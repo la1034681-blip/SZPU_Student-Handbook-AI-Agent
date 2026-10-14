@@ -67,14 +67,31 @@ SYSTEM_PROMPT = """你是深圳职业技术大学《学生手册（2025 年修�
 3. 若证据不足以回答（手册里没有相关规定，或证据只是字面沾边但答不了这个问题），
    必须把 insufficient 设为 true，并在 answer 里说明"手册中未找到相关规定"。绝不编造。
 4. 证据若同时存在"本科口径"与"专科口径"，必须分别说明，不得混为一谈。
-5. 用通顺的中文重新组织，不要整段照抄原文；数字、期限、比例必须与证据完全一致。
-6. 证据中与问题相关的**每一个**数量、上限、期限、条件都要答到，不得只挑其中一项。
+5. 证据中与问题相关的**每一个**数量、上限、期限、条件都要答到，不得只挑其中一项。
    同一事项分若干类别的（本科/专科、免修/置换/替代、各奖项档次），逐类说明。
    例：证据同时给出「免修或置换课程累计不得超过12学分」与「替代任选课累计不得超过
    6学分」时，两个上限都必须答出，只答一个即为遗漏。
-7. 不要在正文里写任何「来源说明」或「口径归属说明」，例如"上述规定出自《某某办法》"、
+6. 不要在正文里写任何「来源说明」或「口径归属说明」，例如"上述规定出自《某某办法》"、
    "本条规定见于第X条"、"上述为专科口径的规定"。出处由系统在答复之外单独列出。
    本科与专科确有差异时，直接用「本科：…」「专科：…」分述即可，不要额外加说明句。
+7. 【答复怎么排版 —— 先给结论，再分点】
+   answer 字段写成「一句结论 + 若干要点」，**不要整段照抄条款原文**：
+   · 第一行：一句**核心结论**，直接回答这个问题的要点（不写条款号）；
+   · 之后每个要点**独占一行**，用「- 」开头，一句话说清，行末紧跟 [Ex]；
+   · 该答的要点按第 5 条**一个都不能少** —— 宁可多分一条，也不要为了短而漏项；
+   · 除这些行以外不要再写别的句子。原文里的程序性描述、兜底条款、重复表述
+     （如"具体按学校某某规定执行""本办法自发布之日起施行"）不要写进来；
+   · 数字、期限、比例、金额必须与证据**完全一致**，一个字都不能改、不能省、不能约；
+   · 【重要】手册原文由系统在答复下方另行完整展示，你**不需要**保留原文措辞。
+
+   【排版范例】格式照下面这样，内容只是举例、不要照搬：
+     正确的 answer：
+       必修课首次不及格可以补考一次。[E1]
+       - 补考成绩由卷面成绩与平时成绩综合评定，合格即获得学分。[E1]
+       - 成绩标注「补考」记入成绩单；补考仍不及格的可申请重修。[E1]
+     要避免的写法（整段照抄原文）：
+       除通识教育选修课程外，学生首次修读的课程考核不及格者，可在下学期开学初
+       参加一次补考（部分不适合补考的实践类、过程性考核的课程则需申请参加重修）……[E1]
 
 【输出格式】
 只输出一个 JSON 对象，不要任何其他文字，不要代码围栏。JSON 含四个键：
@@ -118,6 +135,64 @@ def llm_backend():
     return (os.environ.get("LLM_BACKEND") or "deepseek").strip().lower()
 
 
+def is_rate_limited(exc: BaseException) -> bool:
+    """判断异常是不是「免费档限流」（429 / 请求过于频繁）。
+
+    为什么单独判：免费模型是「永久免费、**不限量但限速**」，限流属于
+    设计的一部分，不是故障。把它跟真故障混在一起，页面上会出现
+    「模型调用失败：429…」这种天书；分开之后才能对该退避的退避、
+    对该报错的报错。
+    """
+    s = f"{type(exc).__name__}: {exc}".lower()
+    return ("429" in s or "rate" in s and "limit" in s
+            or "too many request" in s
+            or "请求过于频繁" in s
+            or "使用量已超出频率限制" in s
+            or "超出频率限制" in s)
+
+
+def _wrap_429(kw: dict):
+    """构造一个「把 429 说人话」的免费档 LLM 客户端。
+
+    实现方式是**继承 ChatOpenAI** 而不是拿它当属性套一层 —— 这点很关键，
+    第一版写成了 `class _Client: def __getattr__...` 的代理，结果整条链炸在
+    「Expected a Runnable, callable or dict」：LangChain 的 chain 只接受
+    `Runnable`，而裸代理类不是 `BaseChatModel` 的子类，注册不上。
+    子类化则天生就是合法 Runnable，属性、配置、结构化输出全部照常。
+
+    为什么要两层（`max_retries` + 这一层）：
+      · `max_retries` 负责**真的重试**，在 SDK 层重发，连接与会话都由它管；
+      · 这一层负责**兜底的兜底** —— 万一重试全用尽仍被限流，别把
+        「429 您的使用量已超出频率限制，将在 12:04:44 重置」原样甩到页面上。
+        那句话对学生毫无意义，而且看起来像系统坏了。
+    """
+    from langchain_openai import ChatOpenAI
+
+    class _Friendly429LLM(ChatOpenAI):
+        """免费档专用：只覆盖 invoke 的异常翻译，行为与父类一致。"""
+
+        def invoke(self, *a, **kw2):
+            try:
+                return super().invoke(*a, **kw2)
+            except Exception as e:                        # noqa: BLE001
+                if not is_rate_limited(e):
+                    raise
+                raise RuntimeError(
+                    "在线大脑现在响应的人太多（免费额度限流），"
+                    "稍等一两分钟再问一次就好。"
+                    f"原始错误：{str(e)[:120]}") from e
+
+    return _Friendly429LLM(**kw)
+
+
+def _env_int(name: str, default: int) -> int:
+    """读一个整数型环境变量，非法值退回默认（不让配置写错就崩）。"""
+    try:
+        return int(str(os.environ.get(name, "") or "").strip() or default)
+    except (TypeError, ValueError):
+        return default
+
+
 def build_llm(model=None, temperature=0.0, api_key=None, base_url=None,
               use_json_mode=True, timeout=90, backend=None):
     """构造聊天模型客户端，由 backend 参数或 LLM_BACKEND 决定走哪条路。
@@ -145,9 +220,14 @@ def build_llm(model=None, temperature=0.0, api_key=None, base_url=None,
         kw = dict(model=model or os.environ.get("FREE_LLM_MODEL") or DEFAULT_FREE_MODEL,
                   temperature=temperature, api_key=key, base_url=base,
                   max_tokens=2000, timeout=timeout)
+        # 免费档「不限量但限速」，429 是常态而非故障。langchain 自带
+        # max_retries（默认 None = 不重试），在这里打开：它会在 SDK 层重发
+        # 请求，比我们在外面包一层更稳（连接、会话、流式都它管）。
+        # 3 次 + 指数退避（约 2/4/8 秒）足以跨过限流窗口。
+        kw["max_retries"] = _env_int("FREE_LLM_MAX_RETRIES", 3)
         if use_json_mode:
             kw["model_kwargs"] = {"response_format": {"type": "json_object"}}
-        return ChatOpenAI(**kw)
+        return _wrap_429(kw)
 
     if backend == "local":
         base = (base_url or os.environ.get("LOCAL_LLM_BASE_URL")

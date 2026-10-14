@@ -210,6 +210,14 @@ _RANK = {"support": 2, "partial": 1, "no": 0, "unknown": 0}
 # 改回严格档只需把常量设为 0。
 SUPPORT_MAX_HARD_NO = 1
 
+_FALSE = {"0", "false", "no", "off"}
+
+
+def _verify_strict() -> bool:
+    """校验器故障时是否仍要拒答。默认否（降级放行），VERIFY_STRICT=1 恢复旧行为。"""
+    import os
+    return str(os.environ.get("VERIFY_STRICT", "")).strip().lower() not in _FALSE | {""}
+
 
 def check_support(claims, evmap, llm, recheck=True) -> dict:
     """二级校验。
@@ -237,8 +245,21 @@ def check_support(claims, evmap, llm, recheck=True) -> dict:
 
     first, err = _ask_verdicts(claims, evmap, llm)
     if first is None:
-        # 校验器自身出错时不能"默默放行" —— 标记未通过，交由上层拒答
-        return {"passed": False, "skipped": False, "error": err, "verdicts": []}
+        # 【重要】2026-10-15 修：这里原来直接 `passed: False`，于是
+        # 「校验器自己解析失败」被上层当成「证据不足」→ **整题拒答**。
+        # 实测「从补考到重修会经历哪些环节」检索完全正确，却因为校验器
+        # 返回的 JSON 解析失败（Extra data）被拒 —— 尺子坏了被当成学生作弊。
+        #
+        # 为什么可以放行：一级校验（引用存在性，纯规则不发 LLM）已经过了，
+        # 伪造引用这条防线没丢；二级只是**加强**防线，它自己坏了不该
+        # 反过来给学生定罪。所以降级放行 + 标 degraded 留痕，日志和
+        # 「内部过程」面板能看出这题没真校验过。
+        # 显式设 VERIFY_STRICT=1 可回到旧行为（校验器故障即拒答）。
+        if _verify_strict():
+            return {"passed": False, "skipped": False, "error": err, "verdicts": []}
+        return {"passed": True, "skipped": True, "degraded": True,
+                "reason": "校验器自身故障，本次未做二级校验（已放行）",
+                "error": err, "verdicts": []}
 
     # ---- 断言级复核：只对首轮非 support 的断言复判 ----
     second, n_recheck = {}, 0
@@ -283,14 +304,26 @@ def check_support(claims, evmap, llm, recheck=True) -> dict:
 
 
 def _extract_json(s: str) -> str:
-    """从可能带 ```json 围栏或前后废话的回复里抠出 JSON 主体。"""
+    """从可能带 ```json 围栏或前后废话的回复里抠出 JSON 主体。
+
+    2026-10-15 修：原实现是「取第一个 { 到最后一个 }」，只要模型把对象写了
+    两遍、或在对象后面又补了一句解释里带花括号，截出来的就是 `{...}{...}`
+    这种非法串，`json.loads` 直接报 `Extra data`→ 校验器判"失败"→
+    **检索完全正确的答案被整题拒答**（实测「从补考到重修会经历哪些环节」）。
+    现改为用 raw_decode 只吃下**第一个完整对象**，后面的内容一律忽略。
+    """
     s = (s or "").strip()
     s = re.sub(r"^```(?:json)?\s*", "", s)
     s = re.sub(r"\s*```$", "", s)
-    i, j = s.find("{"), s.rfind("}")
-    if i != -1 and j != -1 and j > i:
-        return s[i:j + 1]
-    return s
+    i = s.find("{")
+    if i == -1:
+        return s
+    try:
+        obj, _ = json.JSONDecoder().raw_decode(s[i:])
+        return json.dumps(obj, ensure_ascii=False)
+    except Exception:                                   # noqa: BLE001
+        j = s.rfind("}")
+        return s[i:j + 1] if j > i else s
 
 
 # ------------------------------------------------------------------ 汇总

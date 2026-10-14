@@ -494,6 +494,32 @@ def _gate_ok() -> bool:
 _CITE_RE = re.compile(r"\[(E\d+)\]")
 
 
+def format_answer(text: str) -> str:
+    """把模型答复整理成「一句结论 + 分点」，**只插换行，一个字都不改**。
+
+    为什么要在显示前做这一下（2026-10-15 用户反馈「答案不该是一大段」）：
+    提示词里已经写明要分点，但免费小模型（GLM-4-Flash）对排版指令的服从度有限，
+    仍常把要点全挤成一大段 —— 而它的**内容**是对的。所以在渲染这一步做纯排版
+    整理：按句末标点断成几条，第一条留作结论，其余每条独立成行。
+    因为只插换行、不动任何文字，**不影响引用校验**，日志里存的也仍是模型原话。
+    已经自己分了行、或者本来就短（<80 字）的答复原样放行，尊重模型排好的版。
+    """
+    t = (text or "").strip()
+    if not t or "\n" in t or len(t) < 80:
+        return t
+    parts = [s.strip() for s in re.split(r"(?<=[。！？])", t) if s.strip()]
+    # 句末标点后紧跟的 [E1][E2] 会被切成分外的碎片，并回上一句，别让它单独成行
+    merged = []
+    for p in parts:
+        if merged and not _CITE_RE.sub("", p).strip():
+            merged[-1] += p
+        else:
+            merged.append(p)
+    if len(merged) < 2:
+        return t
+    return merged[0] + "\n\n" + "\n".join("- " + p for p in merged[1:])
+
+
 def linkify_citations(text: str, valid_eids) -> str:
     """把正文里的 [E1] 换成可点击角标，点击滚到对应证据卡片。"""
     valid = set(valid_eids)
@@ -694,13 +720,14 @@ def render_assistant(meta: dict):
         st.warning(f"**{title}**\n\n{tip}")
     else:
         valid = {e["eid"] for e in meta["evidences"]}
-        st.markdown(linkify_citations(meta["answer"] or "（空）", valid),
+        st.markdown(linkify_citations(format_answer(meta["answer"]) or "（空）", valid),
                     unsafe_allow_html=True)
 
     emap = {e["eid"]: e for e in meta["evidences"]}
     cits = meta["citations"] or []
     if cits and not meta["refused"]:
-        st.markdown("**依据（点答案里的 <span class='cite-badge'>[E1]</span> 角标可跳到对应条款）：**",
+        st.markdown("**手册原文**（点答复里的 <span class='cite-badge'>[E2]</span> "
+                    "角标可直接跳到对应条款）：",
                     unsafe_allow_html=True)
         cards = []
         for eid in cits:
@@ -711,8 +738,10 @@ def render_assistant(meta: dict):
             text = _html.escape(str(e.get("text") or ""))
             page = e.get("page")
             score = e.get("score") or 0.0
+            # `open`：条款默认就是摊开的 —— 答复里只说结论，完整规定在这里看，
+            # 点角标滚下来要能直接读全文，不用再点一次（2026-10-15 按用户反馈）。
             cards.append(
-                f'<details class="ev" id="ev-{eid}">'
+                f'<details class="ev" id="ev-{eid}" open>'
                 f'<summary>[{eid}] {cite} ｜ PDF 第 {page} 页</summary>'
                 f'<div class="ev-meta">相关度 {score:.4f}</div>'
                 f'<div class="ev-text">{text}</div>'
@@ -1044,17 +1073,13 @@ def main():
     if "sid" not in st.session_state:      # 随机会话号：只用于日志，不含身份信息
         st.session_state.sid = uuid.uuid4().hex[:12]
 
-    # 小工具条：状态提示 + 清空对话
-    c1, c2 = st.columns([7, 1.2])
-    with c1:
-        st.markdown(
-            "<div class='sec'><span class='sec-bar'></span>"
-            "<span class='sec-t'>问答</span></div>",
-            unsafe_allow_html=True)
-    with c2:
-        if st.button("清空对话", use_container_width=True):
-            st.session_state.messages = []
-            st.rerun()
+    # 分区标题。注意：「清空对话」按钮**不在这里** —— 它跟输入框一起放在页面
+    # 下边（见函数末尾），因为它管的是输入框那块地方，放顶上离得太远
+    # （2026-10-15 按用户反馈挪下去的）。
+    st.markdown(
+        "<div class='sec'><span class='sec-bar'></span>"
+        "<span class='sec-t'>问答</span></div>",
+        unsafe_allow_html=True)
 
     # 示例问题：点击后与手动输入走同一条作答链路（真正调用模型）。
     clicked = None
@@ -1085,15 +1110,21 @@ def main():
     st.write("")
     render_suggestions()
 
-    # 角落里的小入口：学生点开也只是一页「要密钥」的提示
+    # 底部工具条：紧挨着输入框，三个小按钮一行
+    # 「清空对话」放这里而不是放顶上 —— 它管的就是下面这块对话区，
+    # 学生滚到底顺手就能清，不用再滚回页首（2026-10-15 按反馈调整）。
     st.write("")
-    _, c1, c2 = st.columns([5.2, 1.6, 1.6])
-    with c1:
+    b1, b2, b3 = st.columns(3)
+    with b1:
+        if st.button("清空对话", key="clear_chat", use_container_width=True):
+            st.session_state.messages = []
+            st.rerun()
+    with b2:
         if st.button("使用统计", key="open_admin", use_container_width=True):
             st.session_state["view"] = "stats"
             st.query_params["view"] = "stats"
             st.rerun()
-    with c2:
+    with b3:
         if st.button("系统自检", key="open_diag", use_container_width=True):
             st.session_state["view"] = "diag"
             st.query_params["view"] = "diag"
