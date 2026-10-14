@@ -677,6 +677,21 @@ def render_assistant(meta: dict):
 
 
 # ==================================================================== 作答
+def _loading_tip() -> str:
+    """等待提示语跟着「问题侧编码」的后端走。
+
+    本机跑模型时确实要等两个模型进显存（约 50 秒），得提前打招呼，否则像卡死；
+    线上是调在线接口（每题多两三秒），根本没有模型可加载 —— 照搬那句话会让
+    学生白白等满 50 秒。判据与 `retrievers._pick_backend` 完全一致：
+    显式开关 > 本机模型在不在。
+    """
+    bk = (os.environ.get("EMBED_BACKEND") or "").strip().lower()
+    if bk not in ("local", "api"):
+        bk = "local" if (ROOT / "models" / "bge-m3" / "config.json").exists() else "api"
+    return ("正在检索手册并作答…（首次加载模型约需 50 秒）" if bk == "local"
+            else "正在检索手册并作答…")
+
+
 def ask_and_render(prompt: str) -> bool:
     """统一作答入口：示例按钮与手动输入都走这里。
 
@@ -690,7 +705,7 @@ def ask_and_render(prompt: str) -> bool:
     with st.chat_message("user"):
         st.markdown(prompt)
     with st.chat_message("assistant"):
-        with st.spinner("正在检索手册并作答…（首次加载模型约需 50 秒）"):
+        with st.spinner(_loading_tip()):
             try:
                 pipe = get_pipeline()
                 pipe.enable_planner = OPT["planner"]

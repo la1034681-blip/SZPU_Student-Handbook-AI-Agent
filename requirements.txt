@@ -19,7 +19,10 @@
 # 本机开发（要用本地大模型）请改装：pip install -r requirements-local.txt
 # ============================================================================
 
-streamlit>=1.40,<2
+# Streamlit 是唯一「升级可能改变页面行为」的依赖（按钮、会话状态、chat_input
+# 这些 API 都归它管），所以钉到本机已经全量验证过的版本，保证线上跑的是同一套。
+# 想升级就改这一行，改完先在本机跑一遍 src/tests/test_app_gate.py 再推。
+streamlit==1.62.0
 numpy>=1.26
 requests>=2.31
 
