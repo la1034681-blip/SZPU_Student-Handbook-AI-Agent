@@ -1,0 +1,101 @@
+{
+ "meta": {
+  "built_at": "2026-10-10 14:52:15",
+  "top_k": 6,
+  "llm_verify": true,
+  "rerank": true,
+  "elapsed": 43.1
+ },
+ "summary": {
+  "n": 4,
+  "n_graded": 1,
+  "n_refuse": 3,
+  "引用存在率": 1.0,
+  "引用支持率": 1.0,
+  "出处命中率": 1.0,
+  "误拒率": 0.0,
+  "拒答正确率": 1.0,
+  "平均延迟": 10.77
+ },
+ "items": [
+  {
+   "qid": "Q01",
+   "type": "fact",
+   "question": "必修课考试不及格，能补考吗？补考成绩怎么算？",
+   "refuse_expected": false,
+   "refused": false,
+   "refuse_reason": "",
+   "answer": "可以补考，但本科与专科口径不同，需分别说明。\n\n专科口径：必修课程、限选课程考核不及格者，可在下学期开学参加一次补考；补考卷面成绩连同修课时的平时成绩一起进行综合评定，考核合格即获得该门课程的学分，课程成绩标注“补考”、记入成绩单 [E1]。若补考不及格或旷考，该课程必须重修，重修成绩按课程综合成绩评定办法评定和记载并标注“重修”，且取消毕业补考 [E3]。\n\n本科口径：除通识教育选修课程外，学生首次修读的课程考核不及格者，可在下学期开学初参加一次补考（部分不适合补考的实践类、过程性考核的课程则需申请参加重修）；补考卷面成绩连同修课时的平时成绩一起进行综合评定，考核合格即获得该门课程的学分，课程成绩标注“补考”，记入成绩单；无故旷考的学生不予参加补考；补考成绩仍不及格或旷考的课程可申请重修，重修考核合格获得该门课程的学分，课程成绩标注“重修”，记入成绩单，具体按学校重修课程管理规定执行；通识教育选修课程不及格的，可另选其他通识教育选修课程进行修读 [E2]。",
+   "citations": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "gold": [
+    "F03-A021",
+    "F04-A016"
+   ],
+   "cited_clauses": [
+    "F03-A021",
+    "F04-A016",
+    "F04-A023"
+   ],
+   "gold_covered": true,
+   "exist_pass": true,
+   "support_pass": true,
+   "verify_pass": true,
+   "latency": 35.24
+  },
+  {
+   "qid": "Q38",
+   "type": "refuse",
+   "question": "学校食堂几点关门？",
+   "refuse_expected": true,
+   "refused": true,
+   "refuse_reason": "证据中没有任何一条涉及食堂营业或关门时间的规定，[E1]至[E6]分别针对学生公寓、创业园区、违纪处分、用水用电、作息制度和校园卡，均与食堂关门时间无关。",
+   "answer": "手册中未找到相关规定。所提供的证据涉及学生公寓大门开放时间、创业园区考勤、学生违纪处分、公寓用水用电、作息制度及校园卡有效期等内容，均未涉及学校食堂的关门时间。",
+   "citations": [],
+   "gold": [],
+   "cited_clauses": [],
+   "gold_covered": null,
+   "exist_pass": null,
+   "support_pass": null,
+   "verify_pass": null,
+   "latency": 1.97
+  },
+  {
+   "qid": "Q39",
+   "type": "refuse",
+   "question": "图书馆一次能借几本书？借期多久？",
+   "refuse_expected": true,
+   "refused": true,
+   "refuse_reason": "所提供的证据中没有关于图书馆借书数量或借阅期限的任何规定，无法回答该问题。",
+   "answer": "手册中未找到相关规定。所提供的证据涉及校园卡有效期、学生违纪处分、教材费结算、社团经费开支以及国家助学贷款还款期限等内容，均未涉及图书馆借书数量或借阅期限的规定。",
+   "citations": [],
+   "gold": [],
+   "cited_clauses": [],
+   "gold_covered": null,
+   "exist_pass": null,
+   "support_pass": null,
+   "verify_pass": null,
+   "latency": 2.4
+  },
+  {
+   "qid": "Q40",
+   "type": "refuse",
+   "question": "2026年秋季学期具体哪天开学？",
+   "refuse_expected": true,
+   "refused": true,
+   "refuse_reason": "所有证据（E1-E6）分别涉及免修置换课程、学业预警、休学复学、延长学习时间、转专业申请时间等内容，均未提及任何学期的具体开学日期，无法回答2026年秋季学期哪天开学。",
+   "answer": "手册中未找到相关规定。所提供的证据均未涉及2026年秋季学期的具体开学日期。",
+   "citations": [],
+   "gold": [],
+   "cited_clauses": [],
+   "gold_covered": null,
+   "exist_pass": null,
+   "support_pass": null,
+   "verify_pass": null,
+   "latency": 3.47
+  }
+ ]
+}

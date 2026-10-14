@@ -1,0 +1,86 @@
+{
+ "meta": {
+  "built_at": "2026-10-14 01:39:49",
+  "total_elapsed": 21.7,
+  "mode": "quick",
+  "counts": {
+   "OK": 3,
+   "WARN": 0,
+   "FAIL": 0
+  }
+ },
+ "stages": [
+  {
+   "stage": "S0",
+   "name": "环境与依赖",
+   "status": "OK",
+   "elapsed": 21.67,
+   "detail": "py3.11.16 torch2.10.0+cu128 CUDA=True ｜ API密钥=已配置",
+   "metrics": {
+    "python": "3.11.16",
+    "torch": "2.10.0+cu128",
+    "cuda": true,
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "显存GB": 8.0,
+    "sentence_transformers": "6.1.0",
+    "langchain": "1.3.18",
+    "streamlit": "1.62.0",
+    "numpy": "2.4.6",
+    "api_key": true
+   },
+   "anomalies": []
+  },
+  {
+   "stage": "S1",
+   "name": "数据资产",
+   "status": "OK",
+   "elapsed": 0.04,
+   "detail": "条款索引960 分块1510 题60",
+   "metrics": {
+    "PDF原文件": "3720KB md5:e3968242",
+    "结构化条款": "1090KB md5:83465885",
+    "条款索引": "22KB md5:10e5379f",
+    "检索分块": "2016KB md5:562da4bd",
+    "稠密向量": "6040KB md5:ffa3767c",
+    "评测集": "94KB md5:7cf4b148",
+    "分块数": 1510,
+    "条款索引键数": 960,
+    "评测题数": 60,
+    "题型分布": {
+     "fact": 15,
+     "numeric": 8,
+     "synthesis": 10,
+     "cross": 20,
+     "refuse": 7
+    },
+    "模型/bge-m3": "就位",
+    "模型/bge-reranker-v2-m3": "就位"
+   },
+   "anomalies": []
+  },
+  {
+   "stage": "S2",
+   "name": "结构一致性",
+   "status": "OK",
+   "elapsed": 0.03,
+   "detail": "向量(1510, 1024) 孤儿0 空块0 NaN0",
+   "metrics": {
+    "分块数": 1510,
+    "向量shape": [
+     1510,
+     1024
+    ],
+    "向量维度": 1024,
+    "NaN向量": 0,
+    "零向量": 0,
+    "空文本块": 0,
+    "条款索引条目": 960,
+    "无条号块(AX/APP)": 14,
+    "孤儿分块": 0,
+    "重复chunk_id": 0,
+    "共享clause_id的分块": 535
+   },
+   "anomalies": []
+  }
+ ]
+}

@@ -1,0 +1,40 @@
+{
+  "rows": [
+    {
+      "qid": "Q36",
+      "type": "cross",
+      "detected": true,
+      "rounds": 1,
+      "changed": true,
+      "n_ev": 28,
+      "latency": 56.6
+    },
+    {
+      "qid": "Q05",
+      "type": "fact",
+      "detected": false,
+      "rounds": 0,
+      "changed": false,
+      "n_ev": 14,
+      "latency": 4.42
+    },
+    {
+      "qid": "Q16",
+      "type": "numeric",
+      "detected": false,
+      "rounds": 0,
+      "changed": false,
+      "n_ev": 14,
+      "latency": 4.14
+    },
+    {
+      "qid": "Q10",
+      "type": "fact",
+      "detected": false,
+      "rounds": 0,
+      "changed": false,
+      "n_ev": 13,
+      "latency": 6.61
+    }
+  ]
+}

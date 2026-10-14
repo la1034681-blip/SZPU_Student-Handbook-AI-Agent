@@ -1,0 +1,6393 @@
+{
+ "file": "附件1. 学生手册(2025年修订)(1).pdf",
+ "pages_total": 269,
+ "chars_total": 132315,
+ "avg_chars_per_page": 491.9,
+ "structure": {
+  "章": {
+   "total": 214,
+   "unique": 11
+  },
+  "节": {
+   "total": 4,
+   "unique": 4
+  },
+  "条": {
+   "total": 953,
+   "unique": 91
+  },
+  "款_顿号": {
+   "total": 72,
+   "unique": 19
+  },
+  "款_括号": {
+   "total": 693,
+   "unique": 29
+  },
+  "款_阿拉伯": {
+   "total": 325,
+   "unique": 28
+  }
+ },
+ "toc_pages": [
+  4,
+  5
+ ],
+ "suspect_scanned_or_blank": [
+  1,
+  2,
+  3,
+  95
+ ],
+ "low_text_pages": [
+  7,
+  31,
+  66,
+  72,
+  77,
+  79,
+  81,
+  86,
+  99,
+  100,
+  110,
+  114,
+  139,
+  153,
+  170,
+  185,
+  193,
+  214,
+  243
+ ],
+ "two_col_pages": [],
+ "table_pages": [
+  67,
+  68,
+  71,
+  77,
+  79,
+  81,
+  83,
+  84,
+  85,
+  86,
+  87,
+  99,
+  100,
+  113,
+  114,
+  124,
+  129,
+  136,
+  137
+ ],
+ "image_pages": [
+  1,
+  29,
+  35,
+  68
+ ],
+ "repeated_headers": [],
+ "repeated_footers": [],
+ "size_histogram": [
+  [
+   10.0,
+   264
+  ],
+  [
+   14.0,
+   43
+  ],
+  [
+   9.0,
+   19
+  ],
+  [
+   11.0,
+   6
+  ],
+  [
+   10.5,
+   5
+  ],
+  [
+   12.0,
+   2
+  ],
+  [
+   15.0,
+   1
+  ],
+  [
+   9.3,
+   1
+  ],
+  [
+   9.7,
+   1
+  ],
+  [
+   16.8,
+   1
+  ],
+  [
+   7.8,
+   1
+  ],
+  [
+   8.1,
+   1
+  ],
+  [
+   9.1,
+   1
+  ],
+  [
+   7.5,
+   1
+  ],
+  [
+   7.1,
+   1
+  ]
+ ],
+ "pages": [
+  {
+   "page": 1,
+   "w": 1167.1,
+   "h": 837.5,
+   "chars": 0,
+   "blocks": 0,
+   "blk_left": 0,
+   "blk_right": 0,
+   "blk_mid": 0,
+   "two_col": false,
+   "images": 1,
+   "tables": 0,
+   "drawings": 0,
+   "top_sizes": []
+  },
+  {
+   "page": 2,
+   "w": 405.4,
+   "h": 595.3,
+   "chars": 0,
+   "blocks": 0,
+   "blk_left": 0,
+   "blk_right": 0,
+   "blk_mid": 0,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 42,
+   "top_sizes": []
+  },
+  {
+   "page": 3,
+   "w": 405.4,
+   "h": 595.3,
+   "chars": 0,
+   "blocks": 0,
+   "blk_left": 0,
+   "blk_right": 0,
+   "blk_mid": 0,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 94,
+   "top_sizes": []
+  },
+  {
+   "page": 4,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 905,
+   "blocks": 32,
+   "blk_left": 3,
+   "blk_right": 0,
+   "blk_mid": 29,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 0,
+   "top_sizes": [
+    [
+     9.0,
+     907
+    ],
+    [
+     10.5,
+     28
+    ],
+    [
+     15.0,
+     5
+    ]
+   ],
+   "first_blk": "目 录 ",
+   "last_blk": "七、深圳职业技术大学家庭经济困难学生认定实施与管理办法……154 "
+  },
+  {
+   "page": 5,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 608,
+   "blocks": 25,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 0,
+   "top_sizes": [
+    [
+     9.0,
+     559
+    ],
+    [
+     10.5,
+     82
+    ]
+   ],
+   "first_blk": "八、深圳职业技术大学学生勤工助学管理办法………………………159 ",
+   "last_blk": "一、深圳职业技术大学学生军事技能训练实施办法（试行）…………258 "
+  },
+  {
+   "page": 6,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 584,
+   "blocks": 25,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     584
+    ],
+    [
+     14.0,
+     11
+    ]
+   ],
+   "first_blk": "高等学校学生行为准则 ",
+   "last_blk": "1 "
+  },
+  {
+   "page": 7,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 82,
+   "blocks": 4,
+   "blk_left": 2,
+   "blk_right": 0,
+   "blk_mid": 3,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     83
+    ]
+   ],
+   "first_blk": "八、强健体魄，热爱生活。积极参加文体活动，提高身体素质， ",
+   "last_blk": "2 "
+  },
+  {
+   "page": 8,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 534,
+   "blocks": 24,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     553
+    ],
+    [
+     14.0,
+     11
+    ]
+   ],
+   "first_blk": "深圳职业技术大学章程 ",
+   "last_blk": "3 "
+  },
+  {
+   "page": 9,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 632,
+   "blocks": 27,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     651
+    ]
+   ],
+   "first_blk": "号。 ",
+   "last_blk": "4 "
+  },
+  {
+   "page": 10,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 537,
+   "blocks": 26,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     565
+    ]
+   ],
+   "first_blk": "第八条 学校稳步推进依法治校工作，建设以学校章程为核心 ",
+   "last_blk": "5 "
+  },
+  {
+   "page": 11,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 560,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     585
+    ]
+   ],
+   "first_blk": "教学质量； ",
+   "last_blk": "6 "
+  },
+  {
+   "page": 12,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 566,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     592
+    ]
+   ],
+   "first_blk": "术学、医学、教育学、法学等学科门类。学校根据经济社会和教育 ",
+   "last_blk": "7 "
+  },
+  {
+   "page": 13,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 631,
+   "blocks": 27,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     640
+    ]
+   ],
+   "first_blk": "上级党组织和本组织的决议，坚持社会主义办学方向，依法治校， ",
+   "last_blk": "8 "
+  },
+  {
+   "page": 14,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 631,
+   "blocks": 27,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     651
+    ]
+   ],
+   "first_blk": "铸牢中华民族共同体意识教育，坚决防范和抵御各类非法传教、渗 ",
+   "last_blk": "9 "
+  },
+  {
+   "page": 15,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 577,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     592
+    ]
+   ],
+   "first_blk": "（二）经常对党员进行遵守纪律的教育，作出关于维护党纪的 ",
+   "last_blk": "10 "
+  },
+  {
+   "page": 16,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 638,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     652
+    ]
+   ],
+   "first_blk": "师以及内部其他工作人员； ",
+   "last_blk": "11 "
+  },
+  {
+   "page": 17,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 611,
+   "blocks": 27,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     636
+    ]
+   ],
+   "first_blk": "笫三节 学术组织 ",
+   "last_blk": "12 "
+  },
+  {
+   "page": 18,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 553,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     575
+    ]
+   ],
+   "first_blk": "可通过。 ",
+   "last_blk": "13 "
+  },
+  {
+   "page": 19,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 550,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     570
+    ]
+   ],
+   "first_blk": "负责学校学位管理，主要职责是： ",
+   "last_blk": "14 "
+  },
+  {
+   "page": 20,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 618,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     638
+    ]
+   ],
+   "first_blk": "专项工作报告，提出意见和建议； ",
+   "last_blk": "15 "
+  },
+  {
+   "page": 21,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 546,
+   "blocks": 27,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     570
+    ]
+   ],
+   "first_blk": "提高学生素质等方面发挥组织、引导和服务青年的作用。 ",
+   "last_blk": "16 "
+  },
+  {
+   "page": 22,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 563,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     583
+    ]
+   ],
+   "first_blk": "第四十一条 二级学院是学校开展办学活动的基层单位，主要 ",
+   "last_blk": "17 "
+  },
+  {
+   "page": 23,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 610,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     625
+    ]
+   ],
+   "first_blk": "（四）领导本单位思想政治工作，加强师德师风建设，落实意 ",
+   "last_blk": "18 "
+  },
+  {
+   "page": 24,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 537,
+   "blocks": 27,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     567
+    ]
+   ],
+   "first_blk": "笫五章 教职工 ",
+   "last_blk": "19 "
+  },
+  {
+   "page": 25,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 547,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     578
+    ]
+   ],
+   "first_blk": "（五）自觉捍卫职业尊严，珍惜教师声誉，提升师德境界； ",
+   "last_blk": "20 "
+  },
+  {
+   "page": 26,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 546,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     564
+    ]
+   ],
+   "first_blk": "（二）参加社会实践、志愿服务、勤工助学、文娱体育及科技 ",
+   "last_blk": "21 "
+  },
+  {
+   "page": 27,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 569,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     599
+    ]
+   ],
+   "first_blk": "情节轻重依法依规给予批评教育或相应的纪律处分。 ",
+   "last_blk": "22 "
+  },
+  {
+   "page": 28,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 584,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     610
+    ]
+   ],
+   "first_blk": "校建立健全国有资产管理制度，加强国有资产管理，优化资源配置， ",
+   "last_blk": "23 "
+  },
+  {
+   "page": 29,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 544,
+   "blocks": 24,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 1,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     571
+    ]
+   ],
+   "first_blk": "第七十四条 学校成立教育基金会，依据法律法规及其章程开 ",
+   "last_blk": "24 "
+  },
+  {
+   "page": 30,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 522,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     555
+    ]
+   ],
+   "first_blk": "和方法自觉；“明辨”是处理问题的分析力和决断精神，“笃行” ",
+   "last_blk": "25 "
+  },
+  {
+   "page": 31,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 127,
+   "blocks": 8,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 5,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     137
+    ]
+   ],
+   "first_blk": "本章程为准。 ",
+   "last_blk": "26 "
+  },
+  {
+   "page": 32,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 511,
+   "blocks": 23,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     516
+    ],
+    [
+     14.0,
+     22
+    ]
+   ],
+   "first_blk": "深圳职业技术大学本科生学籍管理规定（试行） ",
+   "last_blk": "27 "
+  },
+  {
+   "page": 33,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 670,
+   "blocks": 27,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 24,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     683
+    ]
+   ],
+   "first_blk": "原因保留入学资格的，保留时间原则上为一年。保留入学资格期间 ",
+   "last_blk": "28 "
+  },
+  {
+   "page": 34,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 559,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     579
+    ]
+   ],
+   "first_blk": "分。学生遗失学生证需提出原证作废和补办新证的申请，经学院审 ",
+   "last_blk": "29 "
+  },
+  {
+   "page": 35,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 506,
+   "blocks": 22,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 1,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     534
+    ]
+   ],
+   "first_blk": "课程，经学生所在专业的专业主任认定、学院主管教学的领导批准， ",
+   "last_blk": "30 "
+  },
+  {
+   "page": 36,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 623,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     648
+    ]
+   ],
+   "first_blk": "课程成绩为 A+、A、A-、B+、B、B-、C+、C、C-、D、D-或P、 ",
+   "last_blk": "31 "
+  },
+  {
+   "page": 37,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 626,
+   "blocks": 26,
+   "blk_left": 3,
+   "blk_right": 0,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     645
+    ]
+   ],
+   "first_blk": "（三）未交作业次数达到应交作业数量三分之一以上； ",
+   "last_blk": "32 "
+  },
+  {
+   "page": 38,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 553,
+   "blocks": 26,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     577
+    ]
+   ],
+   "first_blk": "（三）普通专升本学生入学后不予转专业； ",
+   "last_blk": "33 "
+  },
+  {
+   "page": 39,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 508,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     532
+    ]
+   ],
+   "first_blk": "生因各种原因需休学或者学校认为应当休学的，经学校批准，可以 ",
+   "last_blk": "34 "
+  },
+  {
+   "page": 40,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 598,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     615
+    ]
+   ],
+   "first_blk": "第三十四条 学生休学期间，学校为其保留学籍，但不享受在 ",
+   "last_blk": "35 "
+  },
+  {
+   "page": 41,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 506,
+   "blocks": 25,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     521
+    ]
+   ],
+   "first_blk": "分者，应予以降级。降级学生名单将在教务处网站进行公示，编入 ",
+   "last_blk": "36 "
+  },
+  {
+   "page": 42,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 591,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     611
+    ]
+   ],
+   "first_blk": "（七）根据教育部《普通高等学校招生体检工作指导意见》， ",
+   "last_blk": "37 "
+  },
+  {
+   "page": 43,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 607,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     628
+    ]
+   ],
+   "first_blk": "（四）退学学生的档案由学校退回其家庭所在地，户口按照国 ",
+   "last_blk": "38 "
+  },
+  {
+   "page": 44,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 565,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     590
+    ]
+   ],
+   "first_blk": "第四十七条 对受留校察看处分的学生，毕业时如未解除其处 ",
+   "last_blk": "39 "
+  },
+  {
+   "page": 45,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 286,
+   "blocks": 14,
+   "blk_left": 4,
+   "blk_right": 0,
+   "blk_mid": 10,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     301
+    ]
+   ],
+   "first_blk": "被撤销的学历证书、学位证书已注册的，学校予以注销，并报 ",
+   "last_blk": "40 "
+  },
+  {
+   "page": 46,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 524,
+   "blocks": 23,
+   "blk_left": 3,
+   "blk_right": 2,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     553
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学专科学生学籍管理规定 ",
+   "last_blk": "41 "
+  },
+  {
+   "page": 47,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 555,
+   "blocks": 27,
+   "blk_left": 13,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     577
+    ]
+   ],
+   "first_blk": "第五条 学生享有下列权利： ",
+   "last_blk": "42 "
+  },
+  {
+   "page": 48,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 664,
+   "blocks": 27,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 24,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     680
+    ]
+   ],
+   "first_blk": "第三章 入学与注册 ",
+   "last_blk": "43 "
+  },
+  {
+   "page": 49,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 625,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     640
+    ]
+   ],
+   "first_blk": "校学生和休学学生的待遇。保留入学资格者必须在下学年开学前凭 ",
+   "last_blk": "44 "
+  },
+  {
+   "page": 50,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 619,
+   "blocks": 27,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     640
+    ]
+   ],
+   "first_blk": "违纪处分办法》予以相应处理。 ",
+   "last_blk": "45 "
+  },
+  {
+   "page": 51,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 555,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     573
+    ]
+   ],
+   "first_blk": "原因不能正常上体育课者，经体育教学部门确认，认真参加锻炼（依 ",
+   "last_blk": "46 "
+  },
+  {
+   "page": 52,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 563,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     580
+    ]
+   ],
+   "first_blk": "练、毕业设计（论文）不得免修。 ",
+   "last_blk": "47 "
+  },
+  {
+   "page": 53,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 519,
+   "blocks": 27,
+   "blk_left": 13,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     544
+    ]
+   ],
+   "first_blk": "作品等证明），转专业更能发挥其特长的，可以申请经过学校组织 ",
+   "last_blk": "48 "
+  },
+  {
+   "page": 54,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 603,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     623
+    ]
+   ],
+   "first_blk": "在学校和拟转入学校同意，由转入学校负责审核转学条件及相关证 ",
+   "last_blk": "49 "
+  },
+  {
+   "page": 55,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 576,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     593
+    ]
+   ],
+   "first_blk": "国人民武装警察部队），学校保留其入学资格或者学籍至退役后两 ",
+   "last_blk": "50 "
+  },
+  {
+   "page": 56,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 524,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     547
+    ]
+   ],
+   "first_blk": "进行公示，并编入下一年级继续学习。 ",
+   "last_blk": "51 "
+  },
+  {
+   "page": 57,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 585,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     601
+    ]
+   ],
+   "first_blk": "离校手续。无故逾期不办理者，学校有关部门注销其在校内的各种 ",
+   "last_blk": "52 "
+  },
+  {
+   "page": 58,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 499,
+   "blocks": 21,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     524
+    ]
+   ],
+   "first_blk": "未达到毕业标准并且未申请延长在校学习时间者，离校时作结 ",
+   "last_blk": "53 "
+  },
+  {
+   "page": 59,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 516,
+   "blocks": 25,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     505
+    ],
+    [
+     14.0,
+     21
+    ]
+   ],
+   "first_blk": "深圳职业技术大学新生入学资格复查管理办法 ",
+   "last_blk": "54 "
+  },
+  {
+   "page": 60,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 567,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     576
+    ]
+   ],
+   "first_blk": "1.录取复查 ",
+   "last_blk": "55 "
+  },
+  {
+   "page": 61,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 616,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     626
+    ]
+   ],
+   "first_blk": "如实写出复查报告，提出延期入学、保留入学资格、退学等建议， ",
+   "last_blk": "56 "
+  },
+  {
+   "page": 62,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 312,
+   "blocks": 12,
+   "blk_left": 1,
+   "blk_right": 1,
+   "blk_mid": 11,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     314
+    ]
+   ],
+   "first_blk": "坚决取消其入学资格，不予新生学籍电子注册。已报到入学的取消 ",
+   "last_blk": "57 "
+  },
+  {
+   "page": 63,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 478,
+   "blocks": 23,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     490
+    ],
+    [
+     14.0,
+     17
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生考勤管理规定 ",
+   "last_blk": "58 "
+  },
+  {
+   "page": 64,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 510,
+   "blocks": 25,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     542
+    ]
+   ],
+   "first_blk": "第三章 考勤的统计 ",
+   "last_blk": "59 "
+  },
+  {
+   "page": 65,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 552,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     590
+    ]
+   ],
+   "first_blk": "所在学院学工办主任审批；一周以上、一个月以内由学院主管学生 ",
+   "last_blk": "60 "
+  },
+  {
+   "page": 66,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 105,
+   "blocks": 6,
+   "blk_left": 1,
+   "blk_right": 1,
+   "blk_mid": 5,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     118
+    ]
+   ],
+   "first_blk": "第八章 附 则 ",
+   "last_blk": "61 "
+  },
+  {
+   "page": 67,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 475,
+   "blocks": 23,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 167,
+   "top_sizes": [
+    [
+     10.0,
+     496
+    ],
+    [
+     14.0,
+     20
+    ]
+   ],
+   "first_blk": "深圳职业技术大学本科生课程成绩管理办法 ",
+   "last_blk": "62 "
+  },
+  {
+   "page": 68,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 349,
+   "blocks": 21,
+   "blk_left": 4,
+   "blk_right": 7,
+   "blk_mid": 16,
+   "col_gap": -272.1,
+   "two_col": false,
+   "images": 1,
+   "tables": 1,
+   "drawings": 112,
+   "top_sizes": [
+    [
+     10.0,
+     400
+    ]
+   ],
+   "first_blk": "B+ 82≦B+<85 3.3 ",
+   "last_blk": "63 "
+  },
+  {
+   "page": 69,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 474,
+   "blocks": 21,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     491
+    ]
+   ],
+   "first_blk": "覆盖原修读课程的成绩，按统一的成绩记载方式参与平均绩点计算。 ",
+   "last_blk": "64 "
+  },
+  {
+   "page": 70,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 437,
+   "blocks": 24,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 15,
+   "top_sizes": [
+    [
+     10.0,
+     426
+    ],
+    [
+     14.0,
+     24
+    ],
+    [
+     9.3,
+     3
+    ],
+    [
+     9.7,
+     1
+    ],
+    [
+     16.8,
+     1
+    ]
+   ],
+   "first_blk": "深圳职业技术大学专科学生课程综合成绩 ",
+   "last_blk": "65 "
+  },
+  {
+   "page": 71,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 392,
+   "blocks": 36,
+   "blk_left": 14,
+   "blk_right": 11,
+   "blk_mid": 27,
+   "col_gap": -278.5,
+   "two_col": false,
+   "images": 0,
+   "tables": 2,
+   "drawings": 266,
+   "top_sizes": [
+    [
+     9.0,
+     238
+    ],
+    [
+     10.0,
+     186
+    ],
+    [
+     7.8,
+     15
+    ],
+    [
+     8.1,
+     10
+    ],
+    [
+     9.1,
+     5
+    ]
+   ],
+   "first_blk": "表一：百分制、五级制、课程绩点的对应关系 ",
+   "last_blk": "66 "
+  },
+  {
+   "page": 72,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 170,
+   "blocks": 9,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 6,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     174
+    ]
+   ],
+   "first_blk": "成绩单的原始成绩只有在学生有特别需要时方可附带打印，正 ",
+   "last_blk": "67 "
+  },
+  {
+   "page": 73,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 522,
+   "blocks": 24,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     512
+    ],
+    [
+     14.0,
+     34
+    ]
+   ],
+   "first_blk": "深圳职业技术大学专科学生申请免修、置换课程 ",
+   "last_blk": "68 "
+  },
+  {
+   "page": 74,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 611,
+   "blocks": 26,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     630
+    ]
+   ],
+   "first_blk": "证书，原则上只认定由国家人力资源和社会保障部、广东省职业技 ",
+   "last_blk": "69 "
+  },
+  {
+   "page": 75,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 596,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     622
+    ]
+   ],
+   "first_blk": "第十一条 因创业或积累工作经验休学的学生，复学后，可根 ",
+   "last_blk": "70 "
+  },
+  {
+   "page": 76,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 273,
+   "blocks": 16,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 10,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     290
+    ]
+   ],
+   "first_blk": "入教务系统，成绩发布后，继续教育与培训学院将打印的成绩单签 ",
+   "last_blk": "71 "
+  },
+  {
+   "page": 77,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 189,
+   "blocks": 19,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 12,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 166,
+   "top_sizes": [
+    [
+     9.0,
+     173
+    ],
+    [
+     11.0,
+     15
+    ],
+    [
+     10.5,
+     4
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "附件1、深圳职业技术大学免修课程申请表 ",
+   "last_blk": "72 "
+  },
+  {
+   "page": 78,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 265,
+   "blocks": 12,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 7,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 26,
+   "top_sizes": [
+    [
+     10.0,
+     175
+    ],
+    [
+     9.0,
+     93
+    ]
+   ],
+   "first_blk": "服兵役类获奖审核： ",
+   "last_blk": "73 "
+  },
+  {
+   "page": 79,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 192,
+   "blocks": 19,
+   "blk_left": 13,
+   "blk_right": 0,
+   "blk_mid": 11,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 166,
+   "top_sizes": [
+    [
+     9.0,
+     173
+    ],
+    [
+     11.0,
+     22
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "附件2、深圳职业技术大学置换不及格课程申请表 ",
+   "last_blk": "74 "
+  },
+  {
+   "page": 80,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 265,
+   "blocks": 11,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 7,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 26,
+   "top_sizes": [
+    [
+     10.0,
+     175
+    ],
+    [
+     9.0,
+     93
+    ]
+   ],
+   "first_blk": "学术成果类审核： ",
+   "last_blk": "75 "
+  },
+  {
+   "page": 81,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 194,
+   "blocks": 19,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 12,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 166,
+   "top_sizes": [
+    [
+     9.0,
+     174
+    ],
+    [
+     11.0,
+     23
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "附件3、深圳职业技术大学替代任意选修课程申请表 ",
+   "last_blk": "76 "
+  },
+  {
+   "page": 82,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 265,
+   "blocks": 12,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 7,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 26,
+   "top_sizes": [
+    [
+     10.0,
+     166
+    ],
+    [
+     9.0,
+     92
+    ],
+    [
+     10.5,
+     9
+    ]
+   ],
+   "first_blk": "学术成果类审核： ",
+   "last_blk": "77 "
+  },
+  {
+   "page": 83,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 231,
+   "blocks": 24,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 2,
+   "drawings": 218,
+   "top_sizes": [
+    [
+     9.0,
+     225
+    ],
+    [
+     11.0,
+     24
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "附件4、学生申请免修、置换、替代课程学分对应标准 ",
+   "last_blk": "78 "
+  },
+  {
+   "page": 84,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 361,
+   "blocks": 35,
+   "blk_left": 17,
+   "blk_right": 14,
+   "blk_mid": 16,
+   "col_gap": -240.7,
+   "two_col": false,
+   "images": 0,
+   "tables": 3,
+   "drawings": 124,
+   "top_sizes": [
+    [
+     9.0,
+     375
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "3.国家专利、论文、作品、科研对应学分标准 ",
+   "last_blk": "79 "
+  },
+  {
+   "page": 85,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 463,
+   "blocks": 32,
+   "blk_left": 8,
+   "blk_right": 10,
+   "blk_mid": 23,
+   "col_gap": -277.1,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 238,
+   "top_sizes": [
+    [
+     9.0,
+     358
+    ],
+    [
+     10.0,
+     126
+    ]
+   ],
+   "first_blk": "6.竞赛类获奖对应学分标准 ",
+   "last_blk": "80 "
+  },
+  {
+   "page": 86,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 153,
+   "blocks": 21,
+   "blk_left": 12,
+   "blk_right": 5,
+   "blk_mid": 5,
+   "col_gap": -272.4,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 60,
+   "top_sizes": [
+    [
+     9.0,
+     164
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "7.体育竞赛类获奖申请学分标准 ",
+   "last_blk": "81 "
+  },
+  {
+   "page": 87,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 305,
+   "blocks": 14,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 5,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 256,
+   "top_sizes": [
+    [
+     7.5,
+     259
+    ],
+    [
+     7.1,
+     92
+    ],
+    [
+     9.0,
+     29
+    ],
+    [
+     11.0,
+     19
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "附件5：免修、置换、替代课程学分汇总表 ",
+   "last_blk": "82 "
+  },
+  {
+   "page": 88,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 524,
+   "blocks": 24,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     531
+    ],
+    [
+     14.0,
+     16
+    ]
+   ],
+   "first_blk": "深圳职业技术大学重修课程管理办法 ",
+   "last_blk": "83 "
+  },
+  {
+   "page": 89,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 518,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     540
+    ]
+   ],
+   "first_blk": "学时。 ",
+   "last_blk": "84 "
+  },
+  {
+   "page": 90,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 266,
+   "blocks": 13,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 10,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     283
+    ]
+   ],
+   "first_blk": "第十一条 参加开班重修或跟班重修的学生若重修课程与正常 ",
+   "last_blk": "85 "
+  },
+  {
+   "page": 91,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 479,
+   "blocks": 24,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     483
+    ],
+    [
+     14.0,
+     23
+    ]
+   ],
+   "first_blk": "深圳职业技术大学考试违规行为 ",
+   "last_blk": "86 "
+  },
+  {
+   "page": 92,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 517,
+   "blocks": 27,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     538
+    ]
+   ],
+   "first_blk": "（八）未用规定的笔或纸答题或者未在试卷规定的地方书写姓 ",
+   "last_blk": "87 "
+  },
+  {
+   "page": 93,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 531,
+   "blocks": 26,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     558
+    ]
+   ],
+   "first_blk": "（五）其他应认定为作弊的行为。 ",
+   "last_blk": "88 "
+  },
+  {
+   "page": 94,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 571,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     597
+    ]
+   ],
+   "first_blk": "（一）代替考生或者由他人代替参加考试的； ",
+   "last_blk": "89 "
+  },
+  {
+   "page": 95,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 42,
+   "blocks": 3,
+   "blk_left": 2,
+   "blk_right": 0,
+   "blk_mid": 1,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     44
+    ]
+   ],
+   "first_blk": "《深圳职业技术学院考试违规行为的认定与处理》（深职院〔2006〕 ",
+   "last_blk": "90 "
+  },
+  {
+   "page": 96,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 562,
+   "blocks": 25,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     562
+    ],
+    [
+     14.0,
+     17
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学业预警管理办法 ",
+   "last_blk": "91 "
+  },
+  {
+   "page": 97,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 582,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     601
+    ]
+   ],
+   "first_blk": "达到8 学分者； ",
+   "last_blk": "92 "
+  },
+  {
+   "page": 98,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 398,
+   "blocks": 19,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 14,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     418
+    ]
+   ],
+   "first_blk": "教师、班级导师等为成员，具体负责本学院学生学业预警工作。 ",
+   "last_blk": "93 "
+  },
+  {
+   "page": 99,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 113,
+   "blocks": 19,
+   "blk_left": 11,
+   "blk_right": 5,
+   "blk_mid": 7,
+   "col_gap": -177.0,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 171,
+   "top_sizes": [
+    [
+     9.0,
+     168
+    ],
+    [
+     12.0,
+     12
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "附件1： ",
+   "last_blk": "94 "
+  },
+  {
+   "page": 100,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 71,
+   "blocks": 11,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 6,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 47,
+   "top_sizes": [
+    [
+     10.5,
+     127
+    ],
+    [
+     14.0,
+     9
+    ],
+    [
+     12.0,
+     4
+    ],
+    [
+     10.0,
+     2
+    ]
+   ],
+   "first_blk": "附件2： ",
+   "last_blk": "95 "
+  },
+  {
+   "page": 101,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 575,
+   "blocks": 25,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     582
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学本科生转专业管理办法 ",
+   "last_blk": "96 "
+  },
+  {
+   "page": 102,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 601,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     622
+    ]
+   ],
+   "first_blk": "（五） 应作退学处理的学生，或受过校级处分，或有课程成绩 ",
+   "last_blk": "97 "
+  },
+  {
+   "page": 103,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 650,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     665
+    ]
+   ],
+   "first_blk": "体实施办法和时间，办理转专业。 ",
+   "last_blk": "98 "
+  },
+  {
+   "page": 104,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 501,
+   "blocks": 23,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     517
+    ]
+   ],
+   "first_blk": "网进行为期不少于5 个工作日的公示。公示期间由学校纪检部门专 ",
+   "last_blk": "99 "
+  },
+  {
+   "page": 105,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 481,
+   "blocks": 23,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     482
+    ],
+    [
+     14.0,
+     20
+    ]
+   ],
+   "first_blk": "深圳职业技术大学专科学生转专业管理办法 ",
+   "last_blk": "100 "
+  },
+  {
+   "page": 106,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 489,
+   "blocks": 27,
+   "blk_left": 15,
+   "blk_right": 1,
+   "blk_mid": 15,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     506
+    ]
+   ],
+   "first_blk": "低录取分数的20分。 ",
+   "last_blk": "101 "
+  },
+  {
+   "page": 107,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 535,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     561
+    ]
+   ],
+   "first_blk": "保留入学资格期满或休学期满复学的学生，如因原专业有较大 ",
+   "last_blk": "102 "
+  },
+  {
+   "page": 108,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 609,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     631
+    ]
+   ],
+   "first_blk": "（四）各类教学改革根据教改的进程统一批量受理； ",
+   "last_blk": "103 "
+  },
+  {
+   "page": 109,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 494,
+   "blocks": 26,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     521
+    ]
+   ],
+   "first_blk": "诉。公示期满没有异议的，学校正式发文公布转专业结果，对同意 ",
+   "last_blk": "104 "
+  },
+  {
+   "page": 110,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 104,
+   "blocks": 5,
+   "blk_left": 1,
+   "blk_right": 1,
+   "blk_mid": 3,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     112
+    ]
+   ],
+   "first_blk": "第十九条 本管理办法自颁布之日起施行，原《深圳职业技术 ",
+   "last_blk": "105 "
+  },
+  {
+   "page": 111,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 533,
+   "blocks": 25,
+   "blk_left": 11,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     538
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生更改身份资料规定 ",
+   "last_blk": "106 "
+  },
+  {
+   "page": 112,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 204,
+   "blocks": 10,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 8,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     219
+    ]
+   ],
+   "first_blk": "6.学生毕业证已发放、回校要求更改姓名或身份证号的。 ",
+   "last_blk": "107 "
+  },
+  {
+   "page": 113,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 249,
+   "blocks": 27,
+   "blk_left": 13,
+   "blk_right": 7,
+   "blk_mid": 14,
+   "col_gap": -249.7,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 199,
+   "top_sizes": [
+    [
+     9.0,
+     289
+    ],
+    [
+     11.0,
+     25
+    ],
+    [
+     10.0,
+     3
+    ]
+   ],
+   "first_blk": "广东省普通、成人高等教育本专科在校生信息修改申请表 ",
+   "last_blk": "108 "
+  },
+  {
+   "page": 114,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 157,
+   "blocks": 8,
+   "blk_left": 4,
+   "blk_right": 3,
+   "blk_mid": 3,
+   "col_gap": -54.6,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 26,
+   "top_sizes": [
+    [
+     9.0,
+     103
+    ],
+    [
+     10.0,
+     95
+    ]
+   ],
+   "first_blk": "学生所在院 （系）审核 ",
+   "last_blk": "109 "
+  },
+  {
+   "page": 115,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 431,
+   "blocks": 23,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 15,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     429
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学士学位授予工作细则 ",
+   "last_blk": "110 "
+  },
+  {
+   "page": 116,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 523,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     538
+    ]
+   ],
+   "first_blk": "（一）未达到毕业要求； ",
+   "last_blk": "111 "
+  },
+  {
+   "page": 117,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 678,
+   "blocks": 27,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     686
+    ]
+   ],
+   "first_blk": "学位评定分委员会应以书面形式或公告方式告知学位申请人（需说 ",
+   "last_blk": "112 "
+  },
+  {
+   "page": 118,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 494,
+   "blocks": 22,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     507
+    ]
+   ],
+   "first_blk": "审议。经学校学士学位评定委员会审定后，对撤销学士学位决定进 ",
+   "last_blk": "113 "
+  },
+  {
+   "page": 119,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 550,
+   "blocks": 24,
+   "blk_left": 2,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     551
+    ],
+    [
+     14.0,
+     23
+    ]
+   ],
+   "first_blk": "深圳职业技术大学创新创业学籍和学分 ",
+   "last_blk": "114 "
+  },
+  {
+   "page": 120,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 563,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     583
+    ]
+   ],
+   "first_blk": "审核并签署意见后，经主管校长批准，在学校统一规定时间内，报 ",
+   "last_blk": "115 "
+  },
+  {
+   "page": 121,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 442,
+   "blocks": 21,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     469
+    ]
+   ],
+   "first_blk": "历或专业技能证书等。 ",
+   "last_blk": "116 "
+  },
+  {
+   "page": 122,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 513,
+   "blocks": 23,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     511
+    ],
+    [
+     14.0,
+     27
+    ]
+   ],
+   "first_blk": "深圳职业技术大学大学生创新创业训练计划 ",
+   "last_blk": "117 "
+  },
+  {
+   "page": 123,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 622,
+   "blocks": 25,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     645
+    ]
+   ],
+   "first_blk": "指导教师。项目构思、设计和实施以项目组成员为主，第一指导教 ",
+   "last_blk": "118 "
+  },
+  {
+   "page": 124,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 513,
+   "blocks": 49,
+   "blk_left": 15,
+   "blk_right": 18,
+   "blk_mid": 24,
+   "col_gap": -292.0,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 64,
+   "top_sizes": [
+    [
+     9.0,
+     383
+    ],
+    [
+     10.0,
+     162
+    ]
+   ],
+   "first_blk": "表1 创客项目验收指标 ",
+   "last_blk": "119 "
+  },
+  {
+   "page": 125,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 527,
+   "blocks": 24,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     557
+    ]
+   ],
+   "first_blk": "第三章 创客项目优化升级 ",
+   "last_blk": "120 "
+  },
+  {
+   "page": 126,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 423,
+   "blocks": 23,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     435
+    ],
+    [
+     14.0,
+     17
+    ]
+   ],
+   "first_blk": "深圳职业技术大学创业园区管理办法 ",
+   "last_blk": "121 "
+  },
+  {
+   "page": 127,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 480,
+   "blocks": 26,
+   "blk_left": 16,
+   "blk_right": 0,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     505
+    ]
+   ],
+   "first_blk": "责，院级园区日常管理及其相关资产由所在学院负责。 ",
+   "last_blk": "122 "
+  },
+  {
+   "page": 128,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 511,
+   "blocks": 26,
+   "blk_left": 13,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     537
+    ]
+   ],
+   "first_blk": "业设计权等知识产权的起诉或司法干预，责任由项目负责人承担； ",
+   "last_blk": "123 "
+  },
+  {
+   "page": 129,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 454,
+   "blocks": 52,
+   "blk_left": 20,
+   "blk_right": 15,
+   "blk_mid": 21,
+   "col_gap": -292.0,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 219,
+   "top_sizes": [
+    [
+     9.0,
+     268
+    ],
+    [
+     10.0,
+     246
+    ]
+   ],
+   "first_blk": "评估指标 ",
+   "last_blk": "124 "
+  },
+  {
+   "page": 130,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 604,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     627
+    ]
+   ],
+   "first_blk": "第十二条 园区管理考核 ",
+   "last_blk": "125 "
+  },
+  {
+   "page": 131,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 526,
+   "blocks": 26,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     550
+    ]
+   ],
+   "first_blk": "（8）不适宜在创业园继续孵化的其他情况。 ",
+   "last_blk": "126 "
+  },
+  {
+   "page": 132,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 316,
+   "blocks": 19,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 12,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     349
+    ]
+   ],
+   "first_blk": "2.入驻企业必须做到离开时锁门关窗，断水断电； ",
+   "last_blk": "127 "
+  },
+  {
+   "page": 133,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 548,
+   "blocks": 24,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     553
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生综合素质评价办法 ",
+   "last_blk": "128 "
+  },
+  {
+   "page": 134,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 555,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     577
+    ]
+   ],
+   "first_blk": "第六条 各学院成立学生综合素质评价工作组，由学院书记、 ",
+   "last_blk": "129 "
+  },
+  {
+   "page": 135,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 596,
+   "blocks": 27,
+   "blk_left": 11,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     610
+    ]
+   ],
+   "first_blk": "5.专业实践。考察学生是否将所学理论知识与实践结合，获取 ",
+   "last_blk": "130 "
+  },
+  {
+   "page": 136,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 247,
+   "blocks": 23,
+   "blk_left": 12,
+   "blk_right": 4,
+   "blk_mid": 17,
+   "col_gap": -283.0,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 127,
+   "top_sizes": [
+    [
+     10.0,
+     277
+    ]
+   ],
+   "first_blk": "16.服务性劳动。包含专业服务、公益劳动与志愿服务。要求学 ",
+   "last_blk": "131 "
+  },
+  {
+   "page": 137,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 392,
+   "blocks": 23,
+   "blk_left": 10,
+   "blk_right": 2,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 1,
+   "drawings": 193,
+   "top_sizes": [
+    [
+     10.0,
+     416
+    ]
+   ],
+   "first_blk": "美育素养 ",
+   "last_blk": "132 "
+  },
+  {
+   "page": 138,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 566,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     601
+    ]
+   ],
+   "first_blk": "第五章 评价程序 ",
+   "last_blk": "133 "
+  },
+  {
+   "page": 139,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 77,
+   "blocks": 4,
+   "blk_left": 2,
+   "blk_right": 0,
+   "blk_mid": 2,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     80
+    ]
+   ],
+   "first_blk": "第二十三条 本办法自公布之日起施行，原《深圳职业技术学 ",
+   "last_blk": "134 "
+  },
+  {
+   "page": 140,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 450,
+   "blocks": 23,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     456
+    ],
+    [
+     14.0,
+     15
+    ]
+   ],
+   "first_blk": "深圳职业技术大学奖学金评选规定 ",
+   "last_blk": "135 "
+  },
+  {
+   "page": 141,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 601,
+   "blocks": 27,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     621
+    ]
+   ],
+   "first_blk": "第四条 单科课程成绩是指所有课程考试（考查）的成绩，不 ",
+   "last_blk": "136 "
+  },
+  {
+   "page": 142,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 418,
+   "blocks": 23,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     457
+    ]
+   ],
+   "first_blk": "（两个学期）不参加评选。 ",
+   "last_blk": "137 "
+  },
+  {
+   "page": 143,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 463,
+   "blocks": 23,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     428
+    ],
+    [
+     14.0,
+     45
+    ]
+   ],
+   "first_blk": "深圳职业技术大学“三好”学生、“三好”学生 ",
+   "last_blk": "138 "
+  },
+  {
+   "page": 144,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 522,
+   "blocks": 27,
+   "blk_left": 15,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     537
+    ]
+   ],
+   "first_blk": "（2）无补考现象。 ",
+   "last_blk": "139 "
+  },
+  {
+   "page": 145,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 473,
+   "blocks": 26,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     495
+    ]
+   ],
+   "first_blk": "1.坚持四项基本原则，努力学习马列主义、毛泽东思想和邓小 ",
+   "last_blk": "140 "
+  },
+  {
+   "page": 146,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 294,
+   "blocks": 16,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 13,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     304
+    ]
+   ],
+   "first_blk": "3.优秀学生干部：比例不超过全校学生干部的20%； ",
+   "last_blk": "141 "
+  },
+  {
+   "page": 147,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 544,
+   "blocks": 24,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     533
+    ],
+    [
+     14.0,
+     20
+    ]
+   ],
+   "first_blk": "深圳职业技术大学“优秀毕业生”评选办法 ",
+   "last_blk": "142 "
+  },
+  {
+   "page": 148,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 456,
+   "blocks": 24,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     472
+    ]
+   ],
+   "first_blk": "达到《国家体育锻炼标准》。 ",
+   "last_blk": "143 "
+  },
+  {
+   "page": 149,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 462,
+   "blocks": 23,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     475
+    ],
+    [
+     14.0,
+     20
+    ]
+   ],
+   "first_blk": "深圳职业技术大学国家奖助学金评审管理办法 ",
+   "last_blk": "144 "
+  },
+  {
+   "page": 150,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 505,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     533
+    ]
+   ],
+   "first_blk": "第四条 申请条件 ",
+   "last_blk": "145 "
+  },
+  {
+   "page": 151,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 562,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     578
+    ]
+   ],
+   "first_blk": "第八条 申请条件 ",
+   "last_blk": "146 "
+  },
+  {
+   "page": 152,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 621,
+   "blocks": 27,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     638
+    ]
+   ],
+   "first_blk": "学生可以同时申请并获得国家助学金；同一学年内国家奖学金和国 ",
+   "last_blk": "147 "
+  },
+  {
+   "page": 153,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 168,
+   "blocks": 9,
+   "blk_left": 4,
+   "blk_right": 0,
+   "blk_mid": 7,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     178
+    ]
+   ],
+   "first_blk": "得截留、挪用和挤占，同时接受财政、主管机关和学校的检查和监 ",
+   "last_blk": "148 "
+  },
+  {
+   "page": 154,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 509,
+   "blocks": 24,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     518
+    ],
+    [
+     14.0,
+     18
+    ]
+   ],
+   "first_blk": "深圳职业技术大学国家助学贷款管理办法 ",
+   "last_blk": "149 "
+  },
+  {
+   "page": 155,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 558,
+   "blocks": 28,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     580
+    ]
+   ],
+   "first_blk": "（二）具有中华人民共和国国籍，且持有中华人民共和国居民 ",
+   "last_blk": "150 "
+  },
+  {
+   "page": 156,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 603,
+   "blocks": 28,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     627
+    ]
+   ],
+   "first_blk": "第七条 贷款利息 ",
+   "last_blk": "151 "
+  },
+  {
+   "page": 157,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 515,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     533
+    ]
+   ],
+   "first_blk": "号码、毕业学校及具体违约行为等信息； ",
+   "last_blk": "152 "
+  },
+  {
+   "page": 158,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 222,
+   "blocks": 12,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 9,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     235
+    ]
+   ],
+   "first_blk": "第十五条 贷款利息 ",
+   "last_blk": "153 "
+  },
+  {
+   "page": 159,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 492,
+   "blocks": 24,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     486
+    ],
+    [
+     14.0,
+     27
+    ]
+   ],
+   "first_blk": "深圳职业技术大学家庭经济困难学生认定 ",
+   "last_blk": "154 "
+  },
+  {
+   "page": 160,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 519,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     543
+    ]
+   ],
+   "first_blk": "第三章 认定的对象及条件 ",
+   "last_blk": "155 "
+  },
+  {
+   "page": 161,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 591,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     604
+    ]
+   ],
+   "first_blk": "（三）有下列情况之一者，可认定为家庭经济特别困难学生： ",
+   "last_blk": "156 "
+  },
+  {
+   "page": 162,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 610,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     622
+    ]
+   ],
+   "first_blk": "泄露学生个人隐私信息。 ",
+   "last_blk": "157 "
+  },
+  {
+   "page": 163,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 382,
+   "blocks": 20,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 13,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     403
+    ]
+   ],
+   "first_blk": "帮助学生解决实际困难。 ",
+   "last_blk": "158 "
+  },
+  {
+   "page": 164,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 557,
+   "blocks": 24,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     567
+    ],
+    [
+     14.0,
+     18
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生勤工助学管理办法 ",
+   "last_blk": "159 "
+  },
+  {
+   "page": 165,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 527,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     546
+    ]
+   ],
+   "first_blk": "具体执行机构，接受学校学生资助工作领导小组的领导，具体工作 ",
+   "last_blk": "160 "
+  },
+  {
+   "page": 166,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 621,
+   "blocks": 28,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     635
+    ]
+   ],
+   "first_blk": "（一）勤工助学岗位的设定既要着眼于满足学生需求，同时要 ",
+   "last_blk": "161 "
+  },
+  {
+   "page": 167,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 596,
+   "blocks": 28,
+   "blk_left": 13,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     616
+    ]
+   ],
+   "first_blk": "次或几次勤工助学活动即完成任务的工作岗位。 ",
+   "last_blk": "162 "
+  },
+  {
+   "page": 168,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 556,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     582
+    ]
+   ],
+   "first_blk": "申请。未经批准擅自开展活动者，一切后果由用工单位承担。 ",
+   "last_blk": "163 "
+  },
+  {
+   "page": 169,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 584,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     608
+    ]
+   ],
+   "first_blk": "养，上一学年内未受纪律处分。 ",
+   "last_blk": "164 "
+  },
+  {
+   "page": 170,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 119,
+   "blocks": 7,
+   "blk_left": 1,
+   "blk_right": 1,
+   "blk_mid": 5,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     131
+    ]
+   ],
+   "first_blk": "工部门和学生协商解决。协商不成的，按照有关法律法规的程序办 ",
+   "last_blk": "165 "
+  },
+  {
+   "page": 171,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 427,
+   "blocks": 23,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     440
+    ],
+    [
+     14.0,
+     17
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生违纪处分办法 ",
+   "last_blk": "166 "
+  },
+  {
+   "page": 172,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 597,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     616
+    ]
+   ],
+   "first_blk": "想汇报。在处分期间对错误有深刻认识并有良好表现，可按期解除 ",
+   "last_blk": "167 "
+  },
+  {
+   "page": 173,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 534,
+   "blocks": 25,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     550
+    ]
+   ],
+   "first_blk": "（二）对检举人、证人或相关人员打击报复、威胁恫吓者; ",
+   "last_blk": "168 "
+  },
+  {
+   "page": 174,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 643,
+   "blocks": 27,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     659
+    ]
+   ],
+   "first_blk": "（三）警告、严重警告处分，由违纪学生所在单位讨论决定， ",
+   "last_blk": "169 "
+  },
+  {
+   "page": 175,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 637,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     656
+    ]
+   ],
+   "first_blk": "学生违纪行为属于保卫处管理职责范围内的，由保卫处负责调 ",
+   "last_blk": "170 "
+  },
+  {
+   "page": 176,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 570,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     589
+    ]
+   ],
+   "first_blk": "家长，对涉及个人隐私、国家机密等情况的处分决定由学生处决定 ",
+   "last_blk": "171 "
+  },
+  {
+   "page": 177,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 504,
+   "blocks": 27,
+   "blk_left": 13,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     523
+    ]
+   ],
+   "first_blk": "（四）有其他情形者，学校视情节轻重给予警告、严重警告、 ",
+   "last_blk": "172 "
+  },
+  {
+   "page": 178,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 625,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     640
+    ]
+   ],
+   "first_blk": "2.造成严重后果者，给予留校察看或开除学籍处分。 ",
+   "last_blk": "173 "
+  },
+  {
+   "page": 179,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 533,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     557
+    ]
+   ],
+   "first_blk": "（四）将他人奖学金、助学金或公款（包括学生活动经费、班 ",
+   "last_blk": "174 "
+  },
+  {
+   "page": 180,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 615,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     632
+    ]
+   ],
+   "first_blk": "（五）旷课50 学时以上者（含50 学时），给予开除学籍处分。 ",
+   "last_blk": "175 "
+  },
+  {
+   "page": 181,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 601,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     615
+    ]
+   ],
+   "first_blk": "（三）代替他人或者让他人代替自己参加考试者，视考试等级 ",
+   "last_blk": "176 "
+  },
+  {
+   "page": 182,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 623,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     643
+    ]
+   ],
+   "first_blk": "（二）对嫖娼卖淫、强奸或强奸未遂者给予开除学籍处分。 ",
+   "last_blk": "177 "
+  },
+  {
+   "page": 183,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 526,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     548
+    ]
+   ],
+   "first_blk": "予口头警告，第二次给予通报批评，第三次警告处分，第四次记过 ",
+   "last_blk": "178 "
+  },
+  {
+   "page": 184,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 527,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     544
+    ]
+   ],
+   "first_blk": "第三十九条 使用互联网违纪者，给予下列处分： ",
+   "last_blk": "179 "
+  },
+  {
+   "page": 185,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 159,
+   "blocks": 8,
+   "blk_left": 3,
+   "blk_right": 0,
+   "blk_mid": 7,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     173
+    ]
+   ],
+   "first_blk": "第五章 附 则 ",
+   "last_blk": "180 "
+  },
+  {
+   "page": 186,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 432,
+   "blocks": 23,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     449
+    ],
+    [
+     14.0,
+     17
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生申诉处理办法 ",
+   "last_blk": "181 "
+  },
+  {
+   "page": 187,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 440,
+   "blocks": 22,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 17,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     464
+    ]
+   ],
+   "first_blk": "（四）作出维持原处理或处分决定的复查决定并将申诉复查决 ",
+   "last_blk": "182 "
+  },
+  {
+   "page": 188,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 543,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     570
+    ]
+   ],
+   "first_blk": "第四章 申诉复查程序 ",
+   "last_blk": "183 "
+  },
+  {
+   "page": 189,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 519,
+   "blocks": 26,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     541
+    ]
+   ],
+   "first_blk": "申诉人因故不能参加复查会议的，应提前2 日向学生申诉处理 ",
+   "last_blk": "184 "
+  },
+  {
+   "page": 190,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 396,
+   "blocks": 18,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 15,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     422
+    ]
+   ],
+   "first_blk": "情况复杂不能在规定限期内作出结论的，经学校负责人批准， ",
+   "last_blk": "185 "
+  },
+  {
+   "page": 191,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 503,
+   "blocks": 23,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     506
+    ],
+    [
+     14.0,
+     18
+    ]
+   ],
+   "first_blk": "深圳职业技术大学港澳台学生管理规定 ",
+   "last_blk": "186 "
+  },
+  {
+   "page": 192,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 571,
+   "blocks": 25,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     599
+    ]
+   ],
+   "first_blk": "第四条 各二级学院负责港澳台学生的教学及日常生活管理。 ",
+   "last_blk": "187 "
+  },
+  {
+   "page": 193,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 93,
+   "blocks": 6,
+   "blk_left": 3,
+   "blk_right": 0,
+   "blk_mid": 4,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     104
+    ]
+   ],
+   "first_blk": "第四章 附 则 ",
+   "last_blk": "188 "
+  },
+  {
+   "page": 194,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 504,
+   "blocks": 23,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     512
+    ],
+    [
+     14.0,
+     18
+    ]
+   ],
+   "first_blk": "深圳职业技术大学外国留学生管理办法 ",
+   "last_blk": "189 "
+  },
+  {
+   "page": 195,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 578,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     605
+    ]
+   ],
+   "first_blk": "外事管理工作。 ",
+   "last_blk": "190 "
+  },
+  {
+   "page": 196,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 596,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     622
+    ]
+   ],
+   "first_blk": "第十四条 各学院接受外国留学生的专业应当是现有专业。为 ",
+   "last_blk": "191 "
+  },
+  {
+   "page": 197,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 357,
+   "blocks": 17,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 13,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     375
+    ]
+   ],
+   "first_blk": "职业技术大学外国留学生宿舍管理规定》。 ",
+   "last_blk": "192 "
+  },
+  {
+   "page": 198,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 555,
+   "blocks": 25,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     548
+    ],
+    [
+     14.0,
+     28
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生出国(境)学习 ",
+   "last_blk": "193 "
+  },
+  {
+   "page": 199,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 612,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     639
+    ]
+   ],
+   "first_blk": "我校赴境外参加长期非学历交换项目(3个月及以上)的学生。 ",
+   "last_blk": "194 "
+  },
+  {
+   "page": 200,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 673,
+   "blocks": 27,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     687
+    ]
+   ],
+   "first_blk": "(三)符合条件并属于第五条第(一)项的学生，属于对等交换实 ",
+   "last_blk": "195 "
+  },
+  {
+   "page": 201,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 456,
+   "blocks": 22,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     480
+    ]
+   ],
+   "first_blk": "规情形的学生可不发放;(二) 其他类型的奖学金在学生获得国(境) ",
+   "last_blk": "196 "
+  },
+  {
+   "page": 202,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 536,
+   "blocks": 24,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     530
+    ],
+    [
+     14.0,
+     33
+    ]
+   ],
+   "first_blk": "深圳职业技术大学香港与内地高等学校师生 ",
+   "last_blk": "197 "
+  },
+  {
+   "page": 203,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 533,
+   "blocks": 26,
+   "blk_left": 11,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     557
+    ]
+   ],
+   "first_blk": "第六条 二级学院在实施计划的过程中，应该严格按照教育部 ",
+   "last_blk": "198 "
+  },
+  {
+   "page": 204,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 532,
+   "blocks": 26,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     564
+    ]
+   ],
+   "first_blk": "关规定从项目经费中支付。 ",
+   "last_blk": "199 "
+  },
+  {
+   "page": 205,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 294,
+   "blocks": 14,
+   "blk_left": 4,
+   "blk_right": 0,
+   "blk_mid": 10,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     314
+    ]
+   ],
+   "first_blk": "第十七条 各项目单位对固定资产的配置、使用、处置等，执 ",
+   "last_blk": "200 "
+  },
+  {
+   "page": 206,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 526,
+   "blocks": 23,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     527
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生社团建设管理办法 ",
+   "last_blk": "201 "
+  },
+  {
+   "page": 207,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 579,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     597
+    ]
+   ],
+   "first_blk": "管理工作。 ",
+   "last_blk": "202 "
+  },
+  {
+   "page": 208,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 665,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     678
+    ]
+   ],
+   "first_blk": "团业务相关的校内党政职能部门、学院党组织、体育部或校内学术 ",
+   "last_blk": "203 "
+  },
+  {
+   "page": 209,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 533,
+   "blocks": 27,
+   "blk_left": 13,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     556
+    ]
+   ],
+   "first_blk": "应当事先向校团委申请变更登记。 ",
+   "last_blk": "204 "
+  },
+  {
+   "page": 210,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 611,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     627
+    ]
+   ],
+   "first_blk": "统筹负责。 ",
+   "last_blk": "205 "
+  },
+  {
+   "page": 211,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 683,
+   "blocks": 27,
+   "blk_left": 4,
+   "blk_right": 0,
+   "blk_mid": 24,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     700
+    ]
+   ],
+   "first_blk": "第五章 组织建设 ",
+   "last_blk": "206 "
+  },
+  {
+   "page": 212,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 585,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     610
+    ]
+   ],
+   "first_blk": "政治类社团和志愿公益类社团的主要负责人原则上应为中共党员。 ",
+   "last_blk": "207 "
+  },
+  {
+   "page": 213,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 573,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     594
+    ]
+   ],
+   "first_blk": "指导单位和校团委提交活动内容、被邀请人基本情况及被邀请人所 ",
+   "last_blk": "208 "
+  },
+  {
+   "page": 214,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 122,
+   "blocks": 7,
+   "blk_left": 2,
+   "blk_right": 1,
+   "blk_mid": 5,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     134
+    ]
+   ],
+   "first_blk": "题的相关业务指导单位及指导教师，要按照全面从严治党要求依规 ",
+   "last_blk": "209 "
+  },
+  {
+   "page": 215,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 483,
+   "blocks": 23,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     496
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生社团经费管理办法 ",
+   "last_blk": "210 "
+  },
+  {
+   "page": 216,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 610,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     630
+    ]
+   ],
+   "first_blk": "均享有2000元/学年的基础经费。校直属、体盟类社团基本运行支持 ",
+   "last_blk": "211 "
+  },
+  {
+   "page": 217,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 555,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     578
+    ]
+   ],
+   "first_blk": "原材料、辅助材料等低值易耗品的采购及运输、装卸、整理费用， ",
+   "last_blk": "212 "
+  },
+  {
+   "page": 218,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 579,
+   "blocks": 24,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     575
+    ],
+    [
+     14.0,
+     21
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生组织资产设备管理办法 ",
+   "last_blk": "213 "
+  },
+  {
+   "page": 219,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 605,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     630
+    ]
+   ],
+   "first_blk": "生组织各项仪器设备管理制度；保障学校仪器设备的安全和完整； ",
+   "last_blk": "214 "
+  },
+  {
+   "page": 220,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 480,
+   "blocks": 23,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     515
+    ]
+   ],
+   "first_blk": "第十一条 各学生组织对积压、闲置或利用率不高的仪器设备 ",
+   "last_blk": "215 "
+  },
+  {
+   "page": 221,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 469,
+   "blocks": 22,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     482
+    ],
+    [
+     14.0,
+     14
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生会章程 ",
+   "last_blk": "216 "
+  },
+  {
+   "page": 222,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 458,
+   "blocks": 25,
+   "blk_left": 10,
+   "blk_right": 1,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     482
+    ]
+   ],
+   "first_blk": "均为本会会员。 ",
+   "last_blk": "217 "
+  },
+  {
+   "page": 223,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 529,
+   "blocks": 27,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     544
+    ]
+   ],
+   "first_blk": "构； ",
+   "last_blk": "218 "
+  },
+  {
+   "page": 224,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 555,
+   "blocks": 27,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     574
+    ]
+   ],
+   "first_blk": "（三）听取、审议深圳职业技术大学学生会的工作报告； ",
+   "last_blk": "219 "
+  },
+  {
+   "page": 225,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 521,
+   "blocks": 24,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     541
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生会根据主责主业设立工作部门，工作部 ",
+   "last_blk": "220 "
+  },
+  {
+   "page": 226,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 585,
+   "blocks": 25,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     608
+    ]
+   ],
+   "first_blk": "第五章 工作人员 ",
+   "last_blk": "221 "
+  },
+  {
+   "page": 227,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 274,
+   "blocks": 14,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 10,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     291
+    ]
+   ],
+   "first_blk": "称行为等问题的，深圳职业技术大学学生会应积极配合学校团委调 ",
+   "last_blk": "222 "
+  },
+  {
+   "page": 228,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 567,
+   "blocks": 23,
+   "blk_left": 2,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     570
+    ],
+    [
+     14.0,
+     17
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生公寓管理办法 ",
+   "last_blk": "223 "
+  },
+  {
+   "page": 229,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 543,
+   "blocks": 27,
+   "blk_left": 13,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     566
+    ]
+   ],
+   "first_blk": "下简称“公寓办”），管委会授权公寓办具体协调公寓日常管理和 ",
+   "last_blk": "224 "
+  },
+  {
+   "page": 230,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 500,
+   "blocks": 27,
+   "blk_left": 15,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     523
+    ]
+   ],
+   "first_blk": "第八条 后勤基建处主要有以下职责： ",
+   "last_blk": "225 "
+  },
+  {
+   "page": 231,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 570,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     593
+    ]
+   ],
+   "first_blk": "理、服务工作。 ",
+   "last_blk": "226 "
+  },
+  {
+   "page": 232,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 619,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     643
+    ]
+   ],
+   "first_blk": "有关费用后，方可办理退宿手续。学生退宿时，应爱护公寓内公共 ",
+   "last_blk": "227 "
+  },
+  {
+   "page": 233,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 627,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     653
+    ]
+   ],
+   "first_blk": "人员在确有安全理由的情况下，可以要求查验物品，携带物品人员 ",
+   "last_blk": "228 "
+  },
+  {
+   "page": 234,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 620,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     641
+    ]
+   ],
+   "first_blk": "开除学籍处分。收缴的违章电器要造册登记，学生可于本学期第二 ",
+   "last_blk": "229 "
+  },
+  {
+   "page": 235,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 609,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     628
+    ]
+   ],
+   "first_blk": "其情节轻重，给予通报批评、警告、严重警告、记过、留校察看或 ",
+   "last_blk": "230 "
+  },
+  {
+   "page": 236,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 565,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     597
+    ]
+   ],
+   "first_blk": "第四十二条 学生应爱护供电、供水设施。如遇照明灯具不亮、 ",
+   "last_blk": "231 "
+  },
+  {
+   "page": 237,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 346,
+   "blocks": 18,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 14,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     374
+    ]
+   ],
+   "first_blk": "明建设的经费投入。 ",
+   "last_blk": "232 "
+  },
+  {
+   "page": 238,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 473,
+   "blocks": 23,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     483
+    ],
+    [
+     14.0,
+     18
+    ]
+   ],
+   "first_blk": "深圳职业技术大学校园一卡通管理办法 ",
+   "last_blk": "233 "
+  },
+  {
+   "page": 239,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 625,
+   "blocks": 27,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     635
+    ]
+   ],
+   "first_blk": "办卡之日起，自然有效期为10年。自然有效期届满后，教工卡可续 ",
+   "last_blk": "234 "
+  },
+  {
+   "page": 240,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 657,
+   "blocks": 27,
+   "blk_left": 7,
+   "blk_right": 1,
+   "blk_mid": 24,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     671
+    ]
+   ],
+   "first_blk": "相关单位提供，特殊情况可以由各服务点拍摄。 ",
+   "last_blk": "235 "
+  },
+  {
+   "page": 241,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 575,
+   "blocks": 27,
+   "blk_left": 11,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     598
+    ]
+   ],
+   "first_blk": "（六）校园卡功能终止后，不进行卡片回收。 ",
+   "last_blk": "236 "
+  },
+  {
+   "page": 242,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 598,
+   "blocks": 27,
+   "blk_left": 6,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     622
+    ]
+   ],
+   "first_blk": "户透支现象，校园一卡通办公室有权向持卡人追索透支款项，并冻 ",
+   "last_blk": "237 "
+  },
+  {
+   "page": 243,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 184,
+   "blocks": 10,
+   "blk_left": 3,
+   "blk_right": 0,
+   "blk_mid": 7,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     200
+    ]
+   ],
+   "first_blk": "一卡通办公室有权视情节采取如冻结校园卡帐户、没收校园卡等相 ",
+   "last_blk": "238 "
+  },
+  {
+   "page": 244,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 527,
+   "blocks": 23,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     532
+    ],
+    [
+     14.0,
+     19
+    ]
+   ],
+   "first_blk": "深圳职业技术大学校园网络安全管理办法 ",
+   "last_blk": "239 "
+  },
+  {
+   "page": 245,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 593,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     612
+    ]
+   ],
+   "first_blk": "指导、监督管理工作，制定学校网络安全管理制度和规程；负责学 ",
+   "last_blk": "240 "
+  },
+  {
+   "page": 246,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 604,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     623
+    ]
+   ],
+   "first_blk": "得损坏或擅自改动，发现校园网网络基础设施的破坏行为或事件应 ",
+   "last_blk": "241 "
+  },
+  {
+   "page": 247,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 599,
+   "blocks": 26,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     617
+    ]
+   ],
+   "first_blk": "入校园网，禁止挪用他人IP地址或私自设置IP地址。 ",
+   "last_blk": "242 "
+  },
+  {
+   "page": 248,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 632,
+   "blocks": 26,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     647
+    ]
+   ],
+   "first_blk": "有害信息侵入情况，接受并配合学校及国家有关部门依法进行的监 ",
+   "last_blk": "243 "
+  },
+  {
+   "page": 249,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 645,
+   "blocks": 27,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     661
+    ]
+   ],
+   "first_blk": "过后方可校内上线运行。 ",
+   "last_blk": "244 "
+  },
+  {
+   "page": 250,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 600,
+   "blocks": 26,
+   "blk_left": 4,
+   "blk_right": 1,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     622
+    ]
+   ],
+   "first_blk": "联网访问； ",
+   "last_blk": "245 "
+  },
+  {
+   "page": 251,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 613,
+   "blocks": 26,
+   "blk_left": 6,
+   "blk_right": 0,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     631
+    ]
+   ],
+   "first_blk": "则。网站、互联网新媒体的开设单位应建立完善的信息发布与审核 ",
+   "last_blk": "246 "
+  },
+  {
+   "page": 252,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 474,
+   "blocks": 26,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     499
+    ]
+   ],
+   "first_blk": "访问服务。待整改完成后由信息系统主管单位提出恢复申请，经教 ",
+   "last_blk": "247 "
+  },
+  {
+   "page": 253,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 565,
+   "blocks": 26,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     591
+    ]
+   ],
+   "first_blk": "流程，做好事发紧急报告与处置、事中情况报告与处置和事后整改 ",
+   "last_blk": "248 "
+  },
+  {
+   "page": 254,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 468,
+   "blocks": 20,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 16,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     477
+    ]
+   ],
+   "first_blk": "需的相关设施，包括校园范围内和各校区之间的各类通信管道、通 ",
+   "last_blk": "249 "
+  },
+  {
+   "page": 255,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 523,
+   "blocks": 24,
+   "blk_left": 7,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     538
+    ],
+    [
+     14.0,
+     17
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生收费管理办法 ",
+   "last_blk": "250 "
+  },
+  {
+   "page": 256,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 556,
+   "blocks": 27,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 24,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     598
+    ]
+   ],
+   "first_blk": "(三) 落实收费公示制度，做好收费政策解释和宣传工作; ",
+   "last_blk": "251 "
+  },
+  {
+   "page": 257,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 586,
+   "blocks": 26,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     601
+    ]
+   ],
+   "first_blk": "学期注册前缴清学费，否则学校不予办理注册手续;学生因家庭经济 ",
+   "last_blk": "252 "
+  },
+  {
+   "page": 258,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 561,
+   "blocks": 27,
+   "blk_left": 8,
+   "blk_right": 1,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     581
+    ]
+   ],
+   "first_blk": "第四章 减免、缓缴和助学贷款 ",
+   "last_blk": "253 "
+  },
+  {
+   "page": 259,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 585,
+   "blocks": 27,
+   "blk_left": 8,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     609
+    ]
+   ],
+   "first_blk": "第五章 退费管理 ",
+   "last_blk": "254 "
+  },
+  {
+   "page": 260,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 509,
+   "blocks": 27,
+   "blk_left": 12,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     537
+    ]
+   ],
+   "first_blk": "费和住宿费: ",
+   "last_blk": "255 "
+  },
+  {
+   "page": 261,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 560,
+   "blocks": 27,
+   "blk_left": 9,
+   "blk_right": 0,
+   "blk_mid": 20,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     584
+    ]
+   ],
+   "first_blk": "时也未申请助学贷款的； ",
+   "last_blk": "256 "
+  },
+  {
+   "page": 262,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 289,
+   "blocks": 13,
+   "blk_left": 3,
+   "blk_right": 1,
+   "blk_mid": 11,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     309
+    ]
+   ],
+   "first_blk": "的学费收缴情况，对于未缴清学费部分，应按比例缓拨经费指标。 ",
+   "last_blk": "257 "
+  },
+  {
+   "page": 263,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 567,
+   "blocks": 25,
+   "blk_left": 5,
+   "blk_right": 0,
+   "blk_mid": 21,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     572
+    ],
+    [
+     14.0,
+     21
+    ]
+   ],
+   "first_blk": "深圳职业技术大学学生军事技能训练实施办法 ",
+   "last_blk": "258 "
+  },
+  {
+   "page": 264,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 487,
+   "blocks": 26,
+   "blk_left": 11,
+   "blk_right": 1,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     516
+    ]
+   ],
+   "first_blk": "国际学生不参加军训。 ",
+   "last_blk": "259 "
+  },
+  {
+   "page": 265,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 507,
+   "blocks": 26,
+   "blk_left": 12,
+   "blk_right": 0,
+   "blk_mid": 18,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     526
+    ]
+   ],
+   "first_blk": "3.现地教学：走进军营，学唱军营歌曲，走进爱国主义教育基 ",
+   "last_blk": "260 "
+  },
+  {
+   "page": 266,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 621,
+   "blocks": 26,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 23,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     648
+    ]
+   ],
+   "first_blk": "第四章 日常管理 ",
+   "last_blk": "261 "
+  },
+  {
+   "page": 267,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 509,
+   "blocks": 26,
+   "blk_left": 10,
+   "blk_right": 0,
+   "blk_mid": 19,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     539
+    ]
+   ],
+   "first_blk": "奇装异服，不得浓妆艳抹、蓄留怪异发型，不得披衣、敞怀、卷裤 ",
+   "last_blk": "262 "
+  },
+  {
+   "page": 268,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 605,
+   "blocks": 25,
+   "blk_left": 5,
+   "blk_right": 1,
+   "blk_mid": 22,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 13,
+   "top_sizes": [
+    [
+     10.0,
+     625
+    ]
+   ],
+   "first_blk": "（三）免训申请和审批须在军训开始前完成。 ",
+   "last_blk": "263 "
+  },
+  {
+   "page": 269,
+   "w": 405.3,
+   "h": 595.4,
+   "chars": 351,
+   "blocks": 15,
+   "blk_left": 2,
+   "blk_right": 0,
+   "blk_mid": 13,
+   "two_col": false,
+   "images": 0,
+   "tables": 0,
+   "drawings": 126,
+   "top_sizes": [
+    [
+     10.0,
+     372
+    ]
+   ],
+   "first_blk": "第二十八条 军训期间所训课目统一进行考核，计入学生总成 ",
+   "last_blk": "264 "
+  }
+ ]
+}

@@ -1,0 +1,379 @@
+{
+ "n_split": 4,
+ "n_total": 44,
+ "plans": {
+  "Q01": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q02": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q03": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q04": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q05": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q06": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q07": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q08": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q09": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q10": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "本科"
+  },
+  "Q11": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "本科"
+  },
+  "Q12": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q13": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q14": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q15": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q16": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q17": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q18": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q19": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q20": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q21": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q22": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q23": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q24": {
+   "need_split": true,
+   "sub_questions": [
+    "考试违纪的认定情形有哪些",
+    "考试作弊的认定情形有哪些",
+    "考试违纪会受到什么处理",
+    "考试作弊会受到什么处理"
+   ],
+   "levels": "未指明"
+  },
+  "Q25": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q26": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q27": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "本科"
+  },
+  "Q28": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q29": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q30": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q31": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q32": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "本科"
+  },
+  "Q33": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "本科"
+  },
+  "Q34": {
+   "need_split": true,
+   "sub_questions": [
+    "必修课不及格后，补考的安排和流程是怎样的",
+    "补考成绩如何记载和计算",
+    "补考不及格后，重修的条件和流程是怎样的",
+    "重修成绩如何记载和计算"
+   ],
+   "levels": "未指明"
+  },
+  "Q35": {
+   "need_split": true,
+   "sub_questions": [
+    "学分修不够会收到学业预警吗？学业预警的等级和条件是什么",
+    "学分修不够会导致学籍处理吗？学籍处理有哪些情形",
+    "学分长期修不够会面临退学或延长学制吗？具体规定是什么"
+   ],
+   "levels": "未指明"
+  },
+  "Q36": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q37": {
+   "need_split": true,
+   "sub_questions": [
+    "国家奖学金的金额和申请条件是什么",
+    "国家励志奖学金的金额和申请条件是什么",
+    "国家助学金的金额和申请条件是什么",
+    "国家奖学金、国家励志奖学金、国家助学金分别怎么发放"
+   ],
+   "levels": "未指明"
+  },
+  "Q38": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q39": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q40": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q41": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q42": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q43": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  },
+  "Q44": {
+   "need_split": false,
+   "sub_questions": [],
+   "levels": "未指明"
+  }
+ },
+ "rows": [
+  {
+   "qid": "Q24",
+   "type": "synthesis",
+   "gold_n": 5,
+   "base_hit": 5,
+   "merge_hit": 5,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q25",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q26",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q27",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q28",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q29",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q30",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q31",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q32",
+   "type": "synthesis",
+   "gold_n": 1,
+   "base_hit": 1,
+   "merge_hit": 1,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q33",
+   "type": "synthesis",
+   "gold_n": 2,
+   "base_hit": 2,
+   "merge_hit": 2,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q34",
+   "type": "cross",
+   "gold_n": 4,
+   "base_hit": 3,
+   "merge_hit": 3,
+   "newly": [],
+   "still_miss": [
+    "F06-A023"
+   ]
+  },
+  {
+   "qid": "Q35",
+   "type": "cross",
+   "gold_n": 2,
+   "base_hit": 1,
+   "merge_hit": 2,
+   "newly": [
+    "F12-A003"
+   ],
+   "still_miss": []
+  },
+  {
+   "qid": "Q36",
+   "type": "cross",
+   "gold_n": 3,
+   "base_hit": 3,
+   "merge_hit": 3,
+   "newly": [],
+   "still_miss": []
+  },
+  {
+   "qid": "Q37",
+   "type": "cross",
+   "gold_n": 9,
+   "base_hit": 9,
+   "merge_hit": 9,
+   "newly": [],
+   "still_miss": []
+  }
+ ],
+ "base_recall": 0.9393939393939394,
+ "merge_recall": 0.9696969696969697
+}

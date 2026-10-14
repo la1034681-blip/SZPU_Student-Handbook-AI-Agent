@@ -1,0 +1,104 @@
+[
+ {
+  "qid": "Q24",
+  "type": "synthesis",
+  "gold_n": 5,
+  "hit_n": 5,
+  "miss": []
+ },
+ {
+  "qid": "Q25",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q26",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q27",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q28",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q29",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q30",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q31",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q32",
+  "type": "synthesis",
+  "gold_n": 1,
+  "hit_n": 1,
+  "miss": []
+ },
+ {
+  "qid": "Q33",
+  "type": "synthesis",
+  "gold_n": 2,
+  "hit_n": 2,
+  "miss": []
+ },
+ {
+  "qid": "Q34",
+  "type": "cross",
+  "gold_n": 4,
+  "hit_n": 3,
+  "miss": [
+   "F06-A023"
+  ]
+ },
+ {
+  "qid": "Q35",
+  "type": "cross",
+  "gold_n": 2,
+  "hit_n": 1,
+  "miss": [
+   "F12-A003"
+  ]
+ },
+ {
+  "qid": "Q36",
+  "type": "cross",
+  "gold_n": 3,
+  "hit_n": 3,
+  "miss": []
+ },
+ {
+  "qid": "Q37",
+  "type": "cross",
+  "gold_n": 9,
+  "hit_n": 9,
+  "miss": []
+ }
+]

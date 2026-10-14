@@ -1,0 +1,56 @@
+{
+ "meta": {
+  "source": "stability_results.json",
+  "round": 1,
+  "repeat": 4,
+  "qids": [
+   "Q24",
+   "Q35"
+  ]
+ },
+ "items": [
+  {
+   "qid": "Q24",
+   "question": "考试违纪和考试作弊有什么区别？分别怎么处理？",
+   "verdicts": [
+    "partial",
+    "partial",
+    "partial",
+    "partial"
+   ],
+   "scores": [
+    0.5,
+    0.5,
+    0.5,
+    0.5
+   ],
+   "verdict_variants": 1,
+   "score_variants": 1,
+   "unstable": false
+  },
+  {
+   "qid": "Q35",
+   "question": "如果学分一直修不够，从轻到重学校会怎么处理？",
+   "verdicts": [
+    "correct",
+    "partial",
+    "correct",
+    "correct"
+   ],
+   "scores": [
+    1.0,
+    0.5,
+    1.0,
+    1.0
+   ],
+   "verdict_variants": 2,
+   "score_variants": 2,
+   "unstable": true
+  }
+ ],
+ "summary": {
+  "n": 2,
+  "unstable": 1,
+  "noise_rate": 0.5
+ }
+}

@@ -1,0 +1,117 @@
+{
+ "meta": {
+  "built_at": "2026-10-14 00:53:46",
+  "top_k": 6,
+  "llm_verify": true,
+  "recheck": true,
+  "judge": true,
+  "rerank": true,
+  "agent": true,
+  "elapsed": 46.2
+ },
+ "summary": {
+  "n": 2,
+  "n_graded": 2,
+  "n_refuse": 0,
+  "引用存在率": 1.0,
+  "引用支持率": 1.0,
+  "出处命中率": 1.0,
+  "误拒率": 0.0,
+  "拒答正确率": null,
+  "答案正确率": 1.0,
+  "已作答正确率": 1.0,
+  "完全正确率": 1.0,
+  "要点覆盖率": 1.0,
+  "拆解触发率": 0.0,
+  "自检触发率": 0.0,
+  "前置拒答数": 0,
+  "平均延迟": 22.19
+ },
+ "items": [
+  {
+   "qid": "Q01",
+   "type": "fact",
+   "question": "必修课考试不及格，能补考吗？补考成绩怎么算？",
+   "refuse_expected": false,
+   "refuse_type": null,
+   "refused": false,
+   "refuse_reason": "",
+   "answer": "必修课考试不及格能否补考及补考成绩如何计算，本科与专科规定如下：\n\n专科：必修课程、限选课程考核不及格者，可在下学期开学参加一次补考；补考卷面成绩连同修课时的平时成绩一起进行综合评定，考核合格即获得该门课程的学分，课程成绩标注“补考”、记入成绩单[E1]。必修课程（含限选课程）补考不及格或旷考者，该课程必须重修；重修人数符合开班规定的，由学校组织单独的重修课程班，无法开班的可随下次正常开课跟班重修；重修课程的成绩按课程综合成绩评定办法评定和记载，并标注“重修”；取消毕业补考[E3]。\n\n本科：除通识教育选修课程外，学生首次修读的课程考核不及格者，可在下学期开学初参加一次补考（部分不适合补考的实践类、过程性考核的课程则需申请参加重修）；补考卷面成绩连同修课时的平时成绩一起进行综合评定，考核合格即获得该门课程的学分，课程成绩标注“补考”，记入成绩单；无故旷考的学生不予参加补考；补考成绩仍不及格或旷考的课程，可申请重修，重修考核合格的获得该门课程的学分，课程成绩标注“重修”，记入成绩单，具体按学校重修课程管理规定执行；通识教育选修课程不及格的，可另选其他通识教育选修课程进行修读[E2]。",
+   "citations": [
+    "E1",
+    "E2",
+    "E3"
+   ],
+   "gold": [
+    "F03-A021",
+    "F04-A016"
+   ],
+   "cited_clauses": [
+    "F03-A021",
+    "F04-A016",
+    "F04-A023"
+   ],
+   "gold_covered": true,
+   "exist_pass": true,
+   "support_pass": true,
+   "verify_pass": true,
+   "verify_reasons": [],
+   "judge_verdict": "correct",
+   "judge_score": 1.0,
+   "judge_coverage": 1.0,
+   "judge_missing": [],
+   "judge_numbers_missing": [],
+   "judge_bad_numbers": [],
+   "judge_reason": "覆盖全部判定要点，本科专科并行口径均正确，无编造数字。",
+   "need_split": false,
+   "sub_questions": [],
+   "hops": 1,
+   "n_evidence": 22,
+   "reflect_rounds": 0,
+   "reflect_gaps": [],
+   "gate_refused": false,
+   "latency": 39.24
+  },
+  {
+   "qid": "Q02",
+   "type": "fact",
+   "question": "补考还是不及格怎么办？",
+   "refuse_expected": false,
+   "refuse_type": null,
+   "refused": false,
+   "refuse_reason": "",
+   "answer": "补考仍不及格的处理，本科与专科口径不同：\n\n本科：补考成绩仍不及格或旷考的课程，可申请重修；重修考核合格的，获得该门课程的学分，课程成绩标注“重修”，记入成绩单，具体按学校重修课程管理规定执行 [E1]。\n\n专科：必修课程（含限选课程）补考不及格或旷考者，该课程必须重修；重修人数符合开班规定的，由学校组织单独的重修课程班，无法开班的，可随下次正常开课跟班重修；重修课程的成绩按课程综合成绩评定办法评定和记载，并标注“重修”；取消毕业补考 [E2]。",
+   "citations": [
+    "E1",
+    "E2"
+   ],
+   "gold": [
+    "F04-A023"
+   ],
+   "cited_clauses": [
+    "F03-A021",
+    "F04-A023"
+   ],
+   "gold_covered": true,
+   "exist_pass": true,
+   "support_pass": true,
+   "verify_pass": true,
+   "verify_reasons": [],
+   "judge_verdict": "correct",
+   "judge_score": 1.0,
+   "judge_coverage": 1.0,
+   "judge_missing": [],
+   "judge_numbers_missing": [],
+   "judge_bad_numbers": [],
+   "judge_reason": "专科口径完整覆盖四个判定要点，本科并行口径属实不扣分。",
+   "need_split": false,
+   "sub_questions": [],
+   "hops": 1,
+   "n_evidence": 22,
+   "reflect_rounds": 0,
+   "reflect_gaps": [],
+   "gate_refused": false,
+   "latency": 5.13
+  }
+ ]
+}

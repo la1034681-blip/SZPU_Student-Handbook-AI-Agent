@@ -1,0 +1,75 @@
+{
+ "meta": {
+  "built_at": "2026-10-14 01:40:41",
+  "top_k": 6,
+  "llm_verify": true,
+  "recheck": true,
+  "judge": true,
+  "rerank": true,
+  "agent": true,
+  "elapsed": 35.8
+ },
+ "summary": {
+  "n": 1,
+  "n_graded": 1,
+  "n_refuse": 0,
+  "引用存在率": 0.0,
+  "引用支持率": 0.0,
+  "出处命中率": 0.0,
+  "误拒率": 1.0,
+  "拒答正确率": null,
+  "答案正确率": 0.0,
+  "已作答正确率": null,
+  "完全正确率": 0.0,
+  "要点覆盖率": null,
+  "拆解触发率": 1.0,
+  "自检触发率": 0.0,
+  "前置拒答数": 0,
+  "平均延迟": 35.81
+ },
+ "items": [
+  {
+   "qid": "N05",
+   "type": "cross",
+   "question": "哪些情况会被退学处理？退学后还能拿到什么证书或证明？退学后宿舍怎么退？",
+   "refuse_expected": false,
+   "refuse_type": null,
+   "refused": true,
+   "refuse_reason": "证据中仅涉及退学情形、退学后证书/证明发放及离校手续办理，未包含退学后宿舍如何退的相关规定。",
+   "answer": "手册中未找到关于退学后宿舍如何办理退出的相关规定。",
+   "citations": [],
+   "gold": [
+    "F03-A038",
+    "F03-A041",
+    "F03-A048",
+    "F04-A039",
+    "F38-A015"
+   ],
+   "cited_clauses": [],
+   "gold_covered": false,
+   "exist_pass": null,
+   "support_pass": null,
+   "verify_pass": null,
+   "verify_reasons": null,
+   "judge_verdict": "refused",
+   "judge_score": 0.0,
+   "judge_coverage": null,
+   "judge_missing": [],
+   "judge_numbers_missing": [],
+   "judge_bad_numbers": [],
+   "judge_reason": "系统拒答，未给出答案",
+   "need_split": true,
+   "sub_questions": [
+    "哪些情况会被退学处理",
+    "退学后还能拿到什么证书或证明",
+    "退学后宿舍怎么退"
+   ],
+   "hops": 4,
+   "n_evidence": 28,
+   "reflect_rounds": 0,
+   "reflect_gaps": [],
+   "gate_refused": false,
+   "latency": 35.81
+  }
+ ]
+}

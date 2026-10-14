@@ -1,0 +1,70 @@
+{
+ "meta": {
+  "source": "stability_results.json",
+  "round": 1,
+  "repeat": 3,
+  "qids": [
+   "Q35",
+   "Q24",
+   "Q36"
+  ]
+ },
+ "items": [
+  {
+   "qid": "Q35",
+   "question": "如果学分一直修不够，从轻到重学校会怎么处理？",
+   "verdicts": [
+    "correct",
+    "correct",
+    "correct"
+   ],
+   "scores": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "verdict_variants": 1,
+   "score_variants": 1,
+   "unstable": false
+  },
+  {
+   "qid": "Q24",
+   "question": "考试违纪和考试作弊有什么区别？分别怎么处理？",
+   "verdicts": [
+    "incorrect",
+    "incorrect",
+    "incorrect"
+   ],
+   "scores": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "verdict_variants": 1,
+   "score_variants": 1,
+   "unstable": false
+  },
+  {
+   "qid": "Q36",
+   "question": "转专业的整个流程包括哪些环节？",
+   "verdicts": [
+    "partial",
+    "partial",
+    "partial"
+   ],
+   "scores": [
+    0.5,
+    0.5,
+    0.5
+   ],
+   "verdict_variants": 1,
+   "score_variants": 1,
+   "unstable": false
+  }
+ ],
+ "summary": {
+  "n": 3,
+  "unstable": 0,
+  "noise_rate": 0.0
+ }
+}

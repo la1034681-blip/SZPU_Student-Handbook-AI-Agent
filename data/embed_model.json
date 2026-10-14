@@ -1,0 +1,11 @@
+{
+ "model": "BAAI/bge-m3",
+ "dim": 1024,
+ "chunks": 1510,
+ "embed_text_sha1": "f26227a7c9828eae7b75b0c9ae34b0d055841c22",
+ "normalized": true,
+ "device": "cuda",
+ "built_at": "2026-10-10T04:17:56",
+ "seconds": 30.8,
+ "note": "向量已 L2 归一化，余弦相似度=点积。换模型需 --force 全量重算。"
+}

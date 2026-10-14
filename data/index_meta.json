@@ -1,0 +1,25 @@
+{
+ "built_at": "2026-10-10T01:42:58",
+ "source": "data/clauses.json + data/chunks.jsonl",
+ "chunks": 1510,
+ "by_type": {
+  "appendix": 4,
+  "article": 970,
+  "clause": 528,
+  "table": 8
+ },
+ "total_chars": 164680,
+ "max_chars": 3140,
+ "empty_chunks": 0,
+ "patched_clauses": {
+  "F08-A002": [
+   "课程绩点计算公式（p70）",
+   "平均课程绩点公式（p71）",
+   "课程绩点计算公式（p70）",
+   "平均课程绩点公式（p71）"
+  ]
+ },
+ "residual_broken_formula": 0,
+ "embed_text_sha1": "f26227a7c9828eae7b75b0c9ae34b0d055841c22",
+ "note": "embed_text 用于向量化；text 为规范化后原文，用于展示与引用。embed_text_sha1 用于判断入库存量是否需要重建。"
+}

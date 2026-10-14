@@ -1,0 +1,482 @@
+[
+ {
+  "qid": "Q01",
+  "refuse": false,
+  "score": 0.9789,
+  "cov1": 0.75,
+  "cov3": 0.75,
+  "n_gold": 2
+ },
+ {
+  "qid": "Q02",
+  "refuse": false,
+  "score": 0.8664,
+  "cov1": 0.625,
+  "cov3": 0.625,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q03",
+  "refuse": false,
+  "score": 0.868,
+  "cov1": 0.5,
+  "cov3": 0.5,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q04",
+  "refuse": false,
+  "score": 0.7892,
+  "cov1": 0.25,
+  "cov3": 0.25,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q05",
+  "refuse": false,
+  "score": 0.9765,
+  "cov1": 0.4,
+  "cov3": 0.8666666666666667,
+  "n_gold": 3
+ },
+ {
+  "qid": "Q06",
+  "refuse": false,
+  "score": 0.987,
+  "cov1": 0.75,
+  "cov3": 0.75,
+  "n_gold": 2
+ },
+ {
+  "qid": "Q07",
+  "refuse": false,
+  "score": 0.8331,
+  "cov1": 0.6363636363636364,
+  "cov3": 0.6363636363636364,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q08",
+  "refuse": false,
+  "score": 0.9857,
+  "cov1": 0.8333333333333334,
+  "cov3": 0.8333333333333334,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q09",
+  "refuse": false,
+  "score": 0.9976,
+  "cov1": 0.8571428571428571,
+  "cov3": 0.8571428571428571,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q10",
+  "refuse": false,
+  "score": 0.917,
+  "cov1": 0.5454545454545454,
+  "cov3": 0.5454545454545454,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q11",
+  "refuse": false,
+  "score": 0.526,
+  "cov1": 0.6,
+  "cov3": 0.6,
+  "n_gold": 2
+ },
+ {
+  "qid": "Q12",
+  "refuse": false,
+  "score": 0.7149,
+  "cov1": 0.35714285714285715,
+  "cov3": 0.35714285714285715,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q13",
+  "refuse": false,
+  "score": 0.9985,
+  "cov1": 1.0,
+  "cov3": 1.0,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q14",
+  "refuse": false,
+  "score": 0.8029,
+  "cov1": 0.5,
+  "cov3": 0.5,
+  "n_gold": 2
+ },
+ {
+  "qid": "Q15",
+  "refuse": false,
+  "score": 0.9936,
+  "cov1": 0.8571428571428571,
+  "cov3": 0.8571428571428571,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q16",
+  "refuse": false,
+  "score": 0.8008,
+  "cov1": 0.0,
+  "cov3": 0.5,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q17",
+  "refuse": false,
+  "score": 0.9705,
+  "cov1": 0.0,
+  "cov3": 0.7,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q18",
+  "refuse": false,
+  "score": 0.9185,
+  "cov1": 0.6,
+  "cov3": 0.6,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q19",
+  "refuse": false,
+  "score": 0.7663,
+  "cov1": 0.5,
+  "cov3": 0.5,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q20",
+  "refuse": false,
+  "score": 0.8864,
+  "cov1": 0.3333333333333333,
+  "cov3": 0.3333333333333333,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q21",
+  "refuse": false,
+  "score": 0.99,
+  "cov1": 0.6666666666666666,
+  "cov3": 0.6666666666666666,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q22",
+  "refuse": false,
+  "score": 0.9605,
+  "cov1": 0.6923076923076923,
+  "cov3": 0.6923076923076923,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q23",
+  "refuse": false,
+  "score": 0.9896,
+  "cov1": 0.8571428571428571,
+  "cov3": 0.8571428571428571,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q24",
+  "refuse": false,
+  "score": 0.8064,
+  "cov1": 0.7142857142857143,
+  "cov3": 0.7142857142857143,
+  "n_gold": 5
+ },
+ {
+  "qid": "Q25",
+  "refuse": false,
+  "score": 0.9979,
+  "cov1": 0.8333333333333334,
+  "cov3": 0.8333333333333334,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q26",
+  "refuse": false,
+  "score": 0.9793,
+  "cov1": 0.47058823529411764,
+  "cov3": 0.5882352941176471,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q27",
+  "refuse": false,
+  "score": 0.9896,
+  "cov1": 0.6,
+  "cov3": 0.6,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q28",
+  "refuse": false,
+  "score": 0.9944,
+  "cov1": 1.0,
+  "cov3": 1.0,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q29",
+  "refuse": false,
+  "score": 0.9984,
+  "cov1": 0.8571428571428571,
+  "cov3": 0.8571428571428571,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q30",
+  "refuse": false,
+  "score": 0.9986,
+  "cov1": 0.7647058823529411,
+  "cov3": 0.7647058823529411,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q31",
+  "refuse": false,
+  "score": 0.9995,
+  "cov1": 0.8333333333333334,
+  "cov3": 0.8333333333333334,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q32",
+  "refuse": false,
+  "score": 0.9958,
+  "cov1": 0.7777777777777778,
+  "cov3": 0.7777777777777778,
+  "n_gold": 1
+ },
+ {
+  "qid": "Q33",
+  "refuse": false,
+  "score": 0.9942,
+  "cov1": 0.6923076923076923,
+  "cov3": 0.6923076923076923,
+  "n_gold": 2
+ },
+ {
+  "qid": "Q34",
+  "refuse": false,
+  "score": 0.7884,
+  "cov1": 0.4583333333333333,
+  "cov3": 0.5,
+  "n_gold": 4
+ },
+ {
+  "qid": "Q35",
+  "refuse": false,
+  "score": 0.112,
+  "cov1": 0.25,
+  "cov3": 0.25,
+  "n_gold": 2
+ },
+ {
+  "qid": "Q36",
+  "refuse": false,
+  "score": 0.946,
+  "cov1": 0.5,
+  "cov3": 0.5,
+  "n_gold": 3
+ },
+ {
+  "qid": "Q37",
+  "refuse": false,
+  "score": 0.9491,
+  "cov1": 0.5588235294117647,
+  "cov3": 0.5882352941176471,
+  "n_gold": 9
+ },
+ {
+  "qid": "Q38",
+  "refuse": true,
+  "score": 0.0168,
+  "cov1": 0.0,
+  "cov3": 0.2857142857142857,
+  "n_gold": 0
+ },
+ {
+  "qid": "Q39",
+  "refuse": true,
+  "score": 0.0023,
+  "cov1": 0.0,
+  "cov3": 0.3,
+  "n_gold": 0
+ },
+ {
+  "qid": "Q40",
+  "refuse": true,
+  "score": 0.0207,
+  "cov1": 0.0,
+  "cov3": 0.4,
+  "n_gold": 0
+ },
+ {
+  "qid": "Q41",
+  "refuse": true,
+  "score": 0.1101,
+  "cov1": 0.45454545454545453,
+  "cov3": 0.45454545454545453,
+  "n_gold": 0
+ },
+ {
+  "qid": "Q42",
+  "refuse": true,
+  "score": 0.0266,
+  "cov1": 0.0,
+  "cov3": 0.2857142857142857,
+  "n_gold": 0
+ },
+ {
+  "qid": "Q43",
+  "refuse": true,
+  "score": 0.0026,
+  "cov1": 0.2,
+  "cov3": 0.2,
+  "n_gold": 0
+ },
+ {
+  "qid": "Q44",
+  "refuse": true,
+  "score": 0.0009,
+  "cov1": 0.0,
+  "cov3": 0.0,
+  "n_gold": 0
+ },
+ {
+  "qid": "N01",
+  "refuse": false,
+  "score": 0.9839,
+  "cov1": 0.725,
+  "cov3": 0.725,
+  "n_gold": 3
+ },
+ {
+  "qid": "N02",
+  "refuse": false,
+  "score": 0.8487,
+  "cov1": 0.30434782608695654,
+  "cov3": 0.34782608695652173,
+  "n_gold": 4
+ },
+ {
+  "qid": "N03",
+  "refuse": false,
+  "score": 0.9499,
+  "cov1": 0.68,
+  "cov3": 0.68,
+  "n_gold": 3
+ },
+ {
+  "qid": "N04",
+  "refuse": false,
+  "score": 0.9781,
+  "cov1": 0.17142857142857143,
+  "cov3": 0.4,
+  "n_gold": 4
+ },
+ {
+  "qid": "N05",
+  "refuse": false,
+  "score": 0.6849,
+  "cov1": 0.4230769230769231,
+  "cov3": 0.5769230769230769,
+  "n_gold": 5
+ },
+ {
+  "qid": "N06",
+  "refuse": false,
+  "score": 0.9775,
+  "cov1": 0.48484848484848486,
+  "cov3": 0.6060606060606061,
+  "n_gold": 6
+ },
+ {
+  "qid": "N07",
+  "refuse": false,
+  "score": 0.8584,
+  "cov1": 0.39285714285714285,
+  "cov3": 0.39285714285714285,
+  "n_gold": 5
+ },
+ {
+  "qid": "N08",
+  "refuse": false,
+  "score": 0.9662,
+  "cov1": 0.4594594594594595,
+  "cov3": 0.5135135135135135,
+  "n_gold": 5
+ },
+ {
+  "qid": "N09",
+  "refuse": false,
+  "score": 0.86,
+  "cov1": 0.42424242424242425,
+  "cov3": 0.45454545454545453,
+  "n_gold": 7
+ },
+ {
+  "qid": "N10",
+  "refuse": false,
+  "score": 0.992,
+  "cov1": 0.45454545454545453,
+  "cov3": 0.45454545454545453,
+  "n_gold": 5
+ },
+ {
+  "qid": "N11",
+  "refuse": false,
+  "score": 0.9942,
+  "cov1": 0.3076923076923077,
+  "cov3": 0.5128205128205128,
+  "n_gold": 5
+ },
+ {
+  "qid": "N12",
+  "refuse": false,
+  "score": 0.9937,
+  "cov1": 0.72,
+  "cov3": 0.72,
+  "n_gold": 6
+ },
+ {
+  "qid": "N13",
+  "refuse": false,
+  "score": 0.9764,
+  "cov1": 0.5714285714285714,
+  "cov3": 0.5714285714285714,
+  "n_gold": 7
+ },
+ {
+  "qid": "N14",
+  "refuse": false,
+  "score": 0.9175,
+  "cov1": 0.4827586206896552,
+  "cov3": 0.4827586206896552,
+  "n_gold": 6
+ },
+ {
+  "qid": "N15",
+  "refuse": false,
+  "score": 0.9854,
+  "cov1": 0.3333333333333333,
+  "cov3": 0.3333333333333333,
+  "n_gold": 5
+ },
+ {
+  "qid": "N16",
+  "refuse": false,
+  "score": 0.9826,
+  "cov1": 0.35714285714285715,
+  "cov3": 0.42857142857142855,
+  "n_gold": 5
+ }
+]

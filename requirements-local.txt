@@ -1,0 +1,74 @@
+# ============================================================================
+# 本机开发环境依赖 —— **不用于线上部署**
+# ----------------------------------------------------------------------------
+# 什么时候用这份：在一台新的机器上重建**本地开发环境**时。
+# 本机跑的是 bge-m3 + bge-reranker-v2-m3 两个大模型（吃显卡、共 4.4 GB），
+# 所以必须有 torch / sentence-transformers，以及离线建库要用的 PDF 解析库。
+#
+# 线上（Streamlit Cloud）读的是仓库根目录的 requirements.txt —— 那是轻量版，
+# 不含 torch（那边没显卡、内存上限 2.7 GB），问题侧编码走在线接口。
+# 两份互不干扰，装哪份取决于你在哪台机器上跑。
+#
+#   本机：pip install -r requirements-local.txt
+#   线上：什么都不用做，Streamlit Cloud 自动读 requirements.txt
+# ============================================================================
+
+# 学生手册 RAG · 依赖清单
+#
+# 【主环境】本机 conda 环境 agent（Python 3.11），不用 workbuddy 托管 venv。
+#   解释器：C:\Users\lijiahui\miniconda3\envs\agent\python.exe
+#   原因：LangChain 1.3.18 全家桶 / fastapi / streamlit / uvicorn 已在该环境，
+#         阶段 3 的混合检索需要「LangChain 编排 + 本地向量」在同一解释器内，
+#         跨环境调用会断链。
+#
+# 【安装源】用阿里云，不要用清华源 ——
+#   清华 https://pypi.tuna.tsinghua.edu.cn/simple 在本机持续返回 403，
+#   pip 表现为 "from versions: none"（看似环境损坏，实为源被拦）。
+#   可用源：https://mirrors.aliyun.com/pypi/simple/
+#
+# 【两个必须避开的坑】
+#   1) 不要用 --force-reinstall / 手工删除已装包：
+#      本机沙箱拦截大规模文件删除，pip 卸载环节会卡死（实测 10 分钟只删 5MB）。
+#      改装：pip install <pkg> --no-deps 覆盖写；确需替换大包时用 zipfile 直接解压。
+#   2) RTX 5060 是 Blackwell（sm_120），必须 cu128 版 torch，
+#      否则报 "no kernel image is available for execution on the device"。
+
+# —— PDF 解析（阶段 1）——
+pymupdf>=1.24                 # 主解析器：文字块坐标、字号、页码
+pdfplumber>=0.11              # 表格回退解析（PyMuPDF 表格会塌行）
+
+# —— 数值与存储（阶段 2）——
+numpy>=1.26                   # 向量矩阵与精确检索
+# SQLite 为 Python 内置；部署阶段（阶段 6）切 PostgreSQL + pgvector
+
+# —— 向量化（阶段 2）——
+torch==2.10.0+cu128           # 已实测：cuda True / RTX 5060 Laptop / capacity (12,0)
+sentence-transformers==6.1.0  # 加载本地 bge-m3
+transformers>=4.40
+tqdm>=4.66
+
+# —— 编排层（阶段 3 起使用；已在 agent 环境，无需重装）——
+# langchain 1.3.18 / langchain-core 1.6.1 / langchain-community
+# langchain-openai / langchain-text-splitters / langgraph / langsmith
+
+# —— 生成层（阶段 4）——
+# 走 DeepSeek 官方 API（OpenAI 兼容协议），用 langchain-openai 的 ChatOpenAI。
+# 密钥放项目根 .env（已写进 .gitignore），变量名 DEEPSEEK_API_KEY；
+# base_url = https://api.deepseek.com/v1，模型 deepseek-chat，temperature=0。
+# 调用示例见 src/ask.py，链路见 src/qa_chain.py。
+langchain-openai>=1.6.0       # 已在 agent 环境，无需重装
+openai>=1.0                   # 其传递依赖
+
+# —— 答案评分与稳定性（阶段 5）——
+# 不引入新依赖：评分复用 DeepSeek 同一个 key（judge_answers.py），
+# 稳定性实验复用同一条问答链路（stability_test.py）。
+#   新增 src/judge_answers.py    答案正确率评分：规则要点覆盖率 + LLM 语义判定 + 数值铁律
+#   新增 src/stability_test.py   多轮波动量化：拒答/出处/答案/校验 四类翻转率
+#   增强 src/verify_citations.py 断言级复核（recheck）+ 元陈述豁免 + hard_no/ignorable_no 区分
+#   增强 src/qa_chain.py         生成失败重试、verify_recheck 开关
+#   增强 src/evaluate_generation.py  接入答案正确率、拒答分类 R1/R2
+
+# GPU 版 torch 离线 wheel 获取（本次实测可用，上海交大镜像 2~3 MB/s）
+# 该 wheel 用完已删除（2.7GB），需要时按下面地址重新下载：
+#   https://mirror.sjtu.edu.cn/pytorch-wheels/cu128/torch-2.10.0%2Bcu128-cp311-cp311-win_amd64.whl
+# 下好后不要用 pip install（会卡在卸载环节），改用 zipfile 直接解压到 site-packages。

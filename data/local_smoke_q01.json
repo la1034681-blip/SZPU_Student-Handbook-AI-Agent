@@ -1,0 +1,83 @@
+{
+ "meta": {
+  "built_at": "2026-10-14 14:30:59",
+  "top_k": 6,
+  "llm_verify": true,
+  "recheck": true,
+  "judge": true,
+  "rerank": true,
+  "agent": true,
+  "elapsed": 120.9
+ },
+ "summary": {
+  "n": 1,
+  "n_graded": 1,
+  "n_refuse": 0,
+  "引用存在率": 1.0,
+  "引用支持率": 1.0,
+  "出处命中率": 1.0,
+  "误拒率": 0.0,
+  "拒答正确率": null,
+  "答案正确率": 0.5,
+  "已作答正确率": 0.5,
+  "完全正确率": 0.0,
+  "要点覆盖率": 0.75,
+  "拆解触发率": 1.0,
+  "自检触发率": 0.0,
+  "前置拒答数": 0,
+  "平均延迟": 108.29
+ },
+ "items": [
+  {
+   "qid": "Q01",
+   "type": "fact",
+   "question": "必修课考试不及格，能补考吗？补考成绩怎么算？",
+   "refuse_expected": false,
+   "refuse_type": null,
+   "refused": false,
+   "refuse_reason": "",
+   "answer": "必修课考试不及格的学生可以参加补考。补考成绩与修课时的平时成绩一起进行综合评定，考核合格后可以获得该门课程的学分，课程成绩标注为“补考”，并记入成绩单。如果补考仍不及格或旷考，则需要申请重修。重修课程的成绩按课程综合成绩评定办法评定和记载，并标注为“重修”。[E1][E2][E3][E4][E14]",
+   "citations": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E14"
+   ],
+   "gold": [
+    "F03-A021",
+    "F04-A016"
+   ],
+   "cited_clauses": [
+    "F03-A021",
+    "F04-A016",
+    "F04-A017",
+    "F04-A023",
+    "F07-A009"
+   ],
+   "gold_covered": true,
+   "exist_pass": true,
+   "support_pass": true,
+   "verify_pass": true,
+   "verify_reasons": [],
+   "judge_verdict": "partial",
+   "judge_score": 0.5,
+   "judge_coverage": 0.75,
+   "judge_missing": [],
+   "judge_numbers_missing": [],
+   "judge_bad_numbers": [],
+   "judge_reason": "待评答案准确覆盖了标准答案的所有要点，且未出现编造或错误的具体数字。；判定要点字面仅命中 75%，存在遗漏",
+   "need_split": true,
+   "sub_questions": [
+    "必修课考试不及格是否可以补考",
+    "补考成绩如何计算"
+   ],
+   "hops": 3,
+   "n_evidence": 14,
+   "reflect_rounds": 0,
+   "reflect_gaps": [],
+   "gate_refused": false,
+   "latency": 108.29
+  }
+ ]
+}

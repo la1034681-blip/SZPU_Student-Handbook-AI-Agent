@@ -1,0 +1,56 @@
+[
+ {
+  "per_file": 3,
+  "max_dist": 2,
+  "max_extra": 4,
+  "cross_recall": 0.7222222222222222,
+  "synth_recall": 0.8666666666666667,
+  "perfect": 9,
+  "avg_ev": 9.214285714285714
+ },
+ {
+  "per_file": 5,
+  "max_dist": 2,
+  "max_extra": 6,
+  "cross_recall": 0.7777777777777778,
+  "synth_recall": 0.8666666666666667,
+  "perfect": 9,
+  "avg_ev": 11.071428571428571
+ },
+ {
+  "per_file": 5,
+  "max_dist": 4,
+  "max_extra": 8,
+  "cross_recall": 0.7777777777777778,
+  "synth_recall": 0.8666666666666667,
+  "perfect": 9,
+  "avg_ev": 11.571428571428571
+ },
+ {
+  "per_file": 8,
+  "max_dist": 4,
+  "max_extra": 12,
+  "cross_recall": 0.8333333333333334,
+  "synth_recall": 1.0,
+  "perfect": 11,
+  "avg_ev": 14.428571428571429
+ },
+ {
+  "per_file": 8,
+  "max_dist": 6,
+  "max_extra": 16,
+  "cross_recall": 0.8888888888888888,
+  "synth_recall": 1.0,
+  "perfect": 12,
+  "avg_ev": 15.285714285714286
+ },
+ {
+  "per_file": 12,
+  "max_dist": 6,
+  "max_extra": 24,
+  "cross_recall": 0.8888888888888888,
+  "synth_recall": 1.0,
+  "perfect": 12,
+  "avg_ev": 18.714285714285715
+ }
+]
