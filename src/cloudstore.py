@@ -93,6 +93,41 @@ class CloudStore:
             pass
         return None
 
+    # ------------------------------------------------------------ 自检
+    def probe(self) -> dict:
+        """连通性探测 —— 专给「系统自检」页用，**故意把失败原因拆开说清**。
+
+        正常的读写方法都遵循「失败就静默 / 只给一句人话」，那是为了不打扰学生；
+        但运维排查时那种含蓄反而要命：地址错了、密钥没配、还是网络不通，
+        从一句「没提交上，可能网络不通」里根本分不出来。这里把地址、有没有密钥、
+        HTTP 状态码、异常类型、耗时全部返回，且不抛异常。
+        """
+        import time
+        info = {"endpoint": self.endpoint, "has_key": bool(self.key),
+                "enabled": self.enabled, "status": None, "ms": None,
+                "err": "", "ok": False}
+        if not self.enabled:
+            info["err"] = "CLOUD_LOG_ENABLED=0 —— 云库功能被开关关掉了"
+            return info
+        if not self.key:
+            info["err"] = ("没有 CLOUD_PUBLISHABLE_KEY —— 线上请在 Streamlit 后台 "
+                           "Settings → Secrets 里配（不是 Environment variables）")
+            return info
+        t0 = time.time()
+        try:
+            r = requests.get(self._url(self.sugg_table), headers=self._headers(),
+                             params={"select": "id", "limit": "1"}, timeout=12)
+            info["status"] = r.status_code
+            info["ms"] = int((time.time() - t0) * 1000)
+            if r.status_code in (200, 206):
+                info["ok"] = True
+            else:
+                info["err"] = f"HTTP {r.status_code} —— {r.text[:180]}"
+        except Exception as e:                                   # noqa: BLE001
+            info["ms"] = int((time.time() - t0) * 1000)
+            info["err"] = f"{type(e).__name__}: {str(e)[:180]}"
+        return info
+
     # ------------------------------------------------------------ 留言墙
     def add_suggestion(self, client_id: str, content: str) -> tuple[bool, str]:
         """提交一条建议。返回 (成功?, 给用户看的一句话)。"""

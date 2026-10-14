@@ -90,5 +90,24 @@ def main():
     print("   页面已无「再问一次」按钮:",
           all("再问一次" not in b.label for b in at.button), flush=True)
 
+    print("\n⑥ 口令没配（留空）→ 必须挡住，不能门户大开", flush=True)
+    # 这条是 2026-10-15 线上事故的直接教训：Secrets 没生效 → ACCESS_CODE 为空 →
+    # 旧逻辑视为「不设门禁」，学生直接就能用，页面上还看不出任何异常。
+    os.environ["ACCESS_CODE"] = ""
+    at.run()
+    show_exc(at, "口令为空")
+    errs = " ".join(e.value for e in at.error)
+    print("   出现「还没配访问口令」提示:", "还没配访问口令" in errs, flush=True)
+    print("   没有问答入口:", len(at.chat_input) == 0, flush=True)
+    print("   没放行（仍在门禁）:", len(at.chat_input) == 0 and "还没配访问口令" in errs,
+          flush=True)
+
+    print("\n⑦ 口令显式设成 off → 这才是有意关闭门禁", flush=True)
+    os.environ["ACCESS_CODE"] = "off"
+    at.run()
+    show_exc(at, "口令 off")
+    print("   放行（有问答入口）:", len(at.chat_input) > 0, flush=True)
+    os.environ["ACCESS_CODE"] = "SZPU666"          # 复原，别影响别的脚本
+
 
 main()

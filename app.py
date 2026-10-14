@@ -313,6 +313,10 @@ _FOOT = """
 OPT = dict(planner=True, reflect=True, gate=True, top_k=6, max_merged=28)
 
 # ==================================================================== 密钥来源
+_SECRETS_NOTE = "（尚未读取）"      # 读 Secrets 的结果，供「系统自检」页显示
+_SECRETS_DONE = False               # 同一轮只读一次，避免被重复调用覆盖掉结果
+
+
 def load_secrets():
     """把 Streamlit Secrets 灌进环境变量 —— 线上与本地共用同一套读取代码。
 
@@ -331,16 +335,28 @@ def load_secrets():
 
     注意：在 Streamlit Cloud 的 Settings → Environment variables 里设的变量
     不会自动进 st.secrets，密钥请统一写在 Secrets 里。
+
+    ⚠ 2026-10-15 教训：原来这里 `except Exception: return 0` 把异常**静默吞掉**，
+    结果 Secrets 格式写错（或压根没配）时程序照常启动，却在真正用到的那一刻
+    冒出一堆看起来毫不相干的零散错误（提问说"缺少 EMBED_API_KEY"、留言说
+    "没提交上"），排查方向全靠猜。现在把结果记进 `_SECRETS_NOTE`，
+    由「系统自检」页摊开给人看 —— 失败要留下痕迹。
     """
+    global _SECRETS_NOTE, _SECRETS_DONE
+    if _SECRETS_DONE:
+        return 0
+    _SECRETS_DONE = True
     try:
         items = dict(st.secrets)
-    except Exception:                    # 没有 secrets.toml / 非 Streamlit 环境
+    except Exception as e:                    # 没有 secrets.toml / 格式错 / 非 Streamlit 环境
+        _SECRETS_NOTE = f"没读到 —— {type(e).__name__}: {str(e)[:140]}"
         return 0
     n = 0
     for k, v in items.items():
         if isinstance(v, (str, int, float)) and str(k) not in os.environ:
             os.environ[str(k)] = str(v)
             n += 1
+    _SECRETS_NOTE = f"读到 {len(items)} 项（新写入环境变量 {n} 项）"
     return n
 
 
@@ -434,10 +450,41 @@ def _render_gate():
             unsafe_allow_html=True)
 
 
+_GATE_OPEN_VALUES = ("off", "none", "0", "false", "open")
+
+
+def _render_gate_unconfigured():
+    """口令**没配好**时挡在这里，明说这是配置问题，而不是假装门禁不存在。"""
+    st.markdown(_STYLE, unsafe_allow_html=True)
+    st.markdown(_HERO, unsafe_allow_html=True)
+    st.error(
+        "**后台还没配访问口令，暂时不能开放使用**\n\n"
+        "管理员请到 Streamlit 后台 **Settings → Secrets** 补上 `ACCESS_CODE`"
+        "（TOML 格式：等号两边留空格、值用英文双引号），保存后会自动重新部署。\n\n"
+        "在配好之前这里会一直挡着 —— 这是故意的：宁可挡住，也不能因为漏配就门户大开。")
+    st.caption("本地调试若想有意不设门禁，把 ACCESS_CODE 设成 off —— "
+               "与「漏配导致为空」区分开。")
+
+
 def _gate_ok() -> bool:
-    """门禁放行判定；未通过就直接把登录页渲染掉、结束本次脚本。"""
-    if not _gate_code():                 # 没配口令 → 不设门禁
+    """门禁放行判定；未通过就把登录页渲染掉、结束本次脚本。
+
+    三种情况（2026-10-15 改，起因见下）：
+      · 口令已配            → 正常走门禁
+      · 口令**留空**        → 视为「没配好」，**拒绝放行**（fail-safe）
+      · 口令是 off/none/0…  → 有意关闭门禁（本地调试用）
+
+    为什么「留空」不再等于「不设门禁」：线上 Secrets 没生效时 ACCESS_CODE 就是空的，
+    按旧逻辑等于**门户大开** —— 手册内容随便拿、免费 GLM 额度随便烧，而且页面上
+    一点异常都看不出来（学生看到的就是个正常可用的系统）。宁可挡住并说明原因，
+    也绝不默认放行。本地 .env 里配了 SZPU666，所以日常使用不受影响。
+    """
+    code = _gate_code()
+    if code.lower() in _GATE_OPEN_VALUES:
         return True
+    if not code:
+        _render_gate_unconfigured()
+        return False
     if st.session_state.get("authed"):
         return True
     _render_gate()
@@ -853,6 +900,111 @@ def render_admin():
         st.caption("编号是浏览器随机生成的，只用来区分「是不是同一个人」，不含身份信息。")
 
 
+# ==================================================================== 系统自检
+def _config_rows() -> list:
+    """关键配置到没到位。纯内存判断，不发网络请求，随便调。"""
+    def has(k: str) -> bool:
+        return bool((os.environ.get(k) or "").strip())
+
+    bk = (os.environ.get("EMBED_BACKEND") or "").strip().lower()
+    if bk not in ("local", "api"):
+        bk = "local" if (ROOT / "models" / "bge-m3" / "config.json").exists() else "api"
+    return [
+        ("ACCESS_CODE", has("ACCESS_CODE"), "访问口令；没配＝不设门禁，谁都能进"),
+        ("ADMIN_CODE", has("ADMIN_CODE"), "统计看板密钥；没配则打不开"),
+        ("EMBED_API_KEY", has("EMBED_API_KEY"),
+         f"在线编码密钥（当前编码后端 = {bk}）；后端是 api 时缺它直接没法提问"),
+        ("CLOUD_ENDPOINT", has("CLOUD_ENDPOINT"), "云库地址；缺了留言墙读不到、日志不落库"),
+        ("CLOUD_PUBLISHABLE_KEY", has("CLOUD_PUBLISHABLE_KEY"), "云库密钥；同上"),
+        ("FREE_LLM_API_KEY", has("FREE_LLM_API_KEY"), "大脑（GLM-4-Flash）密钥；缺了没法作答"),
+    ]
+
+
+def _missing_config() -> list:
+    return [name for name, ok, _ in _config_rows() if not ok]
+
+
+def _render_config_warning():
+    """配置不全时，把「缺哪几项」明明白白摆在页面上。
+
+    为什么非要有它：Secrets 一没配好，程序不会崩，只会在真正用到的那一刻冒一个
+    零散错误（提问说"缺少 EMBED_API_KEY"、留言说"没提交上"）—— 两件事看着毫不
+    相干，排查方向全靠猜。这里一次说清，并指向「系统自检」页。
+    """
+    miss = _missing_config()
+    if not miss:
+        return
+    st.warning(
+        "**后台配置不完整**（缺 " + str(len(miss)) + " 项："
+        + "、".join(f"`{m}`" for m in miss) + "）\n\n"
+        "提问或留言可能因此失败。管理员请点页面底部「系统自检」查看详情。")
+
+
+def _probe_embed() -> str:
+    """真调一次在线编码接口，看通不通、多快。"""
+    import time
+    try:
+        from embed_api import ApiEmbedder
+        t0 = time.time()
+        v = ApiEmbedder().encode(["连通性测试"], normalize_embeddings=True)
+        return (f"通了 —— {int((time.time() - t0) * 1000)} ms，"
+                f"返回形状 {getattr(v, 'shape', None)}")
+    except Exception as e:                                       # noqa: BLE001
+        return f"失败 —— {type(e).__name__}: {str(e)[:200]}"
+
+
+def render_diag():
+    """系统自检：配置状态 + 两条外部链路，只看「有没有配好、通不通」，不显示密钥内容。"""
+    st.markdown(
+        "<div class='sec'><span class='sec-bar'></span>"
+        "<span class='sec-t'>系统自检</span></div>",
+        unsafe_allow_html=True)
+    st.caption("只报「配没配、通不通」，不显示任何密钥内容。"
+               "本地看 .env，线上看 Streamlit 后台 Secrets。")
+
+    st.markdown(f"**Secrets 读取情况**：{_html.escape(str(_SECRETS_NOTE))}")
+    if _SECRETS_NOTE.startswith("没读到") and not (ROOT / ".env").exists():
+        st.caption("线上出现「没读到」通常意味着 Secrets 没保存，或 TOML 写法有误 —— "
+                   "注意分隔线、中文标点、全角引号都不是合法 TOML。")
+
+    st.write("")
+    rows = _config_rows()
+    ok_n = sum(1 for _, ok, _ in rows if ok)
+    st.markdown(f"**关键配置**：{ok_n} / {len(rows)} 项已就位")
+    for name, ok, hint in rows:
+        c1, c2 = st.columns([2.0, 4.0])
+        with c1:
+            st.markdown(("✓ " if ok else "✗ ") + f"`{name}`")
+        with c2:
+            st.caption(("已配置" if ok else "**未配置**") + " —— " + hint)
+
+    st.write("")
+    st.markdown("**连通性测试**（点一下才发请求，平时不打扰）")
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("测云库", use_container_width=True, key="diag_cloud"):
+            st.session_state["diag_cloud_r"] = get_store().probe()
+    with c2:
+        if st.button("测在线编码", use_container_width=True, key="diag_embed"):
+            st.session_state["diag_embed_r"] = _probe_embed()
+
+    r1 = st.session_state.get("diag_cloud_r")
+    if r1:
+        head = "云库通了" if r1.get("ok") else "云库不通"
+        st.markdown(f"**{head}**（耗时 {r1.get('ms')} ms，HTTP {r1.get('status')}）")
+        st.code(f"地址：{r1.get('endpoint')}\n"
+                f"密钥：{'已配' if r1.get('has_key') else '未配'}\n"
+                f"开关：{'开' if r1.get('enabled') else '关'}\n"
+                f"问题：{r1.get('err') or '（无）'}", language=None)
+        if not r1.get("ok"):
+            st.caption("若地址与密钥都对、只是超时或连不上 —— 那多半是网络问题。"
+                       "线上部署在境外，访问国内云库可能不稳，可换个时间再测。")
+
+    r2 = st.session_state.get("diag_embed_r")
+    if r2:
+        st.markdown("**在线编码**：" + r2)
+
+
 # ==================================================================== 主流程
 def main():
     load_secrets()                        # 线上：先灌 Secrets（有则以它为准）
@@ -871,14 +1023,19 @@ def main():
                 or st.query_params.get("view") or "chat")
     if isinstance(raw_view, (list, tuple)):      # URL 里同名参数可能取到列表
         raw_view = raw_view[0] if raw_view else "chat"
-    if str(raw_view) == "stats":
-        render_admin()
+    if str(raw_view) in ("stats", "diag"):
+        if str(raw_view) == "stats":
+            render_admin()
+        else:
+            render_diag()
         st.markdown(_FOOT, unsafe_allow_html=True)
         if st.button("← 回到问答"):
             st.session_state["view"] = "chat"
             st.query_params.pop("view", None)
             st.rerun()
         return
+
+    _render_config_warning()      # 配置缺了什么，先说清，别让人去猜（2026-10-15 踩过）
 
     st.markdown(_CULTURE, unsafe_allow_html=True)
 
@@ -930,11 +1087,16 @@ def main():
 
     # 角落里的小入口：学生点开也只是一页「要密钥」的提示
     st.write("")
-    _, c2 = st.columns([6.4, 1.6])
-    with c2:
+    _, c1, c2 = st.columns([5.2, 1.6, 1.6])
+    with c1:
         if st.button("使用统计", key="open_admin", use_container_width=True):
             st.session_state["view"] = "stats"
             st.query_params["view"] = "stats"
+            st.rerun()
+    with c2:
+        if st.button("系统自检", key="open_diag", use_container_width=True):
+            st.session_state["view"] = "diag"
+            st.query_params["view"] = "diag"
             st.rerun()
 
     st.markdown(_FOOT, unsafe_allow_html=True)
