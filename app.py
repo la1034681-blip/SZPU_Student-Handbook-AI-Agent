@@ -385,7 +385,7 @@ def _render_gate():
     """未通过口令时**只**显示这一页：不加载模型、不渲染任何问答入口。
 
     这样即便有人扫到这个网址，也拿不到任何手册内容，更不会触发
-    50 秒的模型加载把机器拖垮。
+    半分钟的模型加载把机器拖垮。
     """
     st.markdown(_STYLE, unsafe_allow_html=True)
     st.markdown(_HERO, unsafe_allow_html=True)
@@ -680,15 +680,16 @@ def render_assistant(meta: dict):
 def _loading_tip() -> str:
     """等待提示语跟着「问题侧编码」的后端走。
 
-    本机跑模型时确实要等两个模型进显存（约 50 秒），得提前打招呼，否则像卡死；
+    本机跑模型时要等两个模型进显存（**实测 2026-10-15：模型构造 11.3s，
+    整轮首次 search 31.6s，第二次 0.7s**），得提前打招呼，否则像卡死；
     线上是调在线接口（每题多两三秒），根本没有模型可加载 —— 照搬那句话会让
-    学生白白等满 50 秒。判据与 `retrievers._pick_backend` 完全一致：
+    学生白白等满。判据与 `retrievers._pick_backend` 完全一致：
     显式开关 > 本机模型在不在。
     """
     bk = (os.environ.get("EMBED_BACKEND") or "").strip().lower()
     if bk not in ("local", "api"):
         bk = "local" if (ROOT / "models" / "bge-m3" / "config.json").exists() else "api"
-    return ("正在检索手册并作答…（首次加载模型约需 50 秒）" if bk == "local"
+    return ("正在检索手册并作答…（启动后首次需加载模型，约 30 秒）" if bk == "local"
             else "正在检索手册并作答…")
 
 
