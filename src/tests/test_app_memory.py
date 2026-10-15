@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 """无头验证：多轮记忆接进页面后，该出现的东西都出现了（2026-10-15 新增）。
 
-守住四件事
+守住五件事
 ----------
-① 会话号进了地址栏 ?m=      —— 刷新后凭它从云库把上文读回来
+① 会话号进了地址栏 ?m=      —— 刷新/重新进来时靠它认出「上一次是哪个会话」
 ② session_state 里有记忆对象 —— 页面记得住「这次会话聊过什么」
 ③ 「清空对话」把记忆一起清掉 —— 按下去就是「忘掉这些」，不能只清气泡
-④ 「系统自检」页能看到记忆状态与手动清理入口
+④ **刷新 / 重新进来＝上一次到此为止** —— 清掉旧会话、换新号；
+   要的是「只做临时记忆」，不做跨刷新的持久记忆（2026-10-15 用户更正）
+⑤ 「系统自检」页能看到记忆状态与手动清理入口
 
 不碰网络（CLOUD_LOG_ENABLED=0）、不调模型，所以很快、也没副作用。
 记忆的**内容**逻辑由 test_memory.py 单测；真实追问效果由 test_followup_e2e.py 验。
@@ -110,7 +112,30 @@ def main() -> int:
        f"实际还剩 {len(state(at, 'mem').turns)} 条")
     ck("摘要也清空", state(at, "mem").summary == "")
 
-    print("\n④ 「系统自检」页看得到记忆状态")
+    print("\n④ 「刷新 / 重新进来」＝上一次到此为止（2026-10-15 用户更正）")
+    # 模拟「刷新」：一个全新的浏览会话（AppTest 新实例＝session_state 全新），
+    # 但地址栏的 ?m= 还是上一次那个号。
+    import memory as memmod
+    calls = []
+    keep_clear = memmod.clear_memory
+    memmod.clear_memory = lambda mid: (calls.append(mid), True)[1]
+    try:
+        at2 = AppTest.from_file(str(ROOT / "app.py"), default_timeout=300)
+        at2.session_state["authed"] = True
+        at2.query_params["m"] = "a" * 32
+        at2.run()
+    finally:
+        memmod.clear_memory = keep_clear
+    ck("刷新后没炸", not at2.exception, str([e.value for e in at2.exception])[:300])
+    ck("真的去清了上一次那段记忆", calls == ["a" * 32], f"实际 {calls}")
+    new_mid = qp(at2, "m")
+    ck("换成了全新的会话号", new_mid != "a" * 32 and len(new_mid) == 32,
+       f"实际 {new_mid!r}")
+    ck("新会话的记忆是空的", state(at2, "mem").turns == [], )
+    ck("页面上没把旧记忆读回来",
+       "刚才问过的还在" not in md_all(at2))
+
+    print("\n⑤ 「系统自检」页看得到记忆状态")
     click(at, "open_diag")
     at.run()
     body, caps = md_all(at), cap_all(at)

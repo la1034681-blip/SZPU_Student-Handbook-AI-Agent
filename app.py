@@ -37,13 +37,20 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
+# 先把内存里的模块与磁盘对齐，**再** import —— 于是「改完后台代码，刷新一下网页」
+# 就生效，不必去找那个启动服务的黑窗口。为什么必须写在这两行前面：Python 的
+# import 是幂等的，模块已加载就直接从内存取，不会重新读文件；只有先对齐，
+# 下面这句 `from qa_chain import ...` 才拿得到新对象。详见 src/hot_reload.py。
+import hot_reload                                       # noqa: E402
+_RELOADED = hot_reload.refresh()        # 本次真的换掉了哪几个模块（平时是空的）
+
 from qa_chain import build_llm, load_env_file          # noqa: E402
 from retrievers import HandbookRetriever                # noqa: E402
 from agent_qa import AgentQAPipeline                    # noqa: E402
 from oplog import get_logger                           # noqa: E402
 from cloudstore import get_store                       # noqa: E402
 from memory import (SessionMemory, clear_memory,       # noqa: E402
-                    load_memory, new_mem_id, save_memory,
+                    new_mem_id, save_memory,
                     summarize_older, sweep_memory)
 
 DATA_DIR = str(ROOT / "data")
@@ -409,7 +416,8 @@ def client_id() -> str:
 # 只做**临时**记忆：让追问能接着上文答（「那它算不算迟到早退」这种），
 # 用户关掉页面就不再保留 —— 不做持久记忆。三层结构（最近几轮原文 / 更早的
 # 压成摘要 / 追问改写）见 src/memory.py 的模块说明。
-# 会话号放在地址栏 ?m=，刷新后仍认得出是同一个会话 → 可以从云库读回上文。
+# 会话号放在地址栏 ?m=：刷新/重新进来时，靠它认出「上一次是哪个会话」，
+# 好把那一段记忆清掉 —— 刷新＝重新进入＝上一次到此为止，不做跨刷新持久记忆。
 _MEM_PARAM = "m"
 
 # 记忆表里闲置多久算「用户已经走了」。浏览器关标签页时服务器收不到通知
@@ -418,31 +426,63 @@ MEM_IDLE_MIN = 60
 
 
 def memory_id() -> str:
-    """取（必要时创建）本次会话的记忆编号 —— 与 ?u= 一样交给浏览器记住。"""
-    raw = st.query_params.get(_MEM_PARAM)
+    """本次浏览会话的记忆编号（放在地址栏 ?m=，只在「清理时认得出来」用）。"""
+    mid = st.session_state.get("mem_id")
+    return mid if isinstance(mid, str) else ""
+
+
+def _query_one(key: str) -> str:
+    """读地址栏参数，统一取成字符串（同名参数可能是列表）。"""
+    raw = st.query_params.get(key)
     if isinstance(raw, (list, tuple)):
         raw = raw[0] if raw else ""
-    mid = (raw or "").strip()
-    if not (8 <= len(mid) <= 64 and all(c in "0123456789abcdef" for c in mid)):
-        mid = new_mem_id()
-        st.query_params[_MEM_PARAM] = mid
-    st.session_state["mem_id"] = mid
-    return mid
+    return (raw or "").strip()
+
+
+def _close_previous_session() -> None:
+    """把地址栏里带来的「上一次会话」的记忆清掉。
+
+    为什么认得住「上一次」：刷新或重新进来时，`st.session_state` 是全新的
+    （Streamlit 的浏览会话跟着页面连接走，一断就没了），但地址栏里的 `?m=`
+    还在 —— 那就是上一次会话的号。清掉它，就是「上一次到此为止」。
+    """
+    old = _query_one(_MEM_PARAM)
+    if old:
+        clear_memory(old)
 
 
 def get_memory() -> SessionMemory:
-    """拿本次会话的记忆对象（没有就建一个空的）。
+    """拿本次会话的记忆对象。
 
-    刷新页面时 st.session_state 会清空，但地址栏的 ?m= 还在 —— 于是从云库
-    把上文读回来，学生看到「刚才问过的还在」。云库不通就退回空记忆：
-    追问会答得差一点，但绝不报错、也不影响正常提问。
+    什么时候算「新的一次」：刚打开页面、或刚刷新页面 —— 这两种情况 Streamlit
+    都会重建浏览会话（`st.session_state` 清空），所以从这里一眼能认出来。
+
+    按用户要求（2026-10-15）：**刷新＝重新进入＝上一次的记忆清掉**，从零开始，
+    不做跨刷新的持久记忆。同一页面里接着提问**不会**走到这里（那时 mem 还在
+    session_state 里），所以「那要多久呢？」这种追问照样接得上 ——
+    记忆只活在「这一页、这一轮」里。
     """
     mem = st.session_state.get("mem")
     if isinstance(mem, SessionMemory):
         return mem
-    mid = memory_id()
+    # 后台代码热重载后（见文件开头 hot_reload），SessionMemory 这个类换成了新对象，
+    # session_state 里留着的是旧类的实例 —— isinstance 认不出它，但里面的对话还在。
+    # 搬过来，别丢。
+    if mem is not None and hasattr(mem, "to_dict"):
+        try:
+            mem = SessionMemory.from_dict(mem.to_dict())
+            st.session_state["mem"] = mem
+            return mem
+        except Exception:                                    # noqa: BLE001
+            pass
+
+    # —— 本次浏览会话的第一次执行：上一次到此为止，换一个全新的开始 ——
+    _close_previous_session()
     cid = st.session_state.get("client_id") or client_id()
-    mem = load_memory(mid, cid) or SessionMemory(mem_id=mid, client_id=cid)
+    mid = new_mem_id()
+    st.query_params[_MEM_PARAM] = mid
+    st.session_state["mem_id"] = mid
+    mem = SessionMemory(mem_id=mid, client_id=cid)
     st.session_state["mem"] = mem
     return mem
 
@@ -657,6 +697,12 @@ def get_pipeline():
     retriever = HandbookRetriever(DATA_DIR, use_rerank=True, verbose=False)
     llm = build_llm()
     return AgentQAPipeline(retriever, llm=llm, verbose=False)
+
+
+if _RELOADED:
+    # 刚才发生过热重载（见文件开头 hot_reload.refresh()）。缓存里那个流水线对象
+    # 可能是用旧类造的，攥着不放就又回到「新旧混用」——清掉，稍后按新代码重建。
+    get_pipeline.clear()
 
 
 def renumber_citations(meta: dict) -> dict:
@@ -1095,62 +1141,30 @@ def _missing_config() -> list:
     return [name for name, ok, _ in _config_rows() if not ok]
 
 
-# 关键接口探针：内存里的模块若与磁盘上的新代码对不上，就是「改了 src/ 没重启进程」。
-# 每项 =（模块名，类.函数路径，该函数必须认得的参数名）。
-_STALE_PROBES = (
-    ("agent_qa", "AgentQAPipeline.ask", "history_block"),
-    ("qa_chain", "QAPipeline.answer_from_evidences", "history_block"),
-    ("planner", "Planner.plan", "history_block"),
-    ("memory", "SessionMemory.history_block", None),
-)
+# 关键接口探针（判据与说明都在 src/hot_reload.py，那边一处维护）。
+_STALE_PROBES = hot_reload.PROBES
 
 
 def _stale_modules() -> list:
-    """检查内存里的 src/ 模块是不是「旧版」——文件改了，但进程没重启。
+    """内存里的 src/ 模块是不是「旧版」——文件改了，但页面还在按旧代码跑。
 
-    为什么会这样：Streamlit 只会重跑主脚本 app.py，被它 import 的 src/ 模块
-    一直留在内存里，改文件不会重新加载。于是出现「app.py 是新版、agent_qa 是
-    旧版」的混用，页面冒出 `got an unexpected keyword argument 'history_block'`
-    这种英文错 —— 看着像功能坏了，其实只是进程该重启了
-    （2026-10-15 用户截图实证）。
-
-    判据：拿几个关键函数的参数签名当探针。新版有、旧版没有，一对就露馅。
-    返回对不上的说明列表；空列表 = 一切正常。
+    平时这条不该有输出：页面每次加载都会先自动对齐一次模块（见文件开头
+    `hot_reload.refresh()`）。它冒出来，说明自动对齐也没辙了 —— 页面会顺势
+    提示「重启一下」。判据见 src/hot_reload.py。
     """
-    import inspect
-    bad = []
-    for mod_name, dotted, param in _STALE_PROBES:
-        mod = sys.modules.get(mod_name)
-        if mod is None:
-            bad.append(f"{mod_name}（进程里没加载）")
-            continue
-        obj, miss = mod, False
-        for part in dotted.split("."):
-            obj = getattr(obj, part, None)
-            if obj is None:
-                miss = True
-                break
-        if miss:
-            bad.append(f"{mod_name}.{dotted}（找不到这个函数）")
-        elif param:
-            try:
-                if param not in inspect.signature(obj).parameters:
-                    bad.append(f"{mod_name}.{dotted}() 不认 {param} 这个参数")
-            except (TypeError, ValueError):
-                bad.append(f"{mod_name}.{dotted}() 读不到参数")
-    return bad
+    return hot_reload.stale_modules()
 
 
 def _render_stale_warning():
-    """新旧代码混用时，把「请重启网页进程」明明白白说出来，别让人对着一句英文猜。"""
+    """自动对齐之后仍对不上时，才把「重启一下」明说出来，别让人对着一句英文猜。"""
     bad = _stale_modules()
     if not bad:
         return
     st.error(
         "**后台代码已更新，但跑着的网页还是旧的**\n\n"
         + "\n".join(f"- {b}" for b in bad) + "\n\n"
-        "把启动网页时那个黑色窗口关掉，重新双击桌面的「启动网页问答.bat」就好。"
-        "重启后这条提示自动消失（不影响已经问过的内容）。")
+        "页面已经试过自动换新（见 src/hot_reload.py），还是没对上。"
+        "把启动网页时那个黑色窗口关掉，重新双击桌面的「启动网页问答.bat」。")
 
 
 def _render_config_warning():
@@ -1203,11 +1217,20 @@ def render_diag():
         st.markdown("✗ **对不上** —— 网页进程还是旧代码，需要重启")
         for b in _stale:
             st.caption("· " + b)
-        st.caption("关掉启动网页的那个黑色窗口，重新双击「启动网页问答.bat」。"
-                   "Streamlit 只重跑主脚本，被引用的 src/ 模块改了不会自动重新加载，"
-                   "所以改完后台代码必须重启进程。")
+        st.caption("正常情况不会看到这一条：页面每次加载都会自动把旧模块换成新的"
+                   "（见 src/hot_reload.py），刷新一下网页就生效。"
+                   "若它反复出现，就把启动网页的那个黑色窗口关掉，"
+                   "重新双击「启动网页问答.bat」。")
     else:
         st.caption("✓ 一致（内存里的模块与磁盘上的代码对得上）。")
+    if _RELOADED:
+        st.caption(f"本次加载时自动换掉了 {len(_RELOADED)} 个旧模块："
+                   + "、".join(_RELOADED) + " —— 这就是「改完代码刷新页面即生效」。")
+    elif hot_reload.HISTORY:
+        _last = hot_reload.HISTORY[-1]
+        st.caption("这个进程里自动重新加载过 "
+                   + str(len(hot_reload.HISTORY)) + " 次（最近一次换了 "
+                   + str(len(_last.get("modules") or [])) + " 个模块）。")
 
     st.write("")
     rows = _config_rows()
@@ -1224,15 +1247,16 @@ def render_diag():
     st.markdown("**会话记忆**（临时记忆位，不做持久保存）")
     mem = st.session_state.get("mem")
     if isinstance(mem, SessionMemory):
-        st.markdown(f"会话编号 `{mem.mem_id[:8]}…`"
-                    f"（地址栏 `?m=`，刷新后仍认得出是这一次会话）")
+        st.markdown(f"会话编号 `{mem.mem_id[:8]}…`（地址栏 `?m=`）")
         c1, c2, c3 = st.columns(3)
         c1.metric("已记轮次", len(mem.turns))
         c2.metric("摘要字数", len(mem.summary))
         c3.metric("历史块字数", len(mem.history_block()))
-        st.caption("记忆只活在这一次会话里：关掉页面、闲置 "
-                   f"{MEM_IDLE_MIN} 分钟后由云库自动清掉；点「清空对话」会立刻清掉。"
-                   "它**不是**长期记忆，下次进来是一张白纸。")
+        st.caption("记忆只活在「这一页、这一轮」里：**刷新页面 / 重新进来就清空**，"
+                   "同一页里接着追问才记得住；点「清空对话」立刻清掉。"
+                   "云库那份是临时副本，闲置 "
+                   f"{MEM_IDLE_MIN} 分钟后自动清掉（防止有人直接关掉标签页、"
+                   "留一份没主的残留）。它**不是**长期记忆，下次进来是一张白纸。")
     else:
         st.caption("本次会话还没有记忆（还没提问过）。")
 
@@ -1240,7 +1264,7 @@ def render_diag():
         st.session_state["diag_mem_r"] = sweep_memory(MEM_IDLE_MIN)
     r0 = st.session_state.get("diag_mem_r")
     if r0 is not None:
-        st.caption(f"闲置超过 {MEM_IDLE_MIN} 分钟的会话记忆已清理："
+        st.caption(f"云库里闲置超过 {MEM_IDLE_MIN} 分钟的会话记忆已清理："
                    + (f"删掉 {r0} 行" if isinstance(r0, int) and r0 >= 0
                       else "云库没回结果（可能不通）"))
 
@@ -1283,7 +1307,7 @@ def main():
     st.markdown(_CHIPS, unsafe_allow_html=True)
 
     client_id()                           # 匿名编号：写进地址栏，供使用统计认人
-    get_memory()                          # 会话记忆：刷新后从云库读回上文（见 src/memory.py）
+    get_memory()                          # 会话记忆：刷新即清空，只活在这一次会话里
     _sweep_idle()                         # 顺手清掉闲置会话的记忆（近似「用户已退出」）
 
     # 看板视图：学生点开也只是一页要密钥的框，看不到任何数据

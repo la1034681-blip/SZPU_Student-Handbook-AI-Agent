@@ -9,14 +9,20 @@
 
 根因：Streamlit 只重跑主脚本 app.py，被它引用的 src/ 模块一直留在内存里。
 于是出现 app.py 是新的、agent_qa 还是旧的 —— 参数对不上就炸。
-这不是功能坏了，重启一下进程就好。现在页面会自己把这句话说出来。
+这不是功能坏了。
+
+现在的两级处理（配合 src/hot_reload.py）
+  第一级：页面每次加载先自动把旧模块换成新的 —— 刷一下网页就好了，不麻烦人
+  第二级：自动也换不掉（比如真不兼容），才在页面顶部红字说清「重启一下」
 
 测什么
 ------
 ① 探针清单本身是对的（路径/参数名写错会**永远误报**，比不报更糟，所以先守它）
 ② 能认出「函数签名变旧了」③ 能认出「模块没在内存里」④ 能认出「函数找不到」
-⑤ 正常的页面不该出现这条提示；混用时必须出现，且写明怎么修
-⑥ 「系统自检」页也要看得到
+⑤ 正常的页面不该出现红字
+⑥ 混用时页面**先自己修好**，不留红字给用户
+⑦ 自动修不好时（试够了次数），红字提示接手，并写明怎么修
+⑧ 「系统自检」页也要看得到
 
 不碰网络（CLOUD_LOG_ENABLED=0）、不调模型。
 
@@ -38,8 +44,12 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "src" / "tests"))
 
+import importlib                                  # noqa: E402
+import inspect                                    # noqa: E402
+
 import agent_qa                                   # noqa: E402
 import app as appmod                              # noqa: E402
+import hot_reload                                 # noqa: E402
 from streamlit.testing.v1 import AppTest          # noqa: E402
 
 _fail = 0
@@ -118,21 +128,34 @@ def main() -> int:
     ck("正常时不该出现这条提示",
        "网页还是旧的" not in errors_at(at), errors_at(at)[:200])
 
+    print("\n⑥ 混用时：先自己修好，不麻烦用户")
     agent_qa.AgentQAPipeline.ask = old_ask          # 制造「新旧混用」
+    at.run()
+    ck("页面自己把旧模块换掉了（没有红字）",
+       "网页还是旧的" not in errors_at(at), errors_at(at)[:200])
+    ck("内存里确实换成了新签名（认 history_block）",
+       "history_block" in inspect.signature(
+           sys.modules["agent_qa"].AgentQAPipeline.ask).parameters)
+
+    print("\n⑦ 自动也修不好时（试够了次数），红字提示接手")
+    keep_tries = hot_reload._probe_tries
+    hot_reload._probe_tries = hot_reload.MAX_PROBE_TRIES   # 假装已经试够
+    agent_qa.AgentQAPipeline.ask = old_ask
     try:
         at.run()
         err = errors_at(at)
-        ck("混用时页面出现提示", "网页还是旧的" in err, err[:200] or "（页面上一片安静）")
+        ck("出现红字提示", "网页还是旧的" in err, err[:200] or "（页面上一片安静）")
         ck("提示里写了怎么修", "启动网页问答" in err, err[:200])
-        ck("提示里点名了出问题的模块", "history_block" in err, err[:200])
+        ck("点名了出问题的模块", "history_block" in err, err[:200])
     finally:
-        agent_qa.AgentQAPipeline.ask = keep
+        hot_reload._probe_tries = keep_tries
+        importlib.reload(agent_qa)              # 把模块恢复干净
 
     at.run()
     ck("修好后提示自动消失", "网页还是旧的" not in errors_at(at),
        errors_at(at)[:200])
 
-    print("\n⑥ 「系统自检」页也看得到")
+    print("\n⑧ 「系统自检」页也看得到")
     click(at, "open_diag")
     at.run()
     body = "\n".join(m.value for m in at.markdown)
