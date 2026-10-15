@@ -127,17 +127,27 @@ def main() -> int:
         ck("没有 m 这个参数", not at2.query_params.get("m"),
            f"实际 {at2.query_params.get('m')!r}")
 
-        print("\n⑥ 「系统自检」页看得到记忆状态，且没有超时清理那套")
-        click(at2, "open_diag")
-        at2.run()
-        body, caps = md_all(at2), cap_all(at2)
-        ck("自检页没炸", not at2.exception, str([e.value for e in at2.exception])[:300])
-        ck("有「会话记忆」一节", "会话记忆" in body)
-        ck("说清了刷新/关掉就没了", "刷新页面" in caps and "关掉标签页" in caps)
-        ck("说清了不往服务器写", "不往服务器写" in caps)
-        ck("没有「清掉闲置记忆」按钮",
+        print("\n⑥ 自检页已不上墙（2026-10-16），但记忆那节代码保留着")
+        # 自检页入口撤掉后，原来的「点按钮看自检页」走不通了。改为两条更硬的断言：
+        #   ① 页面上确实没有自检入口（不能让学生看到）
+        #   ② 记忆那一节的代码原样在 render_diag 里（「保留代码」不是空话）
+        ck("页面上没有自检入口",
+           not any(b.key == "open_diag" for b in at2.button)
+           and not any("系统自检" in (b.label or "") for b in at2.button))
+        ck("不存在「清掉闲置记忆」按钮",
            not any(b.key == "diag_mem_sweep" for b in at2.button))
-        ck("不再提「闲置 N 分钟」", "闲置" not in caps, caps[:200])
+
+        import inspect
+        import importlib.util as _ilu
+        _spec = _ilu.spec_from_file_location("_app_mem_diag", str(ROOT / "app.py"))
+        _m = _ilu.module_from_spec(_spec)
+        _spec.loader.exec_module(_m)
+        _src = inspect.getsource(_m.render_diag)
+        ck("自检页里「会话记忆」一节保留着", "会话记忆" in _src)
+        ck("「刷新/关掉就没了」的说法保留着",
+           "刷新页面" in _src and "关掉标签页" in _src)
+        ck("「不往服务器写」的说法保留着", "不往服务器写" in _src)
+        ck("没有「闲置 N 分钟」那套说法", "闲置" not in _src, _src[:200])
 
         print("\n⑦ 整个流程走完，仍然一个字节都没出浏览器")
         ck("save / load / clear 依旧没被调用", calls == [], f"实际被调：{calls}")

@@ -461,6 +461,12 @@ def admin_code() -> str:
 _GATE_FAIL_MAX = 5        # 连续输错几次开始短时锁定
 _GATE_LOCK_SEC = 60       # 锁定秒数
 
+# 「系统自检」页（配置状态 + 云库/编码接口连通性）—— 2026-10-16 用户要求
+# **不在网站上展示**：它是给自己排查用的，学生看到只会是一堆技术名词。
+# 代码与页面内容原样保留，改成 True 即可完整恢复（工具条那个入口按钮也留了
+# 注释版）。关掉时连地址栏 ?view=diag 这条后门一起关，免得「撤了等于没撤」。
+SHOW_DIAG = False
+
 
 def _gate_code() -> str:
     return (os.environ.get("ACCESS_CODE") or "").strip()
@@ -624,7 +630,7 @@ def linkify_citations(text: str, valid_eids) -> str:
     return _CITE_RE.sub(repl, text)
 
 
-def friendly_refuse(reason: str):
+def friendly_refuse(reason: str, question: str = ""):
     """把技术性的拒答原因翻译成用户看得懂的话。
 
     返回 (标题, 说明)。原则：面向用户的回答区只讲人话，
@@ -636,14 +642,26 @@ def friendly_refuse(reason: str):
     所有「查不到」的原因（检索无证据 / 拒答前置 / 模型自称证据不足 /
     引用校验未通过）共用这一套话术；真正的技术原因仍然完整写在
     「内部过程」面板里，排查不受影响。
+
+    2026-10-16 补：给了 `question` 且问句里有口语词（体测/挂科/翘课…）时，
+    额外告诉学生手册里的写法 —— 干巴巴一句「查不到」最让人束手无策，
+    而这类查不到**多半就是词没对上**（见 src/term_alias.py）。
     """
     r = reason or ""
     if "模型调用失败" in r or "未接入" in r:
         return ("服务暂时出了点小状况", "请稍等片刻，再试一次。")
-    return ("本手册中没有对应内容",
-            "这个问题在《学生手册（2025 年修订）》里没有找到可以依据的规定。"
-            "你可以换个问法，或者改问手册里的事项"
-            "（学籍、考试、奖助学金、宿舍、违纪处分等）。")
+    tip = ("这个问题在《学生手册（2025 年修订）》里没有找到可以依据的规定。"
+           "你可以换个问法，或者改问手册里的事项"
+           "（学籍、考试、奖助学金、宿舍、违纪处分等）。")
+    if question:
+        try:
+            from term_alias import hint_for
+            extra = hint_for(question)
+        except Exception:                                   # noqa: BLE001
+            extra = ""                                      # 别名表坏了不影响拒答话术
+        if extra:
+            tip = tip + "\n\n" + extra
+    return ("本手册中没有对应内容", tip)
 
 
 # ==================================================================== 资源加载
@@ -734,6 +752,7 @@ def serialize(res) -> dict:
     """把 QAAnswer 压成可放进 session_state 的普通 dict。"""
     return renumber_citations({
         "answer": res.answer,
+        "question": res.question,
         "refused": bool(res.refused),
         "refuse_reason": res.refuse_reason or res.reason or "",
         "citations": list(res.citations or []),
@@ -801,6 +820,15 @@ def render_process(meta: dict):
             if plan.get("standalone"):
                 st.caption(f"检索实际用的完整问句：{plan['standalone']}")
 
+        # 口语词换手册词留痕（2026-10-16）：学生说「体测」手册写「体质测试」，
+        # 字面对不上就搜不到，所以系统会**额外走几路换过词的问句**。这里把它
+        # 显示出来 —— 口语题答得好不好，先看这几路有没有生成。
+        alias_q = plan.get("alias_queries") or []
+        if alias_q:
+            st.caption(f"口语词换手册词：问句里有日常说法在手册里对不上号，"
+                       f"已额外按手册用词搜了 {len(alias_q)} 路 —— "
+                       + "；".join(alias_q))
+
         st.markdown("**② 检索与生成**")
         if meta["refused"]:
             st.write("未生成答案，已按「无可靠依据」处理。")
@@ -845,7 +873,8 @@ def render_assistant(meta: dict):
                 "稍等一两分钟再问一次，就能恢复模型的正常作答。")
 
     if meta["refused"]:
-        title, tip = friendly_refuse(meta["refuse_reason"])
+        title, tip = friendly_refuse(meta["refuse_reason"],
+                                     question=meta.get("question") or "")
         st.warning(f"**{title}**\n\n{tip}")
     else:
         valid = {e["eid"] for e in meta["evidences"]}
@@ -1165,7 +1194,11 @@ def _render_config_warning():
 
     为什么非要有它：Secrets 一没配好，程序不会崩，只会在真正用到的那一刻冒一个
     零散错误（提问说"缺少 EMBED_API_KEY"、留言说"没提交上"）—— 两件事看着毫不
-    相干，排查方向全靠猜。这里一次说清，并指向「系统自检」页。
+    相干，排查方向全靠猜。这里一次说清。
+
+    ⚠ 2026-10-16：原来这里让管理员「点页面底部『系统自检』查看详情」，但那个
+    入口已按用户要求从页面上撤掉了 —— 文案必须同步改，否则是把人指到一个
+    不存在的地方去。现在改为让管理员看启动网页的黑窗口（诊断详情都打印在那里）。
     """
     miss = _missing_config()
     if not miss:
@@ -1173,7 +1206,8 @@ def _render_config_warning():
     st.warning(
         "**后台配置不完整**（缺 " + str(len(miss)) + " 项："
         + "、".join(f"`{m}`" for m in miss) + "）\n\n"
-        "提问或留言可能因此失败。管理员请点页面底部「系统自检」查看详情。")
+        "提问或留言可能因此失败。管理员请补齐配置后重启服务，"
+        "具体缺什么看启动网页时那个黑窗口里的输出。")
 
 
 def _probe_embed() -> str:
@@ -1297,6 +1331,12 @@ def main():
                 or st.query_params.get("view") or "chat")
     if isinstance(raw_view, (list, tuple)):      # URL 里同名参数可能取到列表
         raw_view = raw_view[0] if raw_view else "chat"
+    # 「系统自检」已在页面上撤掉（2026-10-16 用户要求），连地址栏 ?view=diag
+    # 这条后门也一并关掉 —— 否则它照样能被访问到，等于没撤干净。
+    # 代码、页面内容、诊断逻辑**一个字都没删**：把下面 SHOW_DIAG 改成 True
+    # 即可原样恢复（工具条那个按钮也留了注释版，见 main() 末尾）。
+    if not SHOW_DIAG and str(raw_view) == "diag":
+        raw_view = "chat"
     if str(raw_view) in ("stats", "diag"):
         if str(raw_view) == "stats":
             render_admin()
@@ -1393,10 +1433,16 @@ def main():
     st.caption("可以接着追问 —— 比如问完「旷课怎么处分」，再问「那要多久呢？」，"
                "系统记得住你这次会话问过什么。等它答完再问下一句就好。")
 
-    # 工具条：紧跟问答区。清空对话管的就是上面这块对话区，放在这儿最顺手；
-    # 使用统计 / 系统自检 也一并收进来，页面底部只留留言墙与页脚。
+    # 工具条：紧跟问答区。清空对话管的就是上面这块对话区，放在这儿最顺手。
+    #
+    # 「系统自检」按钮**已从页面上撤掉**（2026-10-16 用户要求）：
+    #   · 它是给自己排查用的（看配置全不全、云库/编码接口通不通），
+    #     压根不是给学生看的 —— 学生点进去只会看到一堆技术名词。
+    #   · `render_diag()` 与 `?view=diag` 的渲染路径**代码全部保留**，
+    #     自检内容一个字没删；要临时用，把下面这行注释恢复即可，
+    #     或者直接访问 `?view=diag`（main() 里那条分支也保留着）。
     st.write("")
-    b1, b2, b3 = st.columns(3)
+    b1, b2 = st.columns(2)
     with b1:
         if st.button("清空对话", key="clear_chat", use_container_width=True):
             st.session_state.messages = []
@@ -1409,11 +1455,12 @@ def main():
             st.session_state["view"] = "stats"
             st.query_params["view"] = "stats"
             st.rerun()
-    with b3:
-        if st.button("系统自检", key="open_diag", use_container_width=True):
-            st.session_state["view"] = "diag"
-            st.query_params["view"] = "diag"
-            st.rerun()
+    # 下面这段是原「系统自检」入口，保留备查（需要时取消注释即可恢复）：
+    # with b3:
+    #     if st.button("系统自检", key="open_diag", use_container_width=True):
+    #         st.session_state["view"] = "diag"
+    #         st.query_params["view"] = "diag"
+    #         st.rerun()
 
     # 建议墙：常驻在页面下方，刷新、换台机器进来都还在（内容存在云库）
     # 分区小标题由 render_suggestions() 自己带，这里不再重复画一遍。

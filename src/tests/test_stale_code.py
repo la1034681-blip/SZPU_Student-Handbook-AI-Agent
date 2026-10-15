@@ -155,14 +155,26 @@ def main() -> int:
     ck("修好后提示自动消失", "网页还是旧的" not in errors_at(at),
        errors_at(at)[:200])
 
-    print("\n⑧ 「系统自检」页也看得到")
-    click(at, "open_diag")
+    print("\n⑧ 「系统自检」页入口已撤（页面不展示），代码保留可恢复")
+    # 2026-10-16 用户要求自检页不在网站上展示。所以这里不再断言「点得到按钮」，
+    # 改为断言「页面上确实没有入口」，并另证「代码原样保留」。
+    has_btn = any(b.key == "open_diag" for b in at.button)
+    at.query_params["view"] = "diag"
     at.run()
-    body = "\n".join(m.value for m in at.markdown)
-    caps = "\n".join(c.value for c in at.caption)
-    ck("自检页没炸", not at.exception, str([e.value for e in at.exception])[:300])
-    ck("有「代码版本」一节", "代码版本" in body)
-    ck("正常时显示一致", "一致" in caps)
+    body2 = "\n".join(m.value for m in at.markdown)
+    at.query_params.pop("view", None)
+    ck("工具条里已无自检按钮", not has_btn)
+    ck("地址栏 ?view=diag 也进不去自检页", "代码版本" not in body2)
+
+    # 打开开关后自检页照旧 —— 证明「代码保留」不是句空话
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location("_app_stale_diag", str(ROOT / "app.py"))
+    _m = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_m)
+    ck("开关默认关闭（不在页面上展示）", _m.SHOW_DIAG is False)
+    _src = inspect.getsource(_m.render_diag)
+    ck("自检页函数体完整保留（含「代码版本」一节）", "代码版本" in _src)
+    ck("正常时显示一致（这句也还在）", "一致" in _src)
 
     print("\n" + ("全部通过 ✓" if _fail == 0 else f"有 {_fail} 项失败 ✗"))
     return 0 if _fail == 0 else 1

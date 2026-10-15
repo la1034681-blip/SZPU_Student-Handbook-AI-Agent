@@ -324,6 +324,26 @@ class AgentQAPipeline:
         if (prev_user and history_block
                 and _same_q(root, question) and prev_user not in queries):
             queries = queries + [f"{prev_user} {question}"]
+        # 口语词换手册词（2026-10-16）：学生说「体测」，手册写「体质测试」，
+        # 字面一个字都不重合 → BM25 零命中、向量也拉不起来，最高分只有 0.05，
+        # 最后被引用校验判「证据只是擦边」整题拒答。这里多走几路「换过词的
+        # 同义问句」（追加/前缀/替换三种写法），合并时按条款取最高分，
+        # 所以只会多找到东西、不会弄丢原来的。命中的词见 src/term_alias.py。
+        # 没命中任何口语词时 term_alias.variants 返回空，等于完全没有开销。
+        _alias_used = []
+        try:
+            from term_alias import variants as _alias_variants
+            _extra = [v for v in _alias_variants(root) if v not in queries]
+            if _extra:
+                _alias_used = list(_extra)
+        except Exception:                                   # noqa: BLE001
+            _extra = []                                     # 别名表坏了不能拖垮主路
+        if _extra:
+            queries = queries + _extra
+        if _alias_used:
+            # 记进 plan 供内部过程面板展示（用 update，别整个覆盖 plan）
+            plan = dict(plan)
+            plan["alias_queries"] = _alias_used
         evs = self._merge(queries)
 
         # ---------- 拒答前置（组件四） ----------

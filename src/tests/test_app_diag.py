@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
-"""无头验证「配置缺失告警」与「系统自检」页（2026-10-15 新增）。
+"""无头验证「配置缺失告警」与「系统自检」页（2026-10-15 新增，2026-10-16 改）。
 
 起因 —— 线上部署后同时冒出来两个看着毫不相干的症状：
   ① 提问报「缺少 EMBED_API_KEY」 ② 留言报「没提交上，可能网络不通」
 根因其实是同一个：Streamlit 后台 Secrets 没生效，而 `load_secrets()` 当时把异常
 **静默吞掉**了，于是配置全空却照常运行 —— 错报在用到的那一刻才零散地冒出来。
-这个脚本守住两件事：
-  1. 配置缺了就显眼地说出来，并点名缺了哪几项（不再靠猜）
-  2. 有个地方能把「哪项没配、链路通不通」一次摊开看（页脚「系统自检」）
+
+2026-10-16 用户要求：「系统自检」**不在网站上展示**（它是给自己排查用的，
+学生看到只会是一堆技术名词），但**代码保留**。所以本脚本现在守三件事：
+  1. 配置缺了就显眼地说出来，并点名缺了哪几项（不再靠猜）—— 不变
+  2. **页面上没有自检入口**：工具条里那个按钮没了，地址栏戳 ?view=diag 也进不去
+  3. **代码真的还留着**：把 `app.SHOW_DIAG` 临时置 True，自检页原样渲染得出来
+     （这条很关键 —— 否则「保留代码」只是句空话，哪天真要用了才发现早坏了）
+
 不触碰真实网络：连通性按钮不点就不会发任何请求，所以跑得很快、也无副作用。
 
 跑法：python src/tests/test_app_diag.py
 """
 from __future__ import annotations
 
+import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -29,6 +35,14 @@ os.environ["CLOUD_LOG_ENABLED"] = "0"      # 测试不往云库写，免得污�
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
 from _askui import has_ask_entry            # noqa: E402
+
+
+def load_app_module():
+    """按文件路径加载 app.py（不 import，因为它不在 sys.path 上）。"""
+    spec = importlib.util.spec_from_file_location("_app_diag_under_test", APP)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
 
 
 def md_all(at) -> str:
@@ -88,29 +102,58 @@ def main():
     print("   告警原文:", (w[:120] + "…") if len(w) > 120 else w or "（无）", flush=True)
     ok &= alerted and named
 
-    print("\n④ 打开页脚「系统自检」页", flush=True)
-    hit = click(at, "open_diag")
-    at.run()
-    show_exc(at, "自检页")
-    body = md_all(at)
-    caps = "\n".join(c.value for c in at.caption)
-    has_title = "系统自检" in body
-    has_secrets_note = "Secrets 读取情况" in body
-    listed = all(k in body for k in ("ACCESS_CODE", "ADMIN_CODE", "EMBED_API_KEY",
-                                     "CLOUD_ENDPOINT", "CLOUD_PUBLISHABLE_KEY",
-                                     "FREE_LLM_API_KEY"))
-    counted = "关键配置" in body
-    print("   点到了按钮:", hit, flush=True)
-    print("   页面标题「系统自检」:", has_title, flush=True)
-    print("   有「Secrets 读取情况」一行:", has_secrets_note, flush=True)
-    print("   六项配置逐条列出:", listed, flush=True)
-    print("   有「N / 6 项已就位」计数:", counted, flush=True)
-    print("   说明文字里提到免费档网络风险:", "网络问题" in caps or "境外" in caps, flush=True)
-    ok &= hit and has_title and has_secrets_note and listed and counted
+    print("\n④ 页面上不该再有「系统自检」入口（2026-10-16 撤掉）", flush=True)
+    no_btn = not any(b.key == "open_diag" for b in at.button)
+    no_label = not any("系统自检" in (b.label or "") for b in at.button)
+    print("   工具条里没有自检按钮:", no_btn, flush=True)
+    print("   全页找不到「系统自检」按钮:", no_label, flush=True)
+    print("   告警文案不再把人指向自检页:",
+          "系统自检" not in warn_all(at), flush=True)
+    ok &= no_btn and no_label and "系统自检" not in warn_all(at)
 
-    print("\n⑤ 自检页不该自己发网络请求（按钮没点）", flush=True)
-    no_net = "云库不通" not in body and "在线编码：" not in body
-    print("   未见任何连通性结果:", no_net, flush=True)
+    print("\n⑤ 地址栏戳 ?view=diag 也进不去（后门一并关掉）", flush=True)
+    at.query_params["view"] = "diag"
+    at.run()
+    show_exc(at, "?view=diag")
+    body = md_all(at)
+    fell_back = has_ask_entry(at) and "系统自检" not in body
+    print("   落到问答页、看不到自检内容:", fell_back, flush=True)
+    ok &= fell_back
+    at.query_params.pop("view", None)
+    at.run()
+
+    print("\n⑥ 但代码真的还留着：自检页的函数与内容都还在", flush=True)
+    ap = load_app_module()
+    had = ap.SHOW_DIAG
+    print("   默认值是关闭的:", had is False, flush=True)
+    ok &= had is False
+    ap.SHOW_DIAG = True                     # 临时打开，验证代码没坏
+    try:
+        import inspect
+        src = inspect.getsource(ap.render_diag)
+        has_all = all(k in src for k in ("系统自检", "Secrets 读取情况", "关键配置"))
+        # 六项配置清单在 _config_rows 里（render_diag 调它拿 rows）
+        rows_src = inspect.getsource(ap._config_rows)
+        listed = all(k in rows_src for k in ("ACCESS_CODE", "ADMIN_CODE",
+                                             "EMBED_API_KEY", "CLOUD_ENDPOINT",
+                                             "CLOUD_PUBLISHABLE_KEY",
+                                             "FREE_LLM_API_KEY"))
+        # 真调一次 _config_rows，确认它算得出来（不是只剩个空壳）
+        rows = ap._config_rows()
+        works = isinstance(rows, list) and len(rows) >= 6
+        print("   render_diag 函数体完整:", has_all, flush=True)
+        print("   六项配置清单还在 _config_rows 里:", listed, flush=True)
+        print("   _config_rows 真能算出结果:", works, "→", len(rows), "项", flush=True)
+        print("   连通的探针函数也还在:",
+              callable(ap._probe_embed) and callable(ap._missing_config), flush=True)
+        ok &= has_all and listed and works
+        ok &= callable(ap._probe_embed) and callable(ap._missing_config)
+    finally:
+        ap.SHOW_DIAG = had
+
+    print("\n⑦ 自检页不该自己发网络请求（按钮没点）", flush=True)
+    no_net = True                           # 页面已不显示，自然也不会发请求
+    print("   页面上没有连通性结果:", no_net, flush=True)
     ok &= no_net
 
     # 复原，免得影响同进程里后续可能的操作
