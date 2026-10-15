@@ -158,17 +158,27 @@ class CloudStore:
             "id": str(uuid.uuid4()),
             "client_id": (client_id or "anon")[:64],
             "content": text,
-        }, timeout=10)
+        }, timeout=6)
         if ok:
             return True, "收到了，谢谢"
         return False, "没提交上，可能网络不通，稍后再试一次"
 
-    def list_suggestions(self, limit: int = 60) -> list:
-        """读留言墙（新→旧）。读不到返回空列表。"""
+    def list_suggestions(self, limit: int = 60, timeout: int = 4):
+        """读留言墙（新→旧）。
+
+        **读不到返回 None，真的没有才返回空列表** —— 这两件事在页面上必须
+        说不同的话：读不到要说「暂时读不到」，说成「墙上还空着」等于
+        骗人（2026-10-15 用户报「一开始没显示之前的留言」查出来的就是它：
+        云库一超时，None 被 `or []` 抹成空列表，页面照着「空」渲染）。
+
+        timeout 默认给 4 秒而不是 select 的 8 秒：留言墙不是关键功能，
+        宁可快速降级也别让整页干等 —— 它排在页面最后，卡住最影响体感。
+        """
         rows = self.select(self.sugg_table,
                            select="id,content,created_at",
-                           order="created_at.desc", limit=limit)
-        return rows or []
+                           order="created_at.desc", limit=limit,
+                           timeout=timeout)
+        return None if rows is None else list(rows)
 
     # ------------------------------------------------------------ 统计
     def stats(self):
@@ -240,6 +250,9 @@ if __name__ == "__main__":
                   "usage": st_.usage_table, "sugg": st_.sugg_table})
     print("统计:", st_.stats())
     rows = st_.list_suggestions(5)
-    print(f"留言墙（{len(rows)} 条）:")
-    for r in rows:
-        print("  ", r.get("created_at", "")[:16], (r.get("content") or "")[:50])
+    if rows is None:
+        print("留言墙：读不到（云库超时或没配 —— 注意不是「没有留言」）")
+    else:
+        print(f"留言墙（{len(rows)} 条）:")
+        for r in rows:
+            print("  ", r.get("created_at", "")[:16], (r.get("content") or "")[:50])

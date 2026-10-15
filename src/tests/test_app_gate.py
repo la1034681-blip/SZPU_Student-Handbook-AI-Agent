@@ -39,6 +39,17 @@ def show_exc(at, tag: str) -> None:
         print("      EXC:", e, flush=True)
 
 
+_fail = 0
+
+
+def ck(name: str, cond: bool, extra: str = "") -> None:
+    global _fail
+    if not cond:
+        _fail += 1
+    print(f"   {'✓' if cond else '✗'} {name}" + (f"　—— {extra}" if extra and not cond else ""),
+          flush=True)
+
+
 def main():
     at = AppTest.from_file(APP, default_timeout=900)
     at.run()
@@ -109,6 +120,33 @@ def main():
     show_exc(at, "口令 off")
     print("   放行（有问答入口）:", has_ask_entry(at), flush=True)
     os.environ["ACCESS_CODE"] = "SZPU666"          # 复原，别影响别的脚本
+
+    print("\n⑧ 输汉字/emoji 当口令 → 只提示不对，页面不能崩", flush=True)
+    # 起因：2026-10-15 夜里的全流程目检撞到 —— 学生切中文输入法随手打个汉字，
+    # hmac.compare_digest 在 Python 3 里遇到非 ASCII 直接抛 TypeError，
+    # 整个页面报错、谁都进不来。现在统一走 _same_secret（先编码成 utf-8 bytes）。
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("_app_under_test", APP)
+    ap = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ap)
+    for bad in ("口令", "szpu666中", "🎉🎉", "", " ", "管理员"):
+        got = ap._same_secret(bad, "SZPU666")
+        ck(f"输 {bad!r} → 不放行也不抛异常", got is False, f"竟返回了 {got!r}")
+    ck("正确口令仍然放行", ap._same_secret("SZPU666", "SZPU666") is True)
+    ck("前后空格照样认（等价于 strip）", ap._same_secret(" SZPU666 ", "SZPU666") is True)
+    ck("没配口令时谁都不放行", ap._same_secret("SZPU666", "") is False)
+    ck("大小写不同不放行", ap._same_secret("szpu666", "SZPU666") is False)
+
+    os.environ["ACCESS_CODE"] = "SZPU666"
+    at.run()
+    show_exc(at, "门口状态")
+    print("   页面无异常:", not at.exception, flush=True)
+
+    print("\n———— 小结 ————")
+    print("   全部用例跑完（关键结果见上面各行）", flush=True)
+    print("   有 %d 项断言失败" % _fail, flush=True)
+    if _fail:
+        sys.exit(1)
 
 
 main()

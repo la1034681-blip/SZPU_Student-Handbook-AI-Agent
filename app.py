@@ -466,6 +466,27 @@ def _gate_code() -> str:
     return (os.environ.get("ACCESS_CODE") or "").strip()
 
 
+def _same_secret(got: str, want: str) -> bool:
+    """口令比对，**输什么都只是「不对」，绝不崩页面**。
+
+    为什么不能直接用 `hmac.compare_digest(a, b)`：
+    Python 3 里它只接受 **ASCII** 的 str（或 bytes）。学生切到中文输入法
+    随手打一个汉字进去，它就抛
+    `TypeError: comparing strings with non-ASCII characters is not supported`
+    —— 整个页面直接报错、谁也进不来（2026-10-15 夜目检时撞到）。
+
+    所以先统一编码成 utf-8 的 bytes 再比：比较强度一样（都是定长时间比较），
+    但汉字、emoji、随便什么字符都只会让结果变成 False。
+    """
+    if not want:
+        return False
+    try:
+        return hmac.compare_digest(str(got).strip().encode("utf-8"),
+                                   want.strip().encode("utf-8"))
+    except Exception:
+        return False
+
+
 def _render_gate():
     """未通过口令时**只**显示这一页：不加载模型、不渲染任何问答入口。
 
@@ -495,7 +516,7 @@ def _render_gate():
         if submit:
             if now < lock_until:                      # 锁定中，连正确口令也不放行
                 st.error(f"尝试次数过多，请 {int(lock_until - now) + 1} 秒后再试")
-            elif hmac.compare_digest(pw.strip(), _gate_code()):
+            elif _same_secret(pw, _gate_code()):
                 st.session_state["authed"] = True
                 st.session_state["gate_fails"] = 0
                 st.session_state.pop("gate_lock", None)
@@ -953,9 +974,17 @@ def ask_and_render(prompt: str) -> bool:
 
 
 # ==================================================================== 建议墙
-@st.cache_data(ttl=45, show_spinner=False)
+@st.cache_data(ttl=180, show_spinner=False)
 def _load_suggestions(limit: int = 60):
-    """读留言墙。挂 45 秒缓存：刷新页面不必每次都打云库。"""
+    """读留言墙。挂 3 分钟缓存。
+
+    缓存从 45 秒放长到 3 分钟：留言墙不是关键功能，却排在页面**最后** ——
+    它一卡，整页就卡着「正在运行」。原来 45 秒一过期，每个访客一进来都得
+    重打一次云库（线上访问国内云库本就慢，实测本机也要 300ms+）。
+
+    **返回 None ＝ 读不到**（云库没配 / 超时），**[] ＝ 真的还没有留言**。
+    这两者在页面上必须说不同的话，见 render_suggestions。
+    """
     return get_store().list_suggestions(limit)
 
 
@@ -990,6 +1019,16 @@ def render_suggestions():
                 st.warning(msg)
 
     rows = _load_suggestions()
+    if rows is None:
+        # 「读不到」和「墙上没留言」必须分开说。以前两者被 `or []` 抹成同一个，
+        # 于是云库一超时就谎报「墙上还空着」—— 学生以为之前的留言被删了
+        # （2026-10-15 用户报「一开始没显示之前的留言」，查出来的就是这里）。
+        st.warning("留言墙暂时读不到（云库连不上或超时）。不影响你提问，"
+                   "留言照常能提交。")
+        if st.button("重新加载留言", key="sugg_retry"):
+            _load_suggestions.clear()
+            st.rerun()
+        return
     if not rows:
         st.caption("墙上还空着，你可以是第一个留言的人。")
         return
@@ -1019,7 +1058,7 @@ def render_admin():
                                    label_visibility="collapsed",
                                    placeholder="请输入查看密钥")
                 if st.form_submit_button("进 入", use_container_width=True):
-                    if hmac.compare_digest(pw.strip(), admin_code()):
+                    if _same_secret(pw, admin_code()):
                         st.session_state["admin_ok"] = True
                         st.rerun()
                     else:
