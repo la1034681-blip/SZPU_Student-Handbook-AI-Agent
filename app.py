@@ -1095,6 +1095,64 @@ def _missing_config() -> list:
     return [name for name, ok, _ in _config_rows() if not ok]
 
 
+# 关键接口探针：内存里的模块若与磁盘上的新代码对不上，就是「改了 src/ 没重启进程」。
+# 每项 =（模块名，类.函数路径，该函数必须认得的参数名）。
+_STALE_PROBES = (
+    ("agent_qa", "AgentQAPipeline.ask", "history_block"),
+    ("qa_chain", "QAPipeline.answer_from_evidences", "history_block"),
+    ("planner", "Planner.plan", "history_block"),
+    ("memory", "SessionMemory.history_block", None),
+)
+
+
+def _stale_modules() -> list:
+    """检查内存里的 src/ 模块是不是「旧版」——文件改了，但进程没重启。
+
+    为什么会这样：Streamlit 只会重跑主脚本 app.py，被它 import 的 src/ 模块
+    一直留在内存里，改文件不会重新加载。于是出现「app.py 是新版、agent_qa 是
+    旧版」的混用，页面冒出 `got an unexpected keyword argument 'history_block'`
+    这种英文错 —— 看着像功能坏了，其实只是进程该重启了
+    （2026-10-15 用户截图实证）。
+
+    判据：拿几个关键函数的参数签名当探针。新版有、旧版没有，一对就露馅。
+    返回对不上的说明列表；空列表 = 一切正常。
+    """
+    import inspect
+    bad = []
+    for mod_name, dotted, param in _STALE_PROBES:
+        mod = sys.modules.get(mod_name)
+        if mod is None:
+            bad.append(f"{mod_name}（进程里没加载）")
+            continue
+        obj, miss = mod, False
+        for part in dotted.split("."):
+            obj = getattr(obj, part, None)
+            if obj is None:
+                miss = True
+                break
+        if miss:
+            bad.append(f"{mod_name}.{dotted}（找不到这个函数）")
+        elif param:
+            try:
+                if param not in inspect.signature(obj).parameters:
+                    bad.append(f"{mod_name}.{dotted}() 不认 {param} 这个参数")
+            except (TypeError, ValueError):
+                bad.append(f"{mod_name}.{dotted}() 读不到参数")
+    return bad
+
+
+def _render_stale_warning():
+    """新旧代码混用时，把「请重启网页进程」明明白白说出来，别让人对着一句英文猜。"""
+    bad = _stale_modules()
+    if not bad:
+        return
+    st.error(
+        "**后台代码已更新，但跑着的网页还是旧的**\n\n"
+        + "\n".join(f"- {b}" for b in bad) + "\n\n"
+        "把启动网页时那个黑色窗口关掉，重新双击桌面的「启动网页问答.bat」就好。"
+        "重启后这条提示自动消失（不影响已经问过的内容）。")
+
+
 def _render_config_warning():
     """配置不全时，把「缺哪几项」明明白白摆在页面上。
 
@@ -1137,6 +1195,19 @@ def render_diag():
     if _SECRETS_NOTE.startswith("没读到") and not (ROOT / ".env").exists():
         st.caption("线上出现「没读到」通常意味着 Secrets 没保存，或 TOML 写法有误 —— "
                    "注意分隔线、中文标点、全角引号都不是合法 TOML。")
+
+    st.write("")
+    st.markdown("**代码版本**（后台代码 vs 跑着的网页进程）")
+    _stale = _stale_modules()
+    if _stale:
+        st.markdown("✗ **对不上** —— 网页进程还是旧代码，需要重启")
+        for b in _stale:
+            st.caption("· " + b)
+        st.caption("关掉启动网页的那个黑色窗口，重新双击「启动网页问答.bat」。"
+                   "Streamlit 只重跑主脚本，被引用的 src/ 模块改了不会自动重新加载，"
+                   "所以改完后台代码必须重启进程。")
+    else:
+        st.caption("✓ 一致（内存里的模块与磁盘上的代码对得上）。")
 
     st.write("")
     rows = _config_rows()
@@ -1233,6 +1304,7 @@ def main():
         return
 
     _render_config_warning()      # 配置缺了什么，先说清，别让人去猜（2026-10-15 踩过）
+    _render_stale_warning()       # 代码更新了却没重启进程 → 直接说清（2026-10-15 踩过）
 
     st.markdown(_CULTURE, unsafe_allow_html=True)
 
