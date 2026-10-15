@@ -584,9 +584,11 @@ def get_pipeline():
     每题都调大模型（免费 GLM-4-Flash）。
 
     （原来还有一条「程序化抽取式」通道，用 QA_MODE 环境变量切换。2026-10-15
-     按需求整体下线并删除：`src/procedural_qa.py`、相关的测试与调参脚本都在
-     `.trash_tmp/程序化通道下线-20261015/`。留下的 `_quote_fallback` 只是智能体
-     链路自己的「零幻觉保底」，不是一条独立通道。）
+     按需求把「可切换」这层壳去掉了：QA_MODE 开关、页面上的通道小字、
+     程序化过程面板都已删除。但程序化实现本身**保留**，退居为模型失效时的
+     **兜底安全网** —— 大模型炸或调用失败时，`AgentQAPipeline._rescue()` 会
+     让 `src/procedural_qa.py` 照抄手册原文作答，并在页面上明说「本次是兜底」。
+     相关测试见 `src/tests/test_fallback.py`。）
 
     检索的「问题侧编码」会在本机模型与在线接口之间自动选择（见
     `retrievers.HandbookRetriever._pick_backend`）：本机有 models/ 就用本机，
