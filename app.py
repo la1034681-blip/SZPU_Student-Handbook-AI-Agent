@@ -621,6 +621,7 @@ def serialize(res) -> dict:
         "reflect_rounds": res.reflect_rounds,
         "reflect_log": res.reflect_log or [],
         "verify": res.verify or {},
+        "badge_backfill": bool(getattr(res, "badge_backfill", False)),
     }
 
 
@@ -683,6 +684,11 @@ def render_process(meta: dict):
 
         st.markdown("**④ 引用校验**")
         v = meta.get("verify") or {}
+        if meta.get("badge_backfill"):
+            # 不留痕不行（2026-10-15）：这条不是「答得对不对」的问题，
+            # 而是「答案的文字被动过没有」—— 动过就得说清楚。
+            st.caption("角标回填：模型把出处写进了 citations 字段，正文却没打 [Ex]；"
+                       "系统按**已申报的**编号补上角标（原文一字未改），再重跑校验。")
         if meta["refused"]:
             st.write("—")
         elif v.get("passed"):

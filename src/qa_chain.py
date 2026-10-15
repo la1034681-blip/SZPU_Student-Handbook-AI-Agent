@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -260,6 +261,53 @@ def build_llm(model=None, temperature=0.0, api_key=None, base_url=None,
     return ChatOpenAI(**kw)
 
 
+# ------------------------------------------------------------------ 角标回填
+def backfill_citations(answer: str, citations, evs):
+    """角标回填：模型**申报了出处、正文却一处 [Ex] 都没打**时，替它补上。
+
+    为什么需要这一步（2026-10-15 用户截图实证）
+    -------------------------------------------
+    免费小模型（GLM-4-Flash）非常常见的毛病：`citations` 字段老老实实填了
+    E1/E3/E4/E5，正文却一个 `[Ex]` 角标都不打。而一级校验（`check_existence`）
+    有条硬规矩「有实质内容却一处引用都没标 → 不放行」（防「全篇不标」蒙混），
+    于是**一条与手册逐字对得上的正确回答被整题拒掉** —— 检索分 0.99，
+    答案完全正确，学生看到的却是「抱歉，这个问题我暂时答不了」。
+
+    这正是本项目最忌讳的那类误杀：尺子量不出东西，被当成学生作弊。
+
+    做法
+    ----
+    把**已申报、且确实存在于本次证据**里的编号拼成一组角标，插到答案末尾
+    （有句末标点就插在它之前，符合中文「句末标注出处」的习惯），
+    **原文一个字不改**，然后照常走两级校验（即「角标回填 + 重校验」）。
+
+    只回填合法编号：申报了不存在的编号属于伪造引用，那种情形本来就该被
+    一级校验拦下，这里绝不替它圆场。
+
+    返回 (文本, 是否回填过)。
+    """
+    text = (answer or "").strip()
+    if not text:
+        return text, False
+    if parse_citations(text):          # 正文自己标了角标 → 不动它
+        return text, False
+
+    known = {e.eid for e in evs}
+    declared, seen = [], set()
+    for c in (citations or []):
+        e = str(c).upper()
+        if e in known and e not in seen:
+            seen.add(e)
+            declared.append(e)
+    if not declared:                   # 没申报、或申报的全是编的 → 不圆场
+        return text, False
+
+    marks = "".join(f"[{e}]" for e in declared)
+    m = re.search(r"[。！？；]\s*$", text)
+    return ((text[:m.start()] + marks + text[m.start():]) if m
+            else (text + marks)), True
+
+
 # ------------------------------------------------------------------ 结果
 @dataclass
 class QAAnswer:
@@ -271,6 +319,7 @@ class QAAnswer:
     refused: bool = False
     refuse_reason: str = ""
     model_error: str = ""                      # 非空 = 这次是模型本身用不了（不是"手册没规定"）
+    badge_backfill: bool = False               # 这次替模型补过 [Ex] 角标（见 backfill_citations）
     evidences: list = field(default_factory=list)
     verify: dict = field(default_factory=dict)
     latency: float = 0.0
@@ -449,6 +498,18 @@ class QAPipeline:
             res.citations = parse_citations(res.answer)
         res.insufficient = bool(raw.get("insufficient"))
         res.reason = raw.get("reason") or ""
+        # ---------- 角标回填（2026-10-15） ----------
+        # GLM 常见「citations 填对了、正文忘打 [Ex]」→ 一级校验「通篇无出处」
+        # 会把一句正确回答整题毙掉。这里替它把合法编号补到答案末尾，
+        # 原文一字不改，随后照常走两级校验。见 backfill_citations 的注释。
+        # 注意：模型自称「证据不足」时**不**回填 —— 那时正文是说明为什么答不了，
+        # 给它挂角标毫无意义，还会污染「模型原话」那一栏。
+        if not res.insufficient:
+            res.answer, res.badge_backfill = backfill_citations(
+                res.answer, res.citations, evs)
+            if res.badge_backfill:
+                self._log(f"模型正文未打角标，已按申报的 citations 回填："
+                          f"{res.citations}")
 
         # ---------- 模型自述证据不足 ----------
         if res.insufficient:
@@ -467,6 +528,10 @@ class QAPipeline:
                                      for c in (fixed.get("citations") or [])]
                     if not res.citations:
                         res.citations = parse_citations(res.answer)
+                    # 复核重答同样可能忘打角标 —— 一并回填，免得刚救回来的
+                    # 答案又被一级校验的「通篇无出处」毙掉。
+                    res.answer, res.badge_backfill = backfill_citations(
+                        res.answer, res.citations, evs)
                     res.insufficient = False
                     res.reason = ""
                     res.refused = False
