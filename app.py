@@ -42,6 +42,9 @@ from retrievers import HandbookRetriever                # noqa: E402
 from agent_qa import AgentQAPipeline                    # noqa: E402
 from oplog import get_logger                           # noqa: E402
 from cloudstore import get_store                       # noqa: E402
+from memory import (SessionMemory, clear_memory,       # noqa: E402
+                    load_memory, new_mem_id, save_memory,
+                    summarize_older, sweep_memory)
 
 DATA_DIR = str(ROOT / "data")
 
@@ -402,6 +405,59 @@ def client_id() -> str:
     return uid
 
 
+# ==================================================================== 会话记忆
+# 只做**临时**记忆：让追问能接着上文答（「那它算不算迟到早退」这种），
+# 用户关掉页面就不再保留 —— 不做持久记忆。三层结构（最近几轮原文 / 更早的
+# 压成摘要 / 追问改写）见 src/memory.py 的模块说明。
+# 会话号放在地址栏 ?m=，刷新后仍认得出是同一个会话 → 可以从云库读回上文。
+_MEM_PARAM = "m"
+
+# 记忆表里闲置多久算「用户已经走了」。浏览器关标签页时服务器收不到通知
+# （HTTP 本来就是无连接的），只能靠「多久没人动过」来近似，见 memory.sweep_memory。
+MEM_IDLE_MIN = 60
+
+
+def memory_id() -> str:
+    """取（必要时创建）本次会话的记忆编号 —— 与 ?u= 一样交给浏览器记住。"""
+    raw = st.query_params.get(_MEM_PARAM)
+    if isinstance(raw, (list, tuple)):
+        raw = raw[0] if raw else ""
+    mid = (raw or "").strip()
+    if not (8 <= len(mid) <= 64 and all(c in "0123456789abcdef" for c in mid)):
+        mid = new_mem_id()
+        st.query_params[_MEM_PARAM] = mid
+    st.session_state["mem_id"] = mid
+    return mid
+
+
+def get_memory() -> SessionMemory:
+    """拿本次会话的记忆对象（没有就建一个空的）。
+
+    刷新页面时 st.session_state 会清空，但地址栏的 ?m= 还在 —— 于是从云库
+    把上文读回来，学生看到「刚才问过的还在」。云库不通就退回空记忆：
+    追问会答得差一点，但绝不报错、也不影响正常提问。
+    """
+    mem = st.session_state.get("mem")
+    if isinstance(mem, SessionMemory):
+        return mem
+    mid = memory_id()
+    cid = st.session_state.get("client_id") or client_id()
+    mem = load_memory(mid, cid) or SessionMemory(mem_id=mid, client_id=cid)
+    st.session_state["mem"] = mem
+    return mem
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def _sweep_idle() -> int:
+    """清掉闲置超过 MEM_IDLE_MIN 分钟的会话记忆（近似「用户已退出」）。
+
+    挂 30 分钟缓存：不必每次刷新都去打云库；一次清理覆盖所有会话，
+    所以由谁触发都一样。返回删掉的行数，取不到返回 -1。
+    """
+    out = sweep_memory(MEM_IDLE_MIN)
+    return -1 if out is None else int(out)
+
+
 def admin_code() -> str:
     """看板密钥（.env 的 ADMIN_CODE，默认 9925）—— 只在服务端比对，不外发。"""
     return (os.environ.get("ADMIN_CODE") or "9925").strip()
@@ -717,6 +773,14 @@ def render_process(meta: dict):
             st.write("判定为简单题，不拆解，直接用原问题检索。"
                      + (f"（{plan.get('reason')}）" if plan.get("reason") else ""))
 
+        # 多轮记忆留痕（2026-10-15）：带上文了没有、检索实际用的是哪句，
+        # 一眼能看见 —— 追问答不好时，先看这里就知道是「没接上文」还是别的毛病。
+        if meta.get("history_used"):
+            st.caption(f"多轮记忆：本次带了上文 {meta.get('history_n')} 条作背景"
+                       f"（上文只是背景，不是证据）；追问里的「它／这个」按上文理解。")
+            if plan.get("standalone"):
+                st.caption(f"检索实际用的完整问句：{plan['standalone']}")
+
         st.markdown("**② 检索与生成**")
         if meta["refused"]:
             st.write("未生成答案，已按「无可靠依据」处理。")
@@ -815,14 +879,42 @@ def _loading_tip() -> str:
             else "正在检索手册并作答…")
 
 
+def _remember(mem: SessionMemory, prompt: str, meta: dict) -> None:
+    """把这一轮写进会话记忆：超预算就先把最旧几轮压成摘要，再存一份到云库。
+
+    记忆是**加分项** —— 任何一步失败都只影响「追问顺不顺」，不影响本次作答，
+    所以这里一律吞掉异常、不打扰学生（也不静默改结果，只是记忆少一点）。
+    """
+    try:
+        mem.add_user(prompt)
+        if meta.get("refused"):
+            # 拒答也记一笔，但只留一句短标记 —— 免得把「本手册中没有对应内容」
+            # 这种话当成上文带进下一轮，反而干扰模型对下一句的理解。
+            mem.add_assistant("（本手册中没有对应内容）")
+        else:
+            mem.add_assistant(meta.get("answer") or "")
+        if mem.over_budget():
+            # 只在超预算时才多花一次模型调用；模型不可用则一条不删（宁可超预算）
+            summarize_older(mem, getattr(get_pipeline(), "llm", None))
+        save_memory(mem)
+    except Exception:                                       # noqa: BLE001
+        pass
+
+
 def ask_and_render(prompt: str) -> bool:
     """统一作答入口：示例按钮与手动输入都走这里。
 
     提问频率限制（限流）已按需求临时下线 —— 这里现在是「来者即答」的直通路径。
     限流代码整体备份在 .trash_tmp/限流下线-20261015/，需要时拿回来接上即可。
+
+    多轮记忆（2026-10-15 新增）：本次提问**之前**的对话会作为背景一起送给模型，
+    追问里的「它／这个」才接得上；做法与原理见 src/memory.py。
     """
     sid = st.session_state.get("sid") or "anon"
     cid = st.session_state.get("client_id") or client_id()
+    mem = get_memory()
+    hist = mem.history_block()                    # 本次提问之前的上文（可能为空）
+    prev_q = mem.previous_user_question(prompt)   # 上一轮那句原文：追问检索的兜底
 
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -836,14 +928,18 @@ def ask_and_render(prompt: str) -> bool:
                 pipe.enable_gate = OPT["gate"]
                 pipe.top_k = OPT["top_k"]
                 pipe.max_merged = OPT["max_merged"]
-                res = pipe.ask(prompt)
+                res = pipe.ask(prompt, history_block=hist, prev_user=prev_q)
                 meta = serialize(res)
+                meta["history_used"] = bool(hist)
+                meta["history_n"] = len(mem.turns)
             except Exception as e:                      # noqa: BLE001
                 st.error(f"出错了：{e}")
                 st.session_state.messages.pop()          # 回滚这条提问
                 st.stop()
         st.session_state.messages.append(
             {"role": "assistant", "content": meta["answer"], "meta": meta})
+
+    _remember(mem, prompt, meta)          # 本轮进记忆（失败不影响上面的作答）
 
     # 留痕：后台异步写云库，失败也不影响用户（详见 src/oplog.py）
     # 两条：qa_log 存完整问答（只授 INSERT），qa_usage 只存「谁何时问了一次」
@@ -1054,6 +1150,30 @@ def render_diag():
             st.caption(("已配置" if ok else "**未配置**") + " —— " + hint)
 
     st.write("")
+    st.markdown("**会话记忆**（临时记忆位，不做持久保存）")
+    mem = st.session_state.get("mem")
+    if isinstance(mem, SessionMemory):
+        st.markdown(f"会话编号 `{mem.mem_id[:8]}…`"
+                    f"（地址栏 `?m=`，刷新后仍认得出是这一次会话）")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("已记轮次", len(mem.turns))
+        c2.metric("摘要字数", len(mem.summary))
+        c3.metric("历史块字数", len(mem.history_block()))
+        st.caption("记忆只活在这一次会话里：关掉页面、闲置 "
+                   f"{MEM_IDLE_MIN} 分钟后由云库自动清掉；点「清空对话」会立刻清掉。"
+                   "它**不是**长期记忆，下次进来是一张白纸。")
+    else:
+        st.caption("本次会话还没有记忆（还没提问过）。")
+
+    if st.button("清掉闲置记忆", key="diag_mem_sweep"):
+        st.session_state["diag_mem_r"] = sweep_memory(MEM_IDLE_MIN)
+    r0 = st.session_state.get("diag_mem_r")
+    if r0 is not None:
+        st.caption(f"闲置超过 {MEM_IDLE_MIN} 分钟的会话记忆已清理："
+                   + (f"删掉 {r0} 行" if isinstance(r0, int) and r0 >= 0
+                      else "云库没回结果（可能不通）"))
+
+    st.write("")
     st.markdown("**连通性测试**（点一下才发请求，平时不打扰）")
     c1, c2 = st.columns(2)
     with c1:
@@ -1092,6 +1212,8 @@ def main():
     st.markdown(_CHIPS, unsafe_allow_html=True)
 
     client_id()                           # 匿名编号：写进地址栏，供使用统计认人
+    get_memory()                          # 会话记忆：刷新后从云库读回上文（见 src/memory.py）
+    _sweep_idle()                         # 顺手清掉闲置会话的记忆（近似「用户已退出」）
 
     # 看板视图：学生点开也只是一页要密钥的框，看不到任何数据
     raw_view = (st.session_state.get("view")
@@ -1185,6 +1307,11 @@ def main():
         st.session_state["pending_q"] = q_text.strip()
         st.rerun()
 
+    # 顺手告诉学生「可以接着追问」（2026-10-15 加多轮记忆后才有这句话）。
+    # 不写这句，学生多半以为一次只能问一个独立问题，追问能力就白做了。
+    st.caption("可以接着追问 —— 比如问完「旷课怎么处分」，再问「那要多久呢？」，"
+               "系统记得住你这次会话问过什么。")
+
     # 工具条：紧跟问答区。清空对话管的就是上面这块对话区，放在这儿最顺手；
     # 使用统计 / 系统自检 也一并收进来，页面底部只留留言墙与页脚。
     st.write("")
@@ -1192,6 +1319,10 @@ def main():
     with b1:
         if st.button("清空对话", key="clear_chat", use_container_width=True):
             st.session_state.messages = []
+            mem = get_memory()
+            mem.reset()               # 内存里也清掉，否则追问还会用到已忘掉的上文
+            clear_memory(mem.mem_id)  # 云库那份同步删掉 —— 按下「清空」就是「忘掉这些」
+            st.session_state["mem"] = mem
             st.rerun()
     with b2:
         if st.button("使用统计", key="open_admin", use_container_width=True):

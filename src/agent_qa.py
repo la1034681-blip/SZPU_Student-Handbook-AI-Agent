@@ -70,6 +70,21 @@ from qa_chain import QAPipeline, QAAnswer  # noqa: E402
 from reflect import Reflector            # noqa: E402
 
 
+def _norm_q(text: str) -> str:
+    """问题比对用的归一化：去首尾空白与尾部标点。
+
+    为什么要归一化再用：planner 会把 standalone 的尾巴（？。等）削掉，
+    所以「那要多久呢？？」与「那要多久呢」必须被认成同一句 —— 否则
+    「模型没改写 → 走确定性兜底」这个判断会失效（2026-10-15 实测踩到：
+    兜底检索路没被加上，模糊追问仍然搜不到东西）。
+    """
+    return (text or "").strip().strip("？?。.、，,！! ").strip()
+
+
+def _same_q(a: str, b: str) -> bool:
+    return _norm_q(a) == _norm_q(b) and bool(_norm_q(a))
+
+
 class AgentQAPipeline:
     def __init__(self, retriever, llm=None, top_k=6, max_merged=28,
                  planner=None, reflect=None, enable_planner=True,
@@ -217,25 +232,29 @@ class AgentQAPipeline:
         return self._finalize(merged, order, max(self.max_merged, n_have))
 
     # ------------------------------------------------------------------ 规划
-    def plan_only(self, question):
+    def plan_only(self, question, history_block=""):
         if not self.enable_planner:
             return {"need_split": False, "sub_questions": [], "levels": "未指明",
-                    "reason": "planner 关闭"}
-        return self.planner.plan(question, self.llm)
+                    "standalone": question, "reason": "planner 关闭"}
+        return self.planner.plan(question, self.llm, history_block=history_block)
 
     # ------------------------------------------------------------------ 主链路
-    def ask(self, question: str):
+    def ask(self, question: str, history_block: str = "",
+            prev_user: str = ""):
         """主导航：一切都由大模型驱动；只有模型自己坏了才交给程序化兜底。
 
-        这里包一层 try/except 是 2026-10-15 加的（用户要求「主动权在模型，
-        但模型出问题了要有程序化兜底」）：智能体链路的每一环都吃大模型
-        （规划 / 生成 / 自检 / 引用校验），限流重试烧完、网络抽风、密钥失效、
-        返回解析不了 —— 任一环抛异常，学生收到的就是一句报错。现在改成
-        走 `_rescue()`：检索照做，答案由程序化抽取式照抄原文给出，
-        并在结果里**标明这是兜底**，页面会显式提示（静默降级是本项目最忌讳的）。
+        `history_block`（可选）：本次会话之前的对话摘要 + 最近几轮原文，
+        由 `src/memory.py` 拼好。它有两个用处 ——
+          ① 规划器据此产出 standalone（把「它/这个」补成完整问题），检索拿
+             完整语义去搜，追问题才搜得到东西；
+          ② 生成时作为背景喂进提示词，让回答接得上上文（但它**不是证据**，
+             见 qa_chain.SYSTEM_PROMPT 第 8 条）。
+        `prev_user`（可选）：上一轮学生问的那句原文。小模型不一定每次都肯
+        把追问改写干净，所以再留一条**确定性**兜底 —— 见 `_ask` 里的注释。
+        两个都不传 = 原来的「每题独立」行为，完全向后兼容。
         """
         try:
-            res = self._ask(question)
+            res = self._ask(question, history_block, prev_user)
         except Exception as e:                          # noqa: BLE001
             if self.verbose:
                 print(f"[兜底] 大模型不可用，转程序化兜底："
@@ -289,12 +308,22 @@ class AgentQAPipeline:
         res.latency = time.time() - t0
         return res
 
-    def _ask(self, question: str):
+    def _ask(self, question: str, history_block: str = "", prev_user: str = ""):
         t0 = time.time()
-        plan = self.plan_only(question)
+        plan = self.plan_only(question, history_block)
         need_split = bool(plan.get("need_split"))
-        queries = ([question] + plan["sub_questions"]
-                   if need_split else [question])
+        # 检索用「补全指代后的问题」：带历史时它是 standalone，没历史时就是原问题
+        # （planner 保证 standalone 至少等于原问题）。生成仍然用原问句，这样
+        # 回答的是学生真正问的那句，语气与承接也对得上。
+        root = (plan.get("standalone") or question).strip() or question
+        queries = ([root] + plan["sub_questions"] if need_split else [root])
+        # 追问兜底（确定性，不指望小模型）：本次是追问、而模型又**没**把指代
+        # 补出来（standalone 与原句一样）时，再补一路「上一句 + 本句」——
+        # 靠上一个话题的词把「它/那」补上。例：「那要多久呢？」单独拿去检索
+        # 什么都没；拼成「重修要什么条件 那要多久呢」就能搜到重修条款。
+        if (prev_user and history_block
+                and _same_q(root, question) and prev_user not in queries):
+            queries = queries + [f"{prev_user} {question}"]
         evs = self._merge(queries)
 
         # ---------- 拒答前置（组件四） ----------
@@ -315,7 +344,8 @@ class AgentQAPipeline:
                 res.latency = time.time() - t0
                 return res
 
-        res = self.base.answer_from_evidences(question, evs)
+        res = self.base.answer_from_evidences(question, evs,
+                                              history_block=history_block)
 
         # ---------- 自检回环 ----------
         # 门控说明：**不按 need_split 限定**。第 1 步发现，唯一还失分的 Q36
@@ -341,7 +371,9 @@ class AgentQAPipeline:
                     # 补检没带回新证据：本轮仍"带着缺口重答"一次（治"资料在
                     # 手却没答全"），但靠缺口重复规则在下一轮收住，不空转。
                     pass
-                res = self.base.answer_from_evidences(question, new_evs, hints=gaps)
+                res = self.base.answer_from_evidences(question, new_evs,
+                                                     hints=gaps,
+                                                     history_block=history_block)
                 rounds += 1
                 if res.refused:
                     break

@@ -26,7 +26,10 @@
 --------
     p = Planner(llm)
     plan = p.plan("从补考到重修会经历哪些环节？")
-    # -> {"need_split": True, "sub_questions": [...], "levels": "未指明"}
+    # -> {"need_split": True, "sub_questions": [...], "levels": "未指明",
+    #     "standalone": "…"}
+    # 给了 history_block 时，standalone 是「把追问补全成可独立理解的问题」，
+    # 由检索与生成共用 —— 见 src/memory.py 的说明。
 """
 from __future__ import annotations
 
@@ -66,13 +69,26 @@ PLANNER_SYSTEM = """你是学生手册问答系统的「问题规划器」。你
 - 子问题合起来要覆盖原问题的每个组成部分，不要漏、也不要脑补原问题没有的条件；
 - 子问题不要和原问题完全一样。
 
+【有历史对话时】—— 如果下面给了【之前的对话】：
+- 先看本次问题有没有**省略或指代**（「它 / 他 / 这个 / 那个 / 那……呢 /
+  还有呢 / 那怎么算 / 为什么」）。有的话，把本次问题补成一句**单独拿出来
+  也看得懂**的完整问题，写进 standalone 字段。
+- standalone **只替换指代词、补全省略的主语或事项**，其余照原样保留。
+  绝对不要把上一轮问句的内容搬进来，也不要把两个问题拼成一句。
+  例：上文在讲「旷课处分」，本次问「那它算不算迟到早退？」
+      → standalone 应写「迟到早退算不算旷课？」
+      **不要**写成「旷课多少学时算迟到早退」—— 那是把上一轮的问题混进来了。
+- 本次问题本身已经完整、不依赖上文时，standalone 就照抄本次问题原句。
+- 没有给历史对话时，standalone 一律照抄本次问题原句。
+
 【输出格式】
-只输出一个 JSON 对象，不要任何其他文字、不要代码围栏，含三个键：
+只输出一个 JSON 对象，不要任何其他文字、不要代码围栏，含四个键：
   need_split    布尔值，需要拆解为 true
   sub_questions 字符串数组，拆出来的子问题；need_split 为 false 时给空数组 []
-  levels        字符串，取 "本科" / "专科" / "两者" / "未指明" 之一"""
+  levels        字符串，取 "本科" / "专科" / "两者" / "未指明" 之一
+  standalone    字符串，把本次问题补全成可独立理解的完整问句（见上）"""
 
-PLANNER_USER = """【问题】{question}"""
+PLANNER_USER = """{history_block}【问题】{question}"""
 
 
 class Planner:
@@ -90,30 +106,37 @@ class Planner:
         ])
         return prompt | llm | JsonOutputParser()
 
-    def plan(self, question: str, llm=None) -> dict:
+    def plan(self, question: str, llm=None, history_block: str = "") -> dict:
+        """规划。给了 history_block 时，顺带产出 standalone（补全指代的完整问题）。
+
+        为什么把「追问改写」放在这里做：规划本来就是一道必跑的模型调用，
+        让它**顺手**输出 standalone，等于零额外成本。单独再调一次模型去改写，
+        在免费档上要多撞一次 429 风险，还要多等几秒。
+        """
         llm = llm or self.llm
         if llm is None:
-            return self._fallback("未接入 LLM，默认不拆")
+            return self._fallback("未接入 LLM，默认不拆", question)
         if self._chain is None or getattr(self, "_llm_ref", None) is not llm:
             self._chain = self._build_chain(llm)
             self._llm_ref = llm
         try:
-            raw = self._chain.invoke({"question": question})
+            raw = self._chain.invoke({"question": question,
+                                      "history_block": history_block or ""})
         except Exception as e:                      # noqa: BLE001
             # 规划失败不能让整条链路挂掉：退回"不拆"，走原来的路径
-            return self._fallback(f"规划失败，退回不拆：{str(e)[:80]}")
-        return self._sanitize(question, raw)
+            return self._fallback(f"规划失败，退回不拆：{str(e)[:80]}", question)
+        return self._sanitize(question, raw, bool(history_block))
 
     @staticmethod
-    def _fallback(reason: str) -> dict:
+    def _fallback(reason: str, question: str = "") -> dict:
         return {"need_split": False, "sub_questions": [], "levels": "未指明",
-                "reason": reason}
+                "standalone": question, "reason": reason}
 
     @staticmethod
-    def _sanitize(question: str, raw) -> dict:
+    def _sanitize(question: str, raw, allow_standalone: bool = False) -> dict:
         if not isinstance(raw, dict):
             return {"need_split": False, "sub_questions": [], "levels": "未指明",
-                    "reason": "规划器未返回 JSON 对象"}
+                    "standalone": question, "reason": "规划器未返回 JSON 对象"}
         need = bool(raw.get("need_split"))
         subs = raw.get("sub_questions") or []
         if isinstance(subs, str):
@@ -140,7 +163,14 @@ class Planner:
         if not need:
             out = []
         levels = str(raw.get("levels") or "未指明")
-        return {"need_split": need, "sub_questions": out, "levels": levels}
+        # standalone：只有「这次给了历史」且模型确实改写了，才认它的改写；
+        # 否则一律用原问题 —— 免得没有历史时被模型顺手改题意。
+        standalone = str(raw.get("standalone") or "").strip().strip("？?。.、 ")
+        if not (allow_standalone and standalone):
+            standalone = question
+        standalone = standalone[:200]
+        return {"need_split": need, "sub_questions": out, "levels": levels,
+                "standalone": standalone}
 
 
 if __name__ == "__main__":

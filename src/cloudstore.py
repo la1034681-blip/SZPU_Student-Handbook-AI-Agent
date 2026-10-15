@@ -93,6 +93,24 @@ class CloudStore:
             pass
         return None
 
+    def rpc_ok(self, name: str, payload: dict | None = None,
+               timeout: int = 10) -> bool:
+        """调 RPC，只问「成没成功」。
+
+        为什么不复用 rpc()：返回 void 的函数**没有响应体**，`r.json()` 会直接
+        抛异常 → rpc() 返回 None → 调用方把「写成功了」误判成「失败」
+        （2026-10-15 查临时记忆表时踩到：qa_mem_save 明明写进去了，
+        save_memory 却报 False）。这里只看 HTTP 状态码，不看响应体。
+        """
+        if not self.enabled or not self.key:
+            return False
+        try:
+            r = requests.post(self._url(f"rpc/{name}"), headers=self._headers(),
+                              json=payload or {}, timeout=timeout)
+            return 200 <= r.status_code < 300
+        except Exception:                                        # noqa: BLE001
+            return False
+
     # ------------------------------------------------------------ 自检
     def probe(self) -> dict:
         """连通性探测 —— 专给「系统自检」页用，**故意把失败原因拆开说清**。

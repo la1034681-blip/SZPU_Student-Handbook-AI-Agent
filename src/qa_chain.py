@@ -94,6 +94,12 @@ SYSTEM_PROMPT = """你是深圳职业技术大学《学生手册（2025 年修�
        除通识教育选修课程外，学生首次修读的课程考核不及格者，可在下学期开学初
        参加一次补考（部分不适合补考的实践类、过程性考核的课程则需申请参加重修）……[E1]
 
+8. 【关于【之前的对话】】如果这题带了【之前的对话】，它**不是证据**，只是
+   背景 —— 只用来搞清「学生这次在问什么」（把「它 / 这个 / 那」还原成具体
+   事项）。答案的依据**仍然只有下方【证据】**：对话里出现过的说法、数字、
+   结论都不能当作依据写进答案，更不能照抄。若【证据】里没有本次问题所需
+   的规定，照第 3 条处理（insufficient），不要拿上文凑。
+
 【输出格式】
 只输出一个 JSON 对象，不要任何其他文字，不要代码围栏。JSON 含四个键：
   answer       字符串，带 [Ex] 标注的答复正文
@@ -101,10 +107,13 @@ SYSTEM_PROMPT = """你是深圳职业技术大学《学生手册（2025 年修�
   insufficient 布尔值，证据不足以回答时为 true
   reason       字符串，仅在 insufficient 为 true 时写明原因，否则留空"""
 
-USER_TEMPLATE = """【问题】{question}
+USER_TEMPLATE = """{history_block}【问题】{question}
 
 【证据】
 {context}{hints_block}"""
+
+# 无历史时的占位（空串）—— 模板里保留槽位，但内容为空，等价于没有这一节。
+HISTORY_NONE = ""
 
 # 阶段 6 第 2 步：自检回环把「上一版漏答的点」回灌给生成，让它带着缺口重答
 HINTS_BLOCK = """
@@ -261,6 +270,35 @@ def build_llm(model=None, temperature=0.0, api_key=None, base_url=None,
     return ChatOpenAI(**kw)
 
 
+# ------------------------------------------------------------------ 引用编号规范化
+def normalize_citations(items) -> list:
+    """把模型给的引用编号收拾干净：'[E1]'、' e1 '、'E1,E2'、'[E1][E3]' → ['E1','E2'…]。
+
+    为什么需要（2026-10-15 实测踩到）
+    --------------------------------
+    GLM 有时把方括号一起塞进字符串：返回 `citations: ["[E1]", "[E2]", "[E6]"]`。
+    原来的 `str(c).upper()` 于是得到 `"[E1]"` —— 一级校验拿它跟证据编号 `E1`
+    比对必然对不上，判成「申报了不存在的证据编号」，**一条完全正确的回答被
+    整题拒答**。角标回填也救不了：回填只认合法编号，带括号的一个都不合法，
+    于是它一个都不补 —— 拒答照旧。
+
+    这里统一抽成 `E<数字>`。抽不出数字的（例如模型写了 'E'）原样留下，
+    让它照常被一级校验拦下 —— 规范化只负责去掉**格式噪声**，不替伪造圆场。
+    """
+    out, seen = [], set()
+    for c in (items or []):
+        found = re.findall(r"[Ee]\s*(\d+)", str(c))
+        if found:
+            cand = [f"E{int(n)}" for n in found]
+        else:
+            cand = [re.sub(r"[^A-Za-z0-9]", "", str(c)).upper()]
+        for eid in cand:
+            if eid and eid not in seen:
+                seen.add(eid)
+                out.append(eid)
+    return out
+
+
 # ------------------------------------------------------------------ 角标回填
 def backfill_citations(answer: str, citations, evs):
     """角标回填：模型**申报了出处、正文却一处 [Ex] 都没打**时，替它补上。
@@ -407,7 +445,7 @@ class QAPipeline:
     def build_context(evidences) -> str:
         return "\n\n".join(e.render() for e in evidences)
 
-    def _retry_with_confirm(self, question, context, top1):
+    def _retry_with_confirm(self, question, context, top1, history_block=""):
         """带「证据已确认」的提示重答一次；仍判不足或调用失败 → 返回 None。
 
         为什么值得多花这一次调用：免费小模型判「证据不足」多半不是真不足，
@@ -421,7 +459,8 @@ class QAPipeline:
                 "（例如「不予申请」即等价于「不允许」），请视为同一规定。")
         try:
             raw = self._build_chain().invoke(
-                {"question": question, "context": context, "hints_block": note})
+                {"question": question, "context": context, "hints_block": note,
+                 "history_block": history_block or HISTORY_NONE})
         except Exception as e:                      # noqa: BLE001
             self._log(f"复核重答调用失败：{str(e)[:80]}")
             return None
@@ -430,14 +469,16 @@ class QAPipeline:
             return raw
         return None
 
-    def ask(self, question: str) -> QAAnswer:
+    def ask(self, question: str, history_block: str = "") -> QAAnswer:
         t0 = time.time()
         evs = self.retriever.search(question, top_k=self.top_k)
-        res = self.answer_from_evidences(question, evs)
+        res = self.answer_from_evidences(question, evs,
+                                         history_block=history_block)
         res.latency = time.time() - t0
         return res
 
-    def answer_from_evidences(self, question: str, evs, hints=None) -> QAAnswer:
+    def answer_from_evidences(self, question: str, evs, hints=None,
+                              history_block: str = "") -> QAAnswer:
         """生成 + 两级校验：给定证据产出答案（**不含检索**）。
 
         阶段 6 抽出：供 Agent 循环在"合并了多路检索的证据"之后复用，
@@ -460,7 +501,9 @@ class QAPipeline:
         context = self.build_context(evs)
         hints_block = (HINTS_BLOCK.format(hints="\n".join(f"- {h}" for h in hints))
                        if hints else "")
-        res.prompt_preview = system_user_preview(question, context, hints_block)
+        hist = history_block or HISTORY_NONE
+        res.prompt_preview = system_user_preview(question, context, hints_block,
+                                                 hist)
 
         if self.llm is None:                      # dry-run：只到证据构造
             res.refused = True
@@ -473,7 +516,7 @@ class QAPipeline:
             try:
                 raw = self._build_chain().invoke(
                     {"question": question, "context": context,
-                     "hints_block": hints_block})
+                     "hints_block": hints_block, "history_block": hist})
                 if isinstance(raw, dict) and (raw.get("answer") or "").strip():
                     break
                 last_err, raw = "模型返回内容为空", None
@@ -493,7 +536,7 @@ class QAPipeline:
             raw = {"answer": str(raw)}
 
         res.answer = (raw.get("answer") or "").strip()
-        res.citations = [str(c).upper() for c in (raw.get("citations") or [])]
+        res.citations = normalize_citations(raw.get("citations"))
         if not res.citations:                     # 模型没给列表，就从正文里捞
             res.citations = parse_citations(res.answer)
         res.insufficient = bool(raw.get("insufficient"))
@@ -521,11 +564,10 @@ class QAPipeline:
                 self._log(f"模型称证据不足，但 top1={top1:.3f} ≥ "
                           f"{self.refuse_confirm_min}，启动拒答复核")
                 # 第一手：把「证据确实有」说破，让模型重答一次。
-                fixed = self._retry_with_confirm(question, context, top1)
+                fixed = self._retry_with_confirm(question, context, top1, hist)
                 if fixed is not None:
                     res.answer = (fixed.get("answer") or "").strip()
-                    res.citations = [str(c).upper()
-                                     for c in (fixed.get("citations") or [])]
+                    res.citations = normalize_citations(fixed.get("citations"))
                     if not res.citations:
                         res.citations = parse_citations(res.answer)
                     # 复核重答同样可能忘打角标 —— 一并回填，免得刚救回来的
@@ -580,10 +622,12 @@ class QAPipeline:
         return res
 
 
-def system_user_preview(question, context, hints_block=""):
+def system_user_preview(question, context, hints_block="", history_block=""):
     return (f"[system]\n{SYSTEM_PROMPT}\n\n[human]\n"
             + USER_TEMPLATE.format(question=question, context=context,
-                                   hints_block=hints_block))
+                                   hints_block=hints_block,
+                                   history_block=history_block
+                                   or HISTORY_NONE))
 
 
 if __name__ == "__main__":
