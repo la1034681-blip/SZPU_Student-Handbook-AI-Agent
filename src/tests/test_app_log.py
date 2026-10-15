@@ -21,6 +21,7 @@ os.environ["ACCESS_CODE"] = "SZPU666"
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
 from oplog import get_logger              # noqa: E402
+from _askui import ask, has_ask_entry      # noqa: E402
 
 
 def main():
@@ -29,10 +30,10 @@ def main():
 
     at.text_input[0].set_value("SZPU666")
     at.button[0].click().run()
-    print("进门成功（有问答入口）:", len(at.chat_input) > 0, flush=True)
+    print("进门成功（有问答入口）:", has_ask_entry(at), flush=True)
 
     print("提问：国家奖学金一年多少钱？", flush=True)
-    at.chat_input[0].set_value("国家奖学金一年多少钱？").run()
+    ask(at, "国家奖学金一年多少钱？")
     print("异常:", bool(at.exception), flush=True)
     for e in at.exception:
         print("  EXC:", e, flush=True)

@@ -28,6 +28,7 @@ os.environ["ACCESS_CODE"] = "SZPU666"
 os.environ["CLOUD_LOG_ENABLED"] = "0"      # 测试不往云库写，免得污染日志
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
+from _askui import has_ask_entry            # noqa: E402
 
 
 def md_all(at) -> str:
@@ -62,7 +63,7 @@ def main():
     at.text_input[0].set_value("SZPU666")
     at.button[0].click().run()             # 表单要真的点提交，只 set_value 不生效
     show_exc(at, "进门")
-    entered = len(at.chat_input) > 0
+    entered = has_ask_entry(at)
     print("   已进入主界面:", entered, flush=True)
     ok &= entered
 

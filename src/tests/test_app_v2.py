@@ -9,6 +9,13 @@
 """
 from __future__ import annotations
 
+import os
+
+# 跳过访问门禁：本脚本只验内容/角标/过程面板，不测口令
+# （fail-safe 之后 ACCESS_CODE 为空会被挡住，测试必须显式声明「有意关」）
+os.environ["ACCESS_CODE"] = "off"
+os.environ["CLOUD_LOG_ENABLED"] = "0"
+
 import sys
 from pathlib import Path
 
@@ -18,6 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 APP = str(ROOT / "app.py")
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
+from _askui import ask                       # noqa: E402
 
 
 def main():
@@ -67,7 +75,7 @@ def main():
     # ---------- 3. 拒答分支 ----------
     at3 = AppTest.from_file(APP, default_timeout=300)
     at3.run()
-    at3.chat_input[0].set_value("学校食堂几点关门？").run()
+    ask(at3, "学校食堂几点关门？")
     print("== 拒答分支异常:", bool(at3.exception), flush=True)
     warns = [w.value for w in at3.warning]
     joined = "\n".join(warns)

@@ -30,6 +30,7 @@ os.environ["ADMIN_CODE"] = "9925"
 os.environ["CLOUD_LOG_ENABLED"] = "1"
 
 from streamlit.testing.v1 import AppTest          # noqa: E402
+from _askui import ask, has_ask_entry            # noqa: E402
 
 
 def md_all(at) -> str:
@@ -63,7 +64,7 @@ def main():
     at.text_input[0].set_value("SZPU666")
     at.button[0].click().run()
     show_exc(at, "进入")
-    print("   已进主界面:", len(at.chat_input) > 0, flush=True)
+    print("   已进主界面:", has_ask_entry(at), flush=True)
 
     print("\n② 匿名编号 ?u=", flush=True)
     try:
@@ -136,8 +137,8 @@ def main():
     if bb is not None:
         bb.click().run()
         show_exc(at, "返回")
-    if at.chat_input:
-        at.chat_input[0].set_value("国家奖学金一年多少钱？").run()
+    if has_ask_entry(at):
+        ask(at, "国家奖学金一年多少钱？")
         show_exc(at, "作答")
         print("   出现答案:", ("手册原文" in md_all(at) or "依据" in md_all(at)),
               flush=True)

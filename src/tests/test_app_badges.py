@@ -2,12 +2,20 @@
 """无头验证：证据角标是否渲染为可点击锚点 + 证据卡片是否带 id。"""
 from __future__ import annotations
 
+import os
+
+# 跳过访问门禁：本脚本只验内容/角标/过程面板，不测口令
+# （fail-safe 之后 ACCESS_CODE 为空会被挡住，测试必须显式声明「有意关」）
+os.environ["ACCESS_CODE"] = "off"
+os.environ["CLOUD_LOG_ENABLED"] = "0"
+
 import sys
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
+from _askui import ask                       # noqa: E402
 
 APP = str(Path(__file__).resolve().parent.parent.parent / "app.py")
 
@@ -16,7 +24,7 @@ def main():
     at = AppTest.from_file(APP, default_timeout=300)
     at.run()
     print("初始异常:", bool(at.exception), flush=True)
-    at.chat_input[0].set_value("考试作弊被查到后会怎么处理？").run()
+    ask(at, "考试作弊被查到后会怎么处理？")
     print("提问后异常:", bool(at.exception), flush=True)
     for e in at.exception:
         print("EXC:", e, flush=True)
@@ -37,7 +45,7 @@ def main():
     # 拒答分支：独立实例，不应有任何角标
     at2 = AppTest.from_file(APP, default_timeout=300)
     at2.run()
-    at2.chat_input[0].set_value("学校食堂几点关门？").run()
+    ask(at2, "学校食堂几点关门？")
     md2 = "\n".join(m.value for m in at2.markdown)
     print("拒答分支角标数（应为0）:", md2.count('class="cite-badge"'), flush=True)
     print("拒答分支证据卡片数（应为0）:", md2.count('<details class="ev"'), flush=True)

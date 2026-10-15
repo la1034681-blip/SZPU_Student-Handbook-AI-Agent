@@ -165,6 +165,26 @@ html, body, [class*="css"]{
 [data-testid="stChatInput"]:focus-within{
   border-color:var(--szpu-red); box-shadow:0 0 0 3px rgba(176,27,34,.10);
 }
+/* ---------------- 提问表单（问答区内的输入框 + 提问按钮） ----------------
+   两个坑（2026-10-15 都踩过）：
+   ① 用 :has() 精确命中「装着提问输入框的那个表单」，而不是套一层 <div> ——
+      Streamlit 每个 st.markdown 都是独立容器，套 div 包不住后面的表单，
+      样式根本不会生效。门禁页和留言墙也是 st.form，不限定就会一起被染色。
+   ② Streamlit 1.62 对 st.form 下了 `border:none !important; padding:0 !important`，
+      所以这两条必须也带 !important 才盖得住（背景/圆角不用）。 */
+[data-testid="stForm"]:has(input[aria-label="你的问题"]){
+  border:1px solid var(--szpu-line) !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  padding:10px 12px !important;
+  box-shadow:0 1px 3px rgba(36,33,30,.05);
+}
+[data-testid="stForm"]:has(input[aria-label="你的问题"]):focus-within{
+  border-color:var(--szpu-red) !important;
+  box-shadow:0 0 0 3px rgba(176,27,34,.10);
+}
+[data-testid="stForm"]:has(input[aria-label="你的问题"]) input{ font-size:.95rem; }
+[data-testid="stForm"]:has(input[aria-label="你的问题"]) [data-testid="stVerticalBlock"]{ gap:.1rem; }
 
 /* ---------------- 展开面板（内部过程） ---------------- */
 [data-testid="stExpander"]{
@@ -1073,14 +1093,34 @@ def main():
     if "sid" not in st.session_state:      # 随机会话号：只用于日志，不含身份信息
         st.session_state.sid = uuid.uuid4().hex[:12]
 
-    # 分区标题。注意：「清空对话」按钮**不在这里** —— 它跟输入框一起放在页面
-    # 下边（见函数末尾），因为它管的是输入框那块地方，放顶上离得太远
-    # （2026-10-15 按用户反馈挪下去的）。
+    # ---------------------------------------------------------------- 问答区
     st.markdown(
         "<div class='sec'><span class='sec-bar'></span>"
         "<span class='sec-t'>问答</span></div>",
         unsafe_allow_html=True)
 
+    # 先渲染历史问答，再处理本次提问 —— 于是新问题的气泡永远接在旧答案下面，
+    # 位置固定在「问答」这一栏里。
+    # 为什么必须这么排（2026-10-15 用户反馈「点示例后答案跑到页面最下面」）：
+    # Streamlit 从上往下执行脚本，作答函数写在脚本末尾，它的气泡就渲染在末尾
+    # —— 页面上半截的问答区空着，学生看到的却是「答案掉到留言墙下面去了」。
+    # 现在输入框与作答都收进问答区，示例按钮也走同一条通道（pending_q），
+    # 无论点示例还是打字，问题和答案永远出现在同一个位置。
+    for m in st.session_state.messages:
+        with st.chat_message(m["role"]):
+            if m["role"] == "user":
+                st.markdown(m["content"])
+            else:
+                render_assistant(m["meta"])
+
+    pending = st.session_state.pop("pending_q", None)
+    if pending:
+        ask_and_render(pending)        # 就地渲染：接在上一条答案下面
+        st.rerun()                     # 再整页重画一次，历史与新答案同格式
+
+    # 输入区放在示例问题**下面**（2026-10-15 用户指定：「问答的示例下要有个
+    # 输入问问题的输入框」）。原来用 st.chat_input —— 它天生贴在视口最底部，
+    # 学生一进来只看得见示例按钮，看不见输入框在哪，所以换成普通表单。
     # 示例问题：点击后与手动输入走同一条作答链路（真正调用模型）。
     clicked = None
     if not st.session_state.messages:
@@ -1099,20 +1139,28 @@ def main():
             if cols[i % 2].button(q, key=f"s{i}", use_container_width=True):
                 clicked = q
 
-    for m in st.session_state.messages:
-        with st.chat_message(m["role"]):
-            if m["role"] == "user":
-                st.markdown(m["content"])
-            else:
-                render_assistant(m["meta"])
+    if clicked:                      # 示例 → 也走 pending 通道，位置与打字一致
+        st.session_state["pending_q"] = clicked
+        st.rerun()
 
-    # 建议墙：常驻在问答下方，刷新、换台机器进来都还在（内容存在云库）
-    st.write("")
-    render_suggestions()
+    st.markdown(
+        "<div class='sec'><span class='sec-bar'></span>"
+        "<span class='sec-t'>输入你的问题</span></div>",
+        unsafe_allow_html=True)
+    with st.form("ask_form", clear_on_submit=True):
+        c_in, c_btn = st.columns([5.2, 1.0])
+        with c_in:
+            q_text = st.text_input(
+                "你的问题", label_visibility="collapsed",
+                placeholder="在这里输入问题，例如：奖学金怎么申请？")
+        with c_btn:
+            go = st.form_submit_button("提 问", use_container_width=True)
+    if go and (q_text or "").strip():
+        st.session_state["pending_q"] = q_text.strip()
+        st.rerun()
 
-    # 底部工具条：紧挨着输入框，三个小按钮一行
-    # 「清空对话」放这里而不是放顶上 —— 它管的就是下面这块对话区，
-    # 学生滚到底顺手就能清，不用再滚回页首（2026-10-15 按反馈调整）。
+    # 工具条：紧跟问答区。清空对话管的就是上面这块对话区，放在这儿最顺手；
+    # 使用统计 / 系统自检 也一并收进来，页面底部只留留言墙与页脚。
     st.write("")
     b1, b2, b3 = st.columns(3)
     with b1:
@@ -1130,12 +1178,12 @@ def main():
             st.query_params["view"] = "diag"
             st.rerun()
 
-    st.markdown(_FOOT, unsafe_allow_html=True)
+    # 建议墙：常驻在页面下方，刷新、换台机器进来都还在（内容存在云库）
+    # 分区小标题由 render_suggestions() 自己带，这里不再重复画一遍。
+    st.write("")
+    render_suggestions()
 
-    prompt = st.chat_input("输入你的问题，例如：奖学金怎么申请？") or clicked
-    if prompt:
-        if ask_and_render(prompt):
-            st.rerun()
+    st.markdown(_FOOT, unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
