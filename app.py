@@ -559,18 +559,20 @@ def friendly_refuse(reason: str):
 
     返回 (标题, 说明)。原则：面向用户的回答区只讲人话，
     "最高相关分低于阈值 0.03" 这类细节不出现（挪到「内部过程」面板）。
+
+    2026-10-15 用户要求统一口径：凡是「答不上来」，一律直说
+    「本手册中没有对应内容」，**不再出现**「我暂时答不了 / 拿不准 /
+    为了不给不确定的结论就不作答」这类模棱两可、听着像推脱的话。
+    所有「查不到」的原因（检索无证据 / 拒答前置 / 模型自称证据不足 /
+    引用校验未通过）共用这一套话术；真正的技术原因仍然完整写在
+    「内部过程」面板里，排查不受影响。
     """
     r = reason or ""
-    if "校验未通过" in r:
-        return ("抱歉，这个问题我暂时答不了",
-                "手册里有相关信息，但我没法确认答案完全有依据。"
-                "为了不给你一个不确定的结论，就先不作答了。")
     if "模型调用失败" in r or "未接入" in r:
         return ("服务暂时出了点小状况", "请稍等片刻，再试一次。")
-    # 其余（检索无证据 / 拒答前置 / 模型判定证据不足）统一按「没找到」处理
-    return ("手册里暂无相关内容",
-            "这个问题在《学生手册（2025 年修订）》里没有找到可以依据的规定，"
-            "我就不猜测了。你可以换个问法，或者问手册里的事项"
+    return ("本手册中没有对应内容",
+            "这个问题在《学生手册（2025 年修订）》里没有找到可以依据的规定。"
+            "你可以换个问法，或者改问手册里的事项"
             "（学籍、考试、奖助学金、宿舍、违纪处分等）。")
 
 
@@ -601,9 +603,60 @@ def get_pipeline():
     return AgentQAPipeline(retriever, llm=llm, verbose=False)
 
 
+def renumber_citations(meta: dict) -> dict:
+    """把答复里的角标重编成 E1、E2、E3… 连续编号（2026-10-15 用户要求）。
+
+    背景：链路给证据编号是按「多路检索的合并顺序」E1..En，模型却只挑其中
+    几条来引用，于是学生看到的是 [E2]、[E6]、[E21] 这种跳号 —— 既看不出
+    一共引了几条依据，也看不出先后。
+
+    这里按**答复里首次出现的先后**重新编号：引到的第一条条款就是 E1，
+    第二条 E2，依此类推；下面「手册原文」的卡片同步换成同一套编号，
+    并按 E1、E2、E3… 排好，点角标照样跳得到。
+
+    只动编号，不改一个字；没被引用的证据排到被引用的后面（不显示成卡片）。
+    本来就已经是 E1..Ek 连续时原样返回，不做无谓改动。
+    """
+    if meta.get("refused"):
+        return meta
+    evs = meta.get("evidences") or []
+    answer = meta.get("answer") or ""
+    if not evs or not answer:
+        return meta
+
+    known = {e["eid"] for e in evs}
+    cited: list = []
+    for m in _CITE_RE.finditer(answer):
+        eid = m.group(1)
+        if eid in known and eid not in cited:
+            cited.append(eid)
+    if not cited:
+        return meta
+
+    order = cited + [e["eid"] for e in evs if e["eid"] not in cited]
+    mapping = {old: f"E{i}" for i, old in enumerate(order, 1)}
+    if all(old == new for old, new in mapping.items()):
+        return meta                                   # 本来就连号，不动
+
+    meta["answer"] = _CITE_RE.sub(
+        lambda m: f"[{mapping.get(m.group(1), m.group(1))}]", answer)
+    # 卡片按新编号升序排，保证页面上就是 E1、E2、E3…
+    meta["citations"] = sorted(
+        {mapping[c] for c in (meta.get("citations") or []) if c in mapping},
+        key=lambda s: int(s[1:]))
+    emap = {e["eid"]: e for e in evs}
+    new_evs = []
+    for old in order:
+        e = dict(emap[old])
+        e["eid"] = mapping[old]
+        new_evs.append(e)
+    meta["evidences"] = new_evs
+    return meta
+
+
 def serialize(res) -> dict:
     """把 QAAnswer 压成可放进 session_state 的普通 dict。"""
-    return {
+    return renumber_citations({
         "answer": res.answer,
         "refused": bool(res.refused),
         "refuse_reason": res.refuse_reason or res.reason or "",
@@ -622,7 +675,7 @@ def serialize(res) -> dict:
         "reflect_log": res.reflect_log or [],
         "verify": res.verify or {},
         "badge_backfill": bool(getattr(res, "badge_backfill", False)),
-    }
+    })
 
 
 # ==================================================================== 渲染
@@ -718,7 +771,8 @@ def render_assistant(meta: dict):
     emap = {e["eid"]: e for e in meta["evidences"]}
     cits = meta["citations"] or []
     if cits and not meta["refused"]:
-        st.markdown("**手册原文**（点答复里的 <span class='cite-badge'>[E2]</span> "
+        st.markdown("**手册原文**（点答复里的 "
+                    f"<span class='cite-badge'>[{cits[0]}]</span> "
                     "角标可直接跳到对应条款）：",
                     unsafe_allow_html=True)
         cards = []

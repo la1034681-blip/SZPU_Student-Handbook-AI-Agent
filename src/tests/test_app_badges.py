@@ -40,7 +40,17 @@ def main():
     print("未替换的裸角标（应只剩有效范围内）:", flush=True)
     import re
     valid = set(re.findall(r'href="#ev-(E\d+)"', md))
-    print("  valid eids:", sorted(valid), flush=True)
+
+    # 角标必须连号 E1、E2、E3…（2026-10-15 用户要求：不能出现 E2/E6/E21 跳号）
+    nums = sorted(int(e[1:]) for e in valid)
+    print("角标编号（应是从 1 起的连号）:", nums, flush=True)
+    print("是否连号 E1..Ek :", nums == list(range(1, len(nums) + 1)), flush=True)
+    # 卡片也要按 E1、E2… 排好（顺序不能乱）
+    card_eids = re.findall(r'<details class="ev" id="ev-(E\d+)"', md)
+    print("卡片编号顺序:", card_eids, flush=True)
+    print("卡片是否按号升序:",
+          [int(e[1:]) for e in card_eids] == sorted(int(e[1:]) for e in card_eids),
+          flush=True)
 
     # 拒答分支：独立实例，不应有任何角标
     at2 = AppTest.from_file(APP, default_timeout=300)

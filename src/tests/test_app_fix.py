@@ -42,7 +42,7 @@ def case(name, keyword, expect_answer: bool):
     if expect_answer:
         print("  是否给出了答案(非拒答):", bool(mds) and not warns, flush=True)
     else:
-        print("  含『手册里暂无相关内容』:", "手册里暂无相关内容" in alltext, flush=True)
+        print("  含『本手册中没有对应内容』:", "本手册中没有对应内容" in alltext, flush=True)
         print("  是否泄露『阈值/相关分』:", ("阈值" in alltext) or ("相关分" in alltext), flush=True)
 
 

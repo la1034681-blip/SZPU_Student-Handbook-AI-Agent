@@ -4,7 +4,7 @@
 覆盖：
   1. 初始渲染无异常；主页面 Hero/校训/标签都在；无侧边栏组件
   2. 点示例按钮 → 真正作答（出现 assistant 回答）
-  3. 拒答分支 → 出现「手册里暂无相关内容」，且无"阈值/相关分"技术词
+  3. 拒答分支 → 出现「本手册中没有对应内容」，且无"阈值/相关分"技术词
 总耗时约 2~4 分钟（含模型加载）。
 """
 from __future__ import annotations
@@ -80,7 +80,7 @@ def main():
     warns = [w.value for w in at3.warning]
     joined = "\n".join(warns)
     print("   提示条数:", len(warns), flush=True)
-    print("   含'手册里暂无相关内容':", "手册里暂无相关内容" in joined, flush=True)
+    print("   含'本手册中没有对应内容':", "本手册中没有对应内容" in joined, flush=True)
     print("   泄露技术词(阈值/相关分):",
           ("阈值" in joined or "相关分" in joined), flush=True)
     for w in warns:

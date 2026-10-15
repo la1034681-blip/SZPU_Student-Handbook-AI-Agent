@@ -73,7 +73,7 @@ def main():
     for i, w in enumerate(at.warning):
         print(f"   [{i}]", w.value[:160].replace("\n", " "), flush=True)
     warns = "\n".join(w.value for w in at.warning)
-    print("   含「手册里暂无相关内容」:", "手册里暂无相关内容" in warns, flush=True)
+    print("   含「本手册中没有对应内容」:", "本手册中没有对应内容" in warns, flush=True)
     print("   拒答提示:", warns.strip().replace("\n", " ")[:90], flush=True)
     print("   主答案区泄技术词「相关度」:",
           any("相关度" in m.value for m in at.markdown[-3:]), flush=True)

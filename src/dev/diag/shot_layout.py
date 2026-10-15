@@ -63,7 +63,7 @@ def main():
         # 等答案：出现「手册原文」或拒答话术为止，最多 240 秒
         for _ in range(240):
             body = pg.inner_text("body")
-            if "手册原文" in body or "手册里暂无相关内容" in body:
+            if "手册原文" in body or "本手册中没有对应内容" in body:
                 break
             pg.wait_for_timeout(1000)
         pg.wait_for_timeout(2500)

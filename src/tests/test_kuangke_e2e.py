@@ -44,7 +44,7 @@ msgs = list(at.chat_message)
 
 print("对话消息数：", len(msgs))
 print("出现拒答话术「暂时答不了」：", "暂时答不了" in joined)
-print("出现「手册里暂无相关内容」：", "手册里暂无相关内容" in joined)
+print("出现「本手册中没有对应内容」：", "本手册中没有对应内容" in joined)
 print("出现程序化兜底提示：", "程序化兜底" in joined)
 print("答案里含可点击角标 cite-badge：", "cite-badge" in joined)
 print("答案里含「旷课」：", "旷课" in joined)
