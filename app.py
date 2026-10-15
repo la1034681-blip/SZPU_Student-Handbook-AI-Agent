@@ -575,13 +575,32 @@ def friendly_refuse(reason: str):
 
 
 # ==================================================================== 资源加载
+QA_MODE_DEFAULT = "agent"      # 没配 QA_MODE 时走哪条 —— 主线是智能体链路
+
+
+def _qa_mode() -> tuple:
+    """返回 (通道, 是否靠默认值猜的)。
+
+    为什么单独抽出来（2026-10-15 踩到）：`get_pipeline()` 里原来写的是
+    `os.environ.get("QA_MODE") or "procedural"` —— 配置一旦没读到（.env 丢了、
+    线上 Secrets 漏了这一行），就**悄悄**退回程序化通道：能答、答得也不差，
+    只是不再调大模型。页面上看不出任何异常，最容易让人以为「智能体链路坏了」。
+    按本项目一贯的规矩（配置缺失必须留痕），这里把「猜的」这件事记下来，
+    由页面明说。读法是唯一定义，`get_pipeline` 与页头提示都调它。
+    """
+    raw = (os.environ.get("QA_MODE") or "").strip().lower()
+    if raw in ("agent", "procedural"):
+        return raw, False
+    return QA_MODE_DEFAULT, True
+
+
 @st.cache_resource(show_spinner=False)
 def get_pipeline():
     """加载检索器 + 生成通道（全进程只做一次）。
 
-    QA_MODE=procedural（默认）走**纯程序化抽取式**：直接摘手册原文作答，
-    不需要大模型、不花钱、不吃显卡，毫秒级出结果。
-    QA_MODE=agent 走原来的智能体链路（规划+多跳+校验），需要用大模型，收费。
+    QA_MODE=agent（默认）走**智能体链路**：大模型规划 → 多路检索 → 生成 →
+    自检回补 → 引用校验，每题都会调大模型（免费 GLM-4-Flash）。
+    QA_MODE=procedural 走**纯程序化抽取式**：直接摘手册原文作答，不调大模型。
 
     检索的「问题侧编码」会在本机模型与在线接口之间自动选择（见
     `retrievers.HandbookRetriever._pick_backend`）：本机有 models/ 就用本机，
@@ -590,14 +609,26 @@ def get_pipeline():
     load_secrets()
     load_env_file()
     retriever = HandbookRetriever(DATA_DIR, use_rerank=True, verbose=False)
-    mode = (os.environ.get("QA_MODE") or "procedural").strip().lower()
-    if mode != "agent":
+    if _qa_mode()[0] != "agent":
         from procedural_qa import ProceduralPipeline, make_free_fallback
         # fallback 没配就返回 None，等于纯程序化；配了才在难题上走免费 API
         return ProceduralPipeline(retriever, top_k=6,
                                   fallback=make_free_fallback(), verbose=False)
     llm = build_llm()
     return AgentQAPipeline(retriever, llm=llm, verbose=False)
+
+
+def _channel_label() -> str:
+    """给页面用的中文通道名 —— 学生/管理员一眼能看出「刚才谁答的」。"""
+    mode, guessed = _qa_mode()
+    if mode != "agent":
+        return "程序化直接作答（不调大模型）" + ("　⚠ QA_MODE 未配置，用的默认值"
+                                        if guessed else "")
+    backend = (os.environ.get("LLM_BACKEND") or "free").strip().lower()
+    brain = {"free": "免费 GLM-4-Flash", "deepseek": "DeepSeek",
+             "local": "本机模型"}.get(backend, backend)
+    return ("智能体链路（规划 → 多路检索 → 生成 → 自检 → 引用校验）"
+            f"，大脑 {brain}" + ("　⚠ QA_MODE 未配置，用的默认值" if guessed else ""))
 
 
 def serialize(res) -> dict:
@@ -687,7 +718,9 @@ def render_process(meta: dict):
     if meta["refused"]:
         head = "内部过程 ｜ 已拒答（技术细节）"
     else:
-        head = (f"内部过程 ｜ 拆解{'：是' if need_split else '：否'}"
+        # 明写「智能体」：不然学生看不出这一答到底有没有经过大模型
+        head = (f"内部过程 ｜ 作答通道：智能体"
+                f" ｜ 拆解{'：是' if need_split else '：否'}"
                 f" ｜ 检索 {meta['hops']} 次 ｜ 证据 {meta['n_evidence']} 条"
                 f" ｜ 自检补检 {meta['reflect_rounds']} 轮")
 
@@ -1016,6 +1049,15 @@ def render_diag():
         st.caption("线上出现「没读到」通常意味着 Secrets 没保存，或 TOML 写法有误 —— "
                    "注意分隔线、中文标点、全角引号都不是合法 TOML。")
 
+    # 作答通道：这一条最容易被忽略 —— 程序化通道也能答得挺像样，只是不调大模型，
+    # 光看答案是看不出来的，所以必须写在自检页最显眼处。
+    _mode, _guessed = _qa_mode()
+    st.write("")
+    st.markdown(f"**作答通道**：{'智能体链路' if _mode == 'agent' else '程序化（不调大模型）'}"
+                + ("　⚠ **QA_MODE 未配置**，用的是默认值 —— 线上请在 Secrets 里"
+                   "补一行 `QA_MODE = \"agent\"`" if _guessed else ""))
+    st.caption(_channel_label())
+
     st.write("")
     rows = _config_rows()
     ok_n = sum(1 for _, ok, _ in rows if ok)
@@ -1098,6 +1140,11 @@ def main():
         "<div class='sec'><span class='sec-bar'></span>"
         "<span class='sec-t'>问答</span></div>",
         unsafe_allow_html=True)
+
+    # 当前作答通道写在明面上（2026-10-15 用户问「为什么点示例是程序化作答、
+    # 没调大模型」—— 根因是他看的是旧进程的页面；但通道本来就该一眼可见，
+    # 否则「配置没读到」和「链路坏了」在学生眼里长得一模一样）。
+    st.caption("作答通道：" + _channel_label())
 
     # 先渲染历史问答，再处理本次提问 —— 于是新问题的气泡永远接在旧答案下面，
     # 位置固定在「问答」这一栏里。
