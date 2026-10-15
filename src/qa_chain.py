@@ -270,6 +270,7 @@ class QAAnswer:
     reason: str = ""
     refused: bool = False
     refuse_reason: str = ""
+    model_error: str = ""                      # 非空 = 这次是模型本身用不了（不是"手册没规定"）
     evidences: list = field(default_factory=list)
     verify: dict = field(default_factory=dict)
     latency: float = 0.0
@@ -433,6 +434,10 @@ class QAPipeline:
                 self._log(f"生成未成功，重试 {attempt + 1}/{self.gen_retry}："
                           f"{last_err[:60]}")
         if raw is None:
+            # 标出来：这不是「手册里没规定」式拒答，而是**模型本身用不了**
+            # （429 重试烧完 / 网络断 / 密钥失效 / 返回空）。上层据此转程序化
+            # 兜底照抄原文，而不是把这个拒答丢给学生（2026-10-15 加）。
+            res.model_error = last_err
             res.refused, res.refuse_reason = True, f"模型调用失败：{last_err}"
             return res
         if not isinstance(raw, dict):
@@ -476,7 +481,7 @@ class QAPipeline:
                     res.refuse_confirm = {"top1": round(top1, 4),
                                           "action": "驳回拒答，模型重答"}
                     return res
-                # 第二手：模型还是不松口，就退回程序化照抄（零幻觉保底）
+                # 第二手：模型还是不松口，就改成照抄原文（零幻觉保底）
                 try:
                     from procedural_qa import generate, _verify as _pverify
                     out = generate(question, evs, max_evidence=3)

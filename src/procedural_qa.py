@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
-"""程序化（抽取式）答案生成器 —— 全程不需要任何大模型。
+"""程序化（抽取式）兜底答案生成器 —— 全程不需要任何大模型。
 
-    证据（retrievers.Evidence）
-      → 按"与问题的契合度"给证据重排
-      → 从条款原文切句、挑最相关的句子
-      → 用极性规则合成一句结论（可以 / 不可以 / 需要办 …）
-      → 拼成「结论句 + 原文条款 + 出处」的答案
-      → 契合度低于阈值则拒答
+**它不再是一条作答通道。** 作答永远由智能体链路主导（大模型规划 → 多路检索
+→ 生成 → 自检 → 引用校验）。这里只负责一种情况：**大模型用不了的时候，
+别让学生白问一场** —— 例如 429 限流重试耗尽、网络断了、密钥失效、模型返回
+的结构解析不了。这时把手册原文照抄给他，宁可朴素，也不编。
+
+   证据（retrievers.Evidence）
+     → 按"与问题的契合度"给证据重排
+     → 从条款原文切句、挑最相关的句子
+     → 用极性规则合成一句结论（可以 / 不可以 / 需要办 …）
+     → 拼成「结论句 + 原文条款 + 出处」的答案
+     → 契合度低于阈值则拒答
+
+两处会用到它（都在 `qa_chain.py`）：
+  1. **模型出错兜底**：整条智能体链路抛异常 → 改由这里照抄原文作答，
+     并且**在页面上标明**「大模型暂时不可用，以下为手册原文照抄」。
+  2. **模型坚持拒答时**：模型两次都说"证据不足"，而检索分明显很高
+     （见 `REFUSE_CONFIRM_MIN` 复核）→ 改由这里照抄，而不是拒答。
 
 设计取舍
 --------
@@ -24,9 +35,10 @@
 
 用法
 ----
-    from procedural_qa import ProceduralPipeline
-    pipe = ProceduralPipeline(retriever, top_k=6)
-    res = pipe.ask("必修课考试不及格，能补考吗")
+    from procedural_qa import generate, _verify
+    out = generate(question, evs, max_evidence=3)   # evs = 检索到的证据
+    if not out["insufficient"]:
+        res.answer, res.citations = out["answer"], out["citations"]
 """
 from __future__ import annotations
 
@@ -36,8 +48,6 @@ import time
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
-
-from qa_chain import QAAnswer          # noqa: E402  复用同一套结果结构
 
 # ------------------------------------------------------------------ 词表
 QW = ("怎么样", "怎么办理", "怎么样处理", "怎么处理", "怎么", "如何办理", "如何",
@@ -325,237 +335,6 @@ def generate(question: str, evs, max_evidence: int = 3, max_sent: int = 3,
             "focus_cov": focus_cov}
 
 
-# ------------------------------------------------------------------ 链路壳
-class ProceduralPipeline:
-    """与 QAPipeline 同接口（ask → QAAnswer），但不持有任何 LLM。
-
-    fallback：可选的兜底 callable(question, evs) -> QAAnswer。只有当抽取式
-    契合度不足、而调用方配好了免费大模型时才用得上（默认 None = 纯程序化）。
-    """
-
-    def __init__(self, retriever, top_k=6, max_evidence=4, min_score=0.15,
-                 min_cov=0.10, fallback=None, verbose=False, fb_mode=None):
-        self.retriever = retriever
-        self.top_k = top_k
-        self.max_evidence = max_evidence
-        self.min_score = min_score
-        self.min_cov = min_cov
-        self.fallback = fallback
-        self.verbose = verbose
-        self.n_fallback = 0
-        self.n_fb_fail = 0
-        # 兜底触发口径（FB_MODE 环境变量可覆盖）：
-        #   focus 只兜底"结论不实在 **且** 条款没摘对条"的题（默认，最划算）
-        #   weak  兜底所有"结论不实在"的题（更激进，实测反而略掉分）
-        #   cross weak + 跨章题
-        #   all   除程序化判定的拒答外，全交给大模型（最像"纯 LLM"，延迟最高）
-        #   off   关闭兜底，纯程序化
-        import os
-        self.fb_mode = (fb_mode or os.environ.get("FB_MODE") or "focus").strip().lower()
-        # focus 口径的门槛：焦点覆盖率低于它才认为"条款没摘对条"
-        self.fb_focus_cov = float(os.environ.get("FB_FOCUS_COV") or 0.60)
-        self.fb_on_insufficient = False      # 拒答闸门标定过，默认不让大模型插手
-        self._is_cross = False
-        # 与 AgentQAPipeline 保持同名接口 —— app.py 会给管道统一设这几个开关，
-        # 程序化通道用不上，但显式声明出来，免得被动态赋值埋下隐性耦合。
-        self.enable_planner = False
-        self.enable_reflect = False
-        self.enable_gate = True
-        self.max_merged = max_evidence
-
-    def _log(self, m):
-        if self.verbose:
-            print("  " + m, flush=True)
-
-    @staticmethod
-    def split_subquestions(question: str):
-        """把"一次问好几件事"的题拆成子问题 —— 程序化版的多跳。
-
-        这是跨章题的关键：整体检索只会围着最主要那个话题打转，
-        拆开各自检索才能把散在不同文件里的规定都捞回来。
-        切不出两段就返回空列表，走单路检索。
-        """
-        segs = [s.strip() for s in re.split(r"[？?。；;]", question) if len(s.strip()) >= 4]
-        if len(segs) < 2:
-            segs = [s.strip() for s in re.split(r"[，,、]", question) if len(s.strip()) >= 5]
-        return segs if len(segs) >= 2 else []
-
-    def ask(self, question: str) -> QAAnswer:
-        t0 = time.time()
-        subs = self.split_subquestions(question)
-        self._is_cross = len(subs) >= 2
-        if subs:
-            seen, evs = set(), []
-            for q in [question] + subs:          # 原问题 + 每个子问题各检一路
-                for e in self.retriever.search(q, top_k=self.top_k)[:3]:
-                    if e.clause_id not in seen:
-                        seen.add(e.clause_id)
-                        evs.append(e)
-            for i, e in enumerate(evs, 1):       # 重编 E1..En，保证角标连续
-                e.eid = f"E{i}"
-            # 一次问好几件事，就得给每条事留出位置，否则前面的条款把名额占光
-            n_ev = min(6, 2 + len(subs))
-            self._log(f"拆出 {len(subs)} 个子问题，合并 {len(evs)} 条证据，摘 {n_ev} 条")
-        else:
-            evs = self.retriever.search(question, top_k=self.top_k)
-            n_ev = self.max_evidence
-        res = self.answer_from_evidences(question, evs, max_evidence=n_ev)
-        res.latency = time.time() - t0
-        # 注意：这里是**合并**而不是覆盖 —— 否则会把"是否走了兜底""结论成色"
-        # 这些由 answer_from_evidences 写好的诊断字段一并抹掉（踩过这个坑）。
-        plan = dict(getattr(res, "plan", {}) or {})
-        plan.update({"need_split": bool(subs), "sub_questions": subs})
-        plan.setdefault("mode", "procedural")
-        res.plan = plan
-        res.hops = 1 + len(subs)
-        return res
-
-    def _need_fallback(self, out) -> str:
-        """该不该叫免费大模型？返回触发理由，空串代表不叫。
-
-        触发口径（见 __init__ 的 FB_MODE）：
-          focus（默认）—— 结论句没给出实质答复，**并且**问题焦点在程序化实际
-              摘录的条款里覆盖不足。这一条是 60 题反事实标定出来的：全量兜底
-              会让正确率掉 0.9 个点（大模型概括时必漏一个小要点，而原文照抄
-              不会漏），加上"没摘对条"这个闸门后才真正变成正收益。
-          weak  —— 只要结论句不实在就叫（更激进，留作对照）。
-          cross —— weak 之外再补上跨章题。
-          all   —— 除拒答外全叫。
-        拒答题（程序化判定"手册无相关规定"）默认**不**叫大模型：
-        那个闸门是用 60 题标定过的（重排分中位数 0.976 vs 0.017），
-        叫来只会把该拒的题答错。
-        """
-        if self.fallback is None or self.fb_mode == "off":
-            return ""
-        if out["insufficient"]:
-            return "程序化拒答" if self.fb_on_insufficient else ""
-        if self.fb_mode == "all":
-            return "全量兜底"
-        if self.fb_mode == "focus":
-            if out.get("weak") and (out.get("focus_cov") or 0.0) < self.fb_focus_cov:
-                return "结论不实在且条款没摘对"
-            return ""
-        if self.fb_mode in ("weak", "cross") and out.get("weak"):
-            return "结论不实在"
-        if self.fb_mode == "cross" and self._is_cross:
-            return "跨章题"
-        return ""
-
-    @staticmethod
-    def _compose(out, fb, evs, long_clause=520):
-        """把"大模型的结论"和"程序化的原文条款"拼成一份完整答复。
-
-        还要做一件事：大模型引用的条款，程序化的摘录里可能没摘到（摘录只取
-        得分前几条）。那样用户会看到"结论引 [E1]，下面却没有 E1"的错位 ——
-        所以把模型引到、摘录里缺的条款补进原文区，保证**引用编号在正文里都找得到**。
-        """
-        body = out.get("answer") or ""
-        marker = "**手册原文**"
-        tail = body.split(marker, 1)[1] if marker in body else ""
-        concl = (fb.answer or "").strip()
-
-        by_eid = {e.eid: e for e in evs}
-        shown = list(out.get("citations") or [])
-        extra = [c for c in (fb.citations or []) if c in by_eid and c not in shown]
-        if extra:
-            if not tail:                       # 摘录区都没建，先起个头
-                tail = ""
-            add = []
-            for eid in extra:
-                ev = by_eid[eid]
-                b = HEAD_RE.sub("", (ev.text or "").strip())
-                if len(b) > long_clause:
-                    b = "".join(split_sentences(b))[:long_clause] + "…"
-                add.append(f"[{eid}] {ev.cite}（第 {ev.page} 页）")
-                add.append(f"“{b.replace('“', '「').replace('”', '」')}”")
-                add.append("")
-            tail = (tail.rstrip("\n") + "\n\n" + "\n".join(add)) if tail \
-                else "\n" + "\n".join(add)
-        ans = (concl + "\n\n" + marker + tail) if tail else concl
-        cites = list(dict.fromkeys((fb.citations or []) + (out.get("citations") or [])))
-        return ans, cites
-
-    def answer_from_evidences(self, question: str, evs, max_evidence=None) -> QAAnswer:
-        res = QAAnswer(question=question)
-        res.evidences = evs
-        res.n_evidence = len(evs)
-        res.plan = {"need_split": False, "sub_questions": [], "mode": "procedural",
-                    "conclusion_kind": None, "fallback_reason": None}
-        res.hops = 1
-
-        out = generate(question, evs,
-                       max_evidence=max_evidence or self.max_evidence,
-                       min_score=self.min_score, min_cov=self.min_cov)
-        res.plan["conclusion_kind"] = out.get("conclusion_kind")
-
-        # ---------- 兜底分流 ----------
-        why = self._need_fallback(out)
-        if why:
-            self.n_fallback += 1
-            self._log(f"触发兜底（{why}），转免费大模型")
-            fb = None
-            try:
-                fb = self.fallback(question, evs)
-            except Exception as e:                     # noqa: BLE001
-                self.n_fb_fail += 1
-                self._log(f"兜底调用失败（{e}），回退程序化答案")
-            if fb is not None and not fb.refused and (fb.answer or "").strip():
-                # 两层合成：**结论句**用大模型写的（它能把"多少钱""怎么处理"
-                # 归纳出来），**原文条款与出处**照旧用程序化抽取的。
-                # 这样既补上了程序化最弱的那一环，又保住了"逐字照抄、出处
-                # 可核"的老本 —— 实测直接替换会连出处带要点一起丢掉。
-                ans, cites = self._compose(out, fb, evs)
-                rt = _verify(ans, cites, evs)
-                if rt.get("passed") or not out["answer"]:
-                    fb.answer, fb.citations, fb.verify = ans, cites, rt
-                    fb.refused = False
-                    fb.refuse_reason = ""
-                else:
-                    fb.answer = out["answer"]
-                    fb.citations = out["citations"]
-                    fb.refused = False
-                    fb.refuse_reason = ""
-                    fb.verify = _verify(fb.answer, fb.citations, evs)
-                fb.latency = res.latency
-                fb.plan = {"mode": "procedural→llm", "fallback_reason": why,
-                           "conclusion_kind": out.get("conclusion_kind"),
-                           "sub_questions": []}
-                fb.hops = res.hops
-                fb.n_fallback = self.n_fallback
-                return fb
-            if fb is not None and fb.refused:
-                self.n_fb_fail += 1
-                self._log("兜底也没答上（大模型判证据不足），回退程序化答案")
-            # 兜底失败/答不上 → 落回程序化的结果，绝不让用户拿到空答复
-
-        if out["insufficient"]:
-            res.answer = ""
-            res.citations = []
-            res.insufficient = True
-            res.reason = out["reason"]
-            res.confidence = out["confidence"]
-            res.refused = True
-            res.refuse_reason = out["reason"]
-            res.verify = {"passed": True, "reasons": [], "existence": {},
-                          "support": {}}
-            return res
-
-        res.answer = out["answer"]
-        res.citations = out["citations"]
-        res.insufficient = out["insufficient"]
-        res.reason = out["reason"]
-        res.confidence = out["confidence"]
-        res.refused = bool(out["insufficient"])
-        if res.refused:
-            res.refuse_reason = out["reason"]
-        res.verify = _verify(res.answer, res.citations, evs)
-        if not res.refused and not res.verify.get("passed"):
-            res.refused = True
-            res.refuse_reason = ("自校验未通过：" +
-                                 "；".join(res.verify.get("reasons") or []))
-        return res
-
-
 def _verify(answer, citations, evs):
     try:
         from verify_citations import verify as _v
@@ -563,81 +342,3 @@ def _verify(answer, citations, evs):
     except Exception as e:                        # noqa: BLE001
         return {"passed": True, "reasons": [f"校验跳过：{e}"],
                 "existence": {"passed": True}, "support": {"passed": True}}
-
-
-def make_free_fallback(enabled=None, verbose=False, tag_missing=True):
-    """造一个"免费大模型兜底"函数，给抽取式通道补复杂题。
-
-    只有同时满足「FREE_LLM_ENABLED=1」且「FREE_LLM_API_KEY 配置好」才生效；
-    否则返回 None —— 管道就按纯程序化跑，一分钱不花、也不依赖网络。
-
-    兜底复用 QAPipeline.answer_from_evidences（它只吃证据、不吃检索器），
-    所以生成/两级校验那套逻辑原样生效，不用重写。
-
-    tag_missing：免费小模型（GLM-4-Flash）有个稳定的小毛病 —— 答案正文写得
-    挺准，却忘了在句末打 [E1] 这种角标（它是把出处单独放进 citations 字段的）。
-    而我们的引用闸门要求正文必须带角标，于是好答案被自己的校验拦下。这里做
-    一个**不改变正文内容**的补救：把模型自己给出的出处列表补到正文末尾，
-    然后再重新过一遍引用校验 —— 补完仍不过的，照样拒掉，不放水。
-    """
-    import os
-    if enabled is None:
-        try:                                  # 先读项目根目录的 .env，再判断开关
-            from qa_chain import load_env_file
-            load_env_file()
-        except Exception:                     # noqa: BLE001
-            pass
-        v = (os.environ.get("FREE_LLM_ENABLED", "0") or "0").strip().lower()
-        enabled = v not in ("0", "false", "no", "off", "")
-    if not enabled:
-        return None
-    try:
-        from qa_chain import QAPipeline, build_llm
-        llm = build_llm(backend="free")
-        gen = QAPipeline(None, llm=llm, llm_verify=False, verbose=verbose)
-
-        def _fallback(question, evs):
-            res = gen.answer_from_evidences(question, evs)
-            ans = (res.answer or "").strip()
-            # 注意：不能因为 res.refused 就早退 —— 引用闸门恰恰是在
-            # answer_from_evidences 内部就因为"没角标"把它拒掉的，
-            # 我们要处理的正是这种被误伤的好答案（踩过一次这个坑）。
-            if not tag_missing or not ans or res.insufficient:
-                return res
-            if re.search(r"\[E\d+\]", ans):
-                return res
-            # 只留"确实和答案有字面重合"的那几条出处。免费小模型有时偷懒，
-            # 把它手上所有证据编号一股脑列进 citations，直接照搬会在正文后面
-            # 拖出 [E1][E2]…[E22] 一整串，既难看又不诚实。
-            by_eid = {e.eid: e for e in evs}
-            ang = grams(ans, 2)
-            picked = []
-            for c in (res.citations or []):
-                ev = by_eid.get(c)
-                if ev is None:
-                    continue
-                if len(ang & grams(ev.text or "", 2)) >= 3:
-                    picked.append(c)
-            if not picked:                        # 一条都对不上 → 退回重排分最高的几条
-                picked = [e.eid for e in
-                          sorted(evs, key=lambda e: -(float(getattr(e, "score", 0.0) or 0.0)))[:3]]
-            picked = picked[:5]
-            if not picked:
-                return res
-            res.citations = picked
-            res.answer = ans + " " + "".join(f"[{c}]" for c in picked)
-            v = _verify(res.answer, res.citations, evs)
-            res.verify = v
-            if v.get("passed"):
-                if res.refused and "未标注任何出处" in (res.refuse_reason or ""):
-                    res.refused, res.refuse_reason = False, ""   # 撤销误伤
-            else:
-                res.refused = True
-                res.refuse_reason = ("引用校验未通过：" +
-                                     "；".join(v.get("reasons") or []))
-            return res
-
-        return _fallback
-    except Exception as e:                        # noqa: BLE001
-        print(f"  [免费兜底通道不可用，按纯程序化运行] {e}", flush=True)
-        return None

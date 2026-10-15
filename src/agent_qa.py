@@ -225,6 +225,71 @@ class AgentQAPipeline:
 
     # ------------------------------------------------------------------ 主链路
     def ask(self, question: str):
+        """主导航：一切都由大模型驱动；只有模型自己坏了才交给程序化兜底。
+
+        这里包一层 try/except 是 2026-10-15 加的（用户要求「主动权在模型，
+        但模型出问题了要有程序化兜底」）：智能体链路的每一环都吃大模型
+        （规划 / 生成 / 自检 / 引用校验），限流重试烧完、网络抽风、密钥失效、
+        返回解析不了 —— 任一环抛异常，学生收到的就是一句报错。现在改成
+        走 `_rescue()`：检索照做，答案由程序化抽取式照抄原文给出，
+        并在结果里**标明这是兜底**，页面会显式提示（静默降级是本项目最忌讳的）。
+        """
+        try:
+            res = self._ask(question)
+        except Exception as e:                          # noqa: BLE001
+            if self.verbose:
+                print(f"[兜底] 大模型不可用，转程序化兜底："
+                      f"{type(e).__name__}: {str(e)[:120]}", flush=True)
+            return self._rescue(question, e)
+
+        # 链路没抛异常、但结果是「模型调用失败」式的拒答 —— 那也不算答了，
+        # 同样转兜底（这条是主路径：429 重试烧完、网络断、密钥失效都走这里）。
+        if getattr(res, "model_error", ""):
+            if self.verbose:
+                print(f"[兜底] 模型调用失败，转程序化兜底："
+                      f"{res.model_error[:120]}", flush=True)
+            return self._rescue(question, RuntimeError(res.model_error),
+                                evs=res.evidences)
+        return res
+
+    def _rescue(self, question: str, err: Exception, evs=None):
+        """大模型用不了时的保底作答：照抄手册原文，不留白。"""
+        t0 = time.time()
+        note = f"{type(err).__name__}: {str(err)[:200]}"
+        res = QAAnswer(question=question)
+        res.plan = {"fallback": "procedural", "fallback_error": note}
+        if evs is None:
+            try:
+                evs = self.retriever.search(question, top_k=self.top_k)
+            except Exception as e2:                     # noqa: BLE001
+                res.refused = True
+                res.refuse_reason = f"大模型不可用（{note}），检索也失败（{e2}）"
+                res.plan["fallback_ok"] = False
+                res.latency = time.time() - t0
+                return res
+
+        res.evidences = evs
+        res.hops = 1
+        res.n_evidence = len(evs)
+        try:
+            from procedural_qa import generate, _verify as _pverify
+            out = generate(question, evs, max_evidence=3)
+        except Exception as e3:                         # noqa: BLE001
+            out = None
+            res.plan["fallback_error"] += f" ｜ 兜底本身也失败：{e3}"
+        if out and not out["insufficient"]:
+            res.answer = out["answer"]
+            res.citations = out["citations"]
+            res.verify = _pverify(res.answer, res.citations, evs)
+            res.plan["fallback_ok"] = True
+        else:
+            res.refused = True
+            res.refuse_reason = "手册里没有找到与问题相关的条款"
+            res.plan["fallback_ok"] = True
+        res.latency = time.time() - t0
+        return res
+
+    def _ask(self, question: str):
         t0 = time.time()
         plan = self.plan_only(question)
         need_split = bool(plan.get("need_split"))

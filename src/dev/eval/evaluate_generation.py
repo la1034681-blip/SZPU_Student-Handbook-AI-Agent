@@ -44,14 +44,6 @@ def main():
     ap.add_argument("--agent", action="store_true",
                     help="走 Agent 路径（规划+多路检索），不加则走原 QAPipeline")
     ap.add_argument("--model", default=None)
-    ap.add_argument("--procedural", action="store_true",
-                    help="走纯程序化抽取式通道（不需要任何大模型）")
-    ap.add_argument("--fallback", action="store_true",
-                    help="程序化通道开启免费大模型兜底（需 .env 配好 FREE_LLM_API_KEY）")
-    ap.add_argument("--fb-mode", default=None, choices=["off", "weak", "cross", "all"],
-                    help="兜底触发口径：weak=只兜底结论不实在的（默认）/ cross=加跨章 / all=除拒答外全兜底")
-    ap.add_argument("--min-score", type=float, default=0.15,
-                    help="程序化通道的拒答阈值（top1 重排分，默认 0.15）")
     # 阶段 6：组件开关，用于消融（默认全开）
     ap.add_argument("--no-planner", action="store_true", help="关掉问题拆解")
     ap.add_argument("--no-reflect", action="store_true", help="关掉自检循环")
@@ -80,18 +72,7 @@ def main():
 
     r = HandbookRetriever(d, use_rerank=not a.no_rerank, verbose=False)
     llm = None
-    if a.procedural:
-        from procedural_qa import ProceduralPipeline, make_free_fallback
-        fb = None
-        if a.fallback:
-            fb = make_free_fallback(verbose=False)
-            if fb is None:
-                print("⚠ 兜底未启用（未配置 FREE_LLM_API_KEY 或 FREE_LLM_ENABLED=0）")
-        pipe = ProceduralPipeline(r, top_k=a.top_k, min_score=a.min_score,
-                                  fallback=fb, fb_mode=a.fb_mode, verbose=False)
-        print(f"通道=程序化抽取式  拒答阈值={a.min_score}  "
-              f"免费兜底={'开（' + (a.fb_mode or 'weak') + '）' if fb else '关'}")
-    elif a.agent:
+    if a.agent:
         llm = build_llm(model=a.model)
         from agent_qa import AgentQAPipeline
         pipe = AgentQAPipeline(r, llm=llm, top_k=a.top_k,
@@ -166,6 +147,8 @@ def main():
             "need_split": bool((getattr(res, "plan", {}) or {}).get("need_split")),
             "sub_questions": (getattr(res, "plan", {}) or {}).get("sub_questions"),
             "plan_mode": (getattr(res, "plan", {}) or {}).get("mode"),
+            # 大模型用不了时走了程序化兜底？（见 agent_qa._rescue）
+            "rescued": (getattr(res, "plan", {}) or {}).get("fallback") == "procedural",
             "fb_reason": (getattr(res, "plan", {}) or {}).get("fallback_reason"),
             "conclusion_kind": (getattr(res, "plan", {}) or {}).get("conclusion_kind"),
             "hops": getattr(res, "hops", 1),
@@ -213,8 +196,7 @@ def main():
                         len(graded)),
         "要点覆盖率": mean([r_["judge_coverage"] for r_ in answered]),
         "拆解触发率": rate(sum(1 for r_ in rows if r_["need_split"]), len(rows)),
-        "兜底触发率": rate(sum(1 for r_ in rows
-                            if r_.get("plan_mode") == "procedural→llm"), len(rows)),
+        "兜底触发率": rate(sum(1 for r_ in rows if r_.get("rescued")), len(rows)),
         "自检触发率": rate(sum(1 for r_ in rows if r_.get("reflect_rounds")), len(rows)),
         "前置拒答数": sum(1 for r_ in rows if r_.get("gate_refused")),
         "平均延迟": round(sum(r_["latency"] for r_ in rows) / len(rows), 2),
