@@ -14,14 +14,15 @@
 3. 追问改写          由 planner 顺带产出 standalone 问题（**零额外调用**），
                      让检索拿到完整语义 —— 见 `planner.py` 的 `standalone`
 
-存在哪（两层，互相兜底）
-------------------------
-- 主存放：`st.session_state` —— 浏览器标签页内，关掉就没了
-- 副本：  云库 `qa_memory` —— **临时**表，闲置超时由 `qa_mem_sweep` 清掉。
-  该表不授权给匿名角色（`REVOKE ALL ... FROM anon, authenticated`），
-  只能通过 `qa_mem_save/load/clear/sweep` 四个 SECURITY DEFINER 函数读写，
-  且函数必须带上会话自己的随机 id —— **别人拿不到你的会话内容**。
-  验证脚本：`src/dev/diag/probe_memory_table.py`（含「直接读表被拒」一项）。
+存在哪（只有一处）
+------------------
+`st.session_state` —— 浏览器标签页的内存里。**刷新页面、关掉标签页，它自己就没了**，
+这正是「只做临时记忆」的意思：不需要任何清理动作，也没有任何东西离开过浏览器。
+
+为什么不落云库（曾经落过，2026-10-15 按用户要求撤掉）
+  浏览器关标签页时服务器收不到通知，写进云库的那份会留下没有主的残留行，
+  只能靠「闲置 60 分钟自动清」去猜着收拾 —— 一套多余的近似。不写就没这问题：
+  关闭即清、刷新即清，天然成立。云库那组函数留在文件末尾，但**不再被调用**。
 
 为什么不把整段历史一直留着
 --------------------------
@@ -31,15 +32,12 @@
 
 接在哪（页面侧，见 app.py）
 ---------------------------
-    memory_id()     会话号 → 地址栏 ?m=，刷新后仍认得出是同一次会话
-    get_memory()    取记忆对象；本页没有就从云库读回（读不到就新建一个空的）
-    ask_and_render() 作答前 history_block()/previous_user_question() 一起交给
-                    `AgentQAPipeline.ask(history_block=…, prev_user=…)`；
-                    作答后 `_remember()` 写入这一轮、超预算则 summarize_older()、
-                    再 save_memory() 存一份到云库
-    「清空对话」      mem.reset() + clear_memory() 一起清
-    「系统自检」页   显示记忆状态，另有「清掉闲置记忆」按钮
-    main() 启动时    _sweep_idle() 清掉闲置会话（近似「用户已经关页面走了」）
+    get_memory()     取记忆对象；这一页还没有就新建一个空的（只放进 session_state）
+    ask_and_render() 作答前把 history_block() / previous_user_question() 交给
+                     `AgentQAPipeline.ask(history_block=…, prev_user=…)`；
+                     作答后 `_remember()` 写入这一轮，超预算则 summarize_older()
+    「清空对话」      session_state.messages 与 mem.reset() 一起清
+    「系统自检」页    显示记忆状态（记了几轮、摘要多少字）
 """
 from __future__ import annotations
 
@@ -239,14 +237,22 @@ def summarize_older(mem: SessionMemory, llm, keep: int = KEEP_MESSAGES) -> bool:
     return True
 
 
-# ------------------------------------------------------------------ 云库副本
+# --------------------------------------------------- 云库副本（**已停用，不再调用**）
+# 2026-10-15 用户要求：记忆只在页面上活着，**关闭 / 刷新就清空**，并去掉
+# 「闲置 60 分钟自动清」那套。既然压根不往服务器写，「关闭即清」就天然成立，
+# 也就不会再留下没有主的残留行，自然不需要定时清理。
+# 下面四个函数（save / load / clear / sweep）连同云库表 `qa_memory` 都**保留但
+# 不再调用** —— 万一以后要接回去，改 app.py 一处即可（`_remember()` 里加一行
+# save_memory、get_memory() 里改回 load_memory）。
+# 顺带一个好处：这么改之后，学生的会话内容一个字节都不出浏览器，
+# 「别人拿不到」不再依赖权限设计 —— 根本没存过。
 def _store():
     from cloudstore import get_store
     return get_store()
 
 
 def save_memory(mem: SessionMemory) -> bool:
-    """把记忆存进云库临时表。失败返回 False（不影响作答 —— 页面仍用内存那份）。
+    """（已停用）把记忆存进云库临时表。失败返回 False（不影响作答）。
 
     注意：`qa_mem_save` 返回 void、**没有响应体**，所以只能用 `rpc_ok`
     （看 HTTP 状态码），不能用 `rpc`（解析 JSON 会把成功判成失败）。
@@ -315,11 +321,11 @@ def _as_count(out):
 
 
 def sweep_memory(minutes: int = 60):
-    """清掉闲置超过 minutes 分钟的会话（视为用户已经关页面走了）。
+    """（已停用 —— 2026-10-15 用户要求去掉「闲置超时自动清」）清掉闲置会话。
 
-    为什么靠超时：浏览器关标签页时服务器收不到通知（HTTP 本来就是无连接的），
-    没有任何可靠的「用户退出了」事件。所以用「多久没人动过」来近似。
-    返回删掉的行数；云库不可用返回 None。
+    它当初存在的理由：浏览器关标签页时服务器收不到通知，写进云库的那份会留下
+    没有主的残留行，只能用「多久没人动过」去猜着清。现在不写云库了，这个近似
+    也就没必要了。函数留着备查，返回删掉的行数；云库不可用返回 None。
     """
     try:
         out = _store().rpc("qa_mem_sweep", {"p_minutes": int(minutes)})

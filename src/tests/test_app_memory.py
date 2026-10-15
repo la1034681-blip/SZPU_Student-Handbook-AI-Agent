@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
-"""无头验证：多轮记忆接进页面后，该出现的东西都出现了（2026-10-15 新增）。
+"""无头验证：多轮记忆的页面接线（2026-10-15 定稿版）。
 
-守住五件事
+现在的行为（用户 2026-10-15 最终确认的口径）
+--------------------------------------------
+· 同一页里连着问  → 记得住，追问接得上
+· 刷新页面 / 关掉标签页 → 记忆就没了（**不写服务器，所以天然如此**）
+· 点「清空对话」  → 立刻清掉
+· **没有**「闲置 60 分钟自动清」那套 —— 用户要求去掉；
+  也不再把记忆存到云库（存了就得靠超时去猜着清，那正是被去掉的东西）
+
+守住七件事
 ----------
-① 会话号进了地址栏 ?m=      —— 刷新/重新进来时靠它认出「上一次是哪个会话」
-② session_state 里有记忆对象 —— 页面记得住「这次会话聊过什么」
-③ 「清空对话」把记忆一起清掉 —— 按下去就是「忘掉这些」，不能只清气泡
-④ **刷新 / 重新进来＝上一次到此为止** —— 清掉旧会话、换新号；
-   要的是「只做临时记忆」，不做跨刷新的持久记忆（2026-10-15 用户更正）
-⑤ 「系统自检」页能看到记忆状态与手动清理入口
+① session_state 里有记忆对象，一进来是空的
+② 「清空对话」把记忆一起清掉（不是只清气泡）
+③ **一个字节都不出浏览器**：整页走一遍，save/load/clear_memory 一次都没被调
+④ 刷新（新建 AppTest 实例＝新的浏览会话）＝ 一张白纸
+⑤ 地址栏里不再有 `?m=`（会话号机制已随云库副本一起去掉）
+⑥ 「系统自检」页看得到记忆状态，且**没有**「清掉闲置记忆」按钮、不再提「闲置 N 分钟」
+⑦ 全程走完，仍然一个字节都没出浏览器
 
 不碰网络（CLOUD_LOG_ENABLED=0）、不调模型，所以很快、也没副作用。
 记忆的**内容**逻辑由 test_memory.py 单测；真实追问效果由 test_followup_e2e.py 验。
@@ -23,8 +32,8 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-# 必须在 import app 之前：关掉所有云库出口（记忆的云库副本也随之关掉）。
-# 地址栏 ?m= 与页面内的记忆对象都在本地，照样能测。
+# 必须在 import app 之前：关掉所有云库出口。记忆本来就不走云库，
+# 这里再把出口关掉，等于「就算它偷偷想写也写不成」。
 os.environ["ACCESS_CODE"] = "off"
 os.environ["CLOUD_LOG_ENABLED"] = "0"
 
@@ -32,6 +41,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "src" / "tests"))
 
+import memory as memmod                           # noqa: E402
 from streamlit.testing.v1 import AppTest          # noqa: E402
 from _askui import has_ask_entry                  # noqa: E402
 
@@ -43,17 +53,6 @@ def ck(name: str, cond: bool, extra: str = ""):
     if not cond:
         _fail += 1
     print(f"  {'✓' if cond else '✗'} {name}" + (f"  —— {extra}" if extra and not cond else ""))
-
-
-def qp(at, key: str) -> str:
-    """读地址栏参数。AppTest 的 query_params 值可能是列表，统一取第一个。"""
-    try:
-        raw = at.query_params.get(key)
-    except Exception:                                     # noqa: BLE001
-        return ""
-    if isinstance(raw, (list, tuple)):
-        raw = raw[0] if raw else ""
-    return (raw or "").strip()
 
 
 def state(at, key: str):
@@ -77,73 +76,74 @@ def cap_all(at) -> str:
 
 
 def main() -> int:
-    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=300)
-    at.session_state["authed"] = True
-    at.run()
-
-    print("① 一进页面就有会话号，并写进地址栏")
-    ck("页面没炸", not at.exception, str([e.value for e in at.exception])[:300])
-    ck("已进入问答页", has_ask_entry(at))
-    mid = qp(at, "m")
-    ck("地址栏出现 ?m=", bool(mid), f"实际 {mid!r}")
-    ck("会话号是 32 位十六进制",
-       len(mid) == 32 and all(c in "0123456789abcdef" for c in mid), mid)
-
-    print("\n② 页面里存着记忆对象")
-    mem = state(at, "mem")
-    ck("session_state 里有 mem", mem is not None)
-    ck("刚进来时记忆是空的",
-       mem is not None and getattr(mem, "turns", None) == [] and not getattr(mem, "summary", ""))
-
-    print("\n③ 「清空对话」把记忆一起清掉")
-    # 手动灌两轮进记忆 —— 只是为了验「清空」这个动作，不必真调模型
-    mem.add_user("旷课多少学时会被处分？")
-    mem.add_assistant("10-19 学时警告，50 学时以上开除学籍。")
-    mem.add_user("那迟到早退算不算旷课？")
-    mem.add_assistant("迟到早退按旷课计。")
-    ck("灌进去 4 条", len(mem.turns) == 4)
-    at.run()                                   # 重画：让页面用上这份记忆
-    ck("重画后记忆还在", len(state(at, "mem").turns) == 4)
-    hit = click(at, "clear_chat")
-    at.run()
-    ck("点到了「清空对话」", hit)
-    ck("对话消息清空", state(at, "messages") == [])
-    ck("记忆也清空（不是只清气泡）", state(at, "mem").turns == [],
-       f"实际还剩 {len(state(at, 'mem').turns)} 条")
-    ck("摘要也清空", state(at, "mem").summary == "")
-
-    print("\n④ 「刷新 / 重新进来」＝上一次到此为止（2026-10-15 用户更正）")
-    # 模拟「刷新」：一个全新的浏览会话（AppTest 新实例＝session_state 全新），
-    # 但地址栏的 ?m= 还是上一次那个号。
-    import memory as memmod
+    # 一整页走下来，云库那三个函数一次都不该被叫到
     calls = []
-    keep_clear = memmod.clear_memory
-    memmod.clear_memory = lambda mid: (calls.append(mid), True)[1]
+    keep = {n: getattr(memmod, n)
+            for n in ("save_memory", "load_memory", "clear_memory")}
+    for n in keep:
+        setattr(memmod, n, (lambda name: lambda *a, **k: calls.append(name))(n))
     try:
+        at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=300)
+        at.session_state["authed"] = True
+        at.run()
+
+        print("① 一进页面就有记忆对象，且是空的")
+        ck("页面没炸", not at.exception, str([e.value for e in at.exception])[:300])
+        ck("已进入问答页", has_ask_entry(at))
+        mem = state(at, "mem")
+        ck("session_state 里有 mem", mem is not None)
+        ck("刚进来时记忆是空的",
+           mem is not None and getattr(mem, "turns", None) == []
+           and not getattr(mem, "summary", ""))
+
+        print("\n② 「清空对话」把记忆一起清掉")
+        # 手动灌两轮进记忆 —— 只验「清空」这个动作，不必真调模型
+        mem.add_user("旷课多少学时会被处分？")
+        mem.add_assistant("10-19 学时警告，50 学时以上开除学籍。")
+        mem.add_user("那迟到早退算不算旷课？")
+        mem.add_assistant("迟到早退按旷课计。")
+        ck("灌进去 4 条", len(mem.turns) == 4)
+        at.run()                                   # 重画：让页面用上这份记忆
+        ck("重画后记忆还在", len(state(at, "mem").turns) == 4)
+        hit = click(at, "clear_chat")
+        at.run()
+        ck("点到了「清空对话」", hit)
+        ck("对话消息清空", state(at, "messages") == [])
+        ck("记忆也清空（不是只清气泡）", state(at, "mem").turns == [],
+           f"实际还剩 {len(state(at, 'mem').turns)} 条")
+        ck("摘要也清空", state(at, "mem").summary == "")
+
+        print("\n③ 一个字节都不出浏览器（云库那三个函数没被叫过）")
+        ck("save / load / clear 都没被调用", calls == [], f"实际被调：{calls}")
+
+        print("\n④ 刷新（新的浏览会话）＝一张白纸")
         at2 = AppTest.from_file(str(ROOT / "app.py"), default_timeout=300)
         at2.session_state["authed"] = True
-        at2.query_params["m"] = "a" * 32
         at2.run()
-    finally:
-        memmod.clear_memory = keep_clear
-    ck("刷新后没炸", not at2.exception, str([e.value for e in at2.exception])[:300])
-    ck("真的去清了上一次那段记忆", calls == ["a" * 32], f"实际 {calls}")
-    new_mid = qp(at2, "m")
-    ck("换成了全新的会话号", new_mid != "a" * 32 and len(new_mid) == 32,
-       f"实际 {new_mid!r}")
-    ck("新会话的记忆是空的", state(at2, "mem").turns == [], )
-    ck("页面上没把旧记忆读回来",
-       "刚才问过的还在" not in md_all(at2))
+        ck("刷新后没炸", not at2.exception, str([e.value for e in at2.exception])[:300])
+        ck("记忆是空的", state(at2, "mem").turns == [])
 
-    print("\n⑤ 「系统自检」页看得到记忆状态")
-    click(at, "open_diag")
-    at.run()
-    body, caps = md_all(at), cap_all(at)
-    ck("自检页没炸", not at.exception, str([e.value for e in at.exception])[:300])
-    ck("有「会话记忆」一节", "会话记忆" in body)
-    ck("说清了是临时记忆、不做持久保存", "临时" in body and "持久" in body)
-    ck("有手动清理按钮", any(b.key == "diag_mem_sweep" for b in at.button))
-    ck("提到闲置多久会清掉", "闲置" in caps and "分钟" in caps)
+        print("\n⑤ 地址栏里不再有 ?m=")
+        ck("没有 m 这个参数", not at2.query_params.get("m"),
+           f"实际 {at2.query_params.get('m')!r}")
+
+        print("\n⑥ 「系统自检」页看得到记忆状态，且没有超时清理那套")
+        click(at2, "open_diag")
+        at2.run()
+        body, caps = md_all(at2), cap_all(at2)
+        ck("自检页没炸", not at2.exception, str([e.value for e in at2.exception])[:300])
+        ck("有「会话记忆」一节", "会话记忆" in body)
+        ck("说清了刷新/关掉就没了", "刷新页面" in caps and "关掉标签页" in caps)
+        ck("说清了不往服务器写", "不往服务器写" in caps)
+        ck("没有「清掉闲置记忆」按钮",
+           not any(b.key == "diag_mem_sweep" for b in at2.button))
+        ck("不再提「闲置 N 分钟」", "闲置" not in caps, caps[:200])
+
+        print("\n⑦ 整个流程走完，仍然一个字节都没出浏览器")
+        ck("save / load / clear 依旧没被调用", calls == [], f"实际被调：{calls}")
+    finally:
+        for n, f in keep.items():
+            setattr(memmod, n, f)
 
     print("\n" + ("全部通过 ✓" if _fail == 0 else f"有 {_fail} 项失败 ✗"))
     return 0 if _fail == 0 else 1

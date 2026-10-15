@@ -49,9 +49,7 @@ from retrievers import HandbookRetriever                # noqa: E402
 from agent_qa import AgentQAPipeline                    # noqa: E402
 from oplog import get_logger                           # noqa: E402
 from cloudstore import get_store                       # noqa: E402
-from memory import (SessionMemory, clear_memory,       # noqa: E402
-                    new_mem_id, save_memory,
-                    summarize_older, sweep_memory)
+from memory import SessionMemory, new_mem_id, summarize_older   # noqa: E402
 
 DATA_DIR = str(ROOT / "data")
 
@@ -413,54 +411,26 @@ def client_id() -> str:
 
 
 # ==================================================================== 会话记忆
-# 只做**临时**记忆：让追问能接着上文答（「那它算不算迟到早退」这种），
-# 用户关掉页面就不再保留 —— 不做持久记忆。三层结构（最近几轮原文 / 更早的
-# 压成摘要 / 追问改写）见 src/memory.py 的模块说明。
-# 会话号放在地址栏 ?m=：刷新/重新进来时，靠它认出「上一次是哪个会话」，
-# 好把那一段记忆清掉 —— 刷新＝重新进入＝上一次到此为止，不做跨刷新持久记忆。
-_MEM_PARAM = "m"
-
-# 记忆表里闲置多久算「用户已经走了」。浏览器关标签页时服务器收不到通知
-# （HTTP 本来就是无连接的），只能靠「多久没人动过」来近似，见 memory.sweep_memory。
-MEM_IDLE_MIN = 60
-
-
-def memory_id() -> str:
-    """本次浏览会话的记忆编号（放在地址栏 ?m=，只在「清理时认得出来」用）。"""
-    mid = st.session_state.get("mem_id")
-    return mid if isinstance(mid, str) else ""
-
-
-def _query_one(key: str) -> str:
-    """读地址栏参数，统一取成字符串（同名参数可能是列表）。"""
-    raw = st.query_params.get(key)
-    if isinstance(raw, (list, tuple)):
-        raw = raw[0] if raw else ""
-    return (raw or "").strip()
-
-
-def _close_previous_session() -> None:
-    """把地址栏里带来的「上一次会话」的记忆清掉。
-
-    为什么认得住「上一次」：刷新或重新进来时，`st.session_state` 是全新的
-    （Streamlit 的浏览会话跟着页面连接走，一断就没了），但地址栏里的 `?m=`
-    还在 —— 那就是上一次会话的号。清掉它，就是「上一次到此为止」。
-    """
-    old = _query_one(_MEM_PARAM)
-    if old:
-        clear_memory(old)
+# 只做**临时**记忆：让追问能接着上文答（「那它算不算迟到早退」这种）。
+#
+# 记忆**只存在这一页的内存里**（`st.session_state`），不往服务器写任何东西 ——
+# 所以刷新页面、关掉标签页，它自己就没了，不需要谁去清理。
+#
+# 为什么刻意不落云库（2026-10-15 用户要求）：他要的是「在页面上问答期间记得住，
+# 一关掉或刷新就清空」。而浏览器关标签页时服务器**收不到任何通知**，写进云库
+# 反而会留下没有主的残留行，只能靠「闲置多久」去猜着清 —— 那是一套多余的近似。
+# 干脆不写：关闭即清、刷新即清，天然成立，也不用再猜。
+#
+# 三层结构（最近几轮原文 / 更早的压成摘要 / 追问改写）见 src/memory.py 的说明。
 
 
 def get_memory() -> SessionMemory:
-    """拿本次会话的记忆对象。
+    """拿本次会话的记忆对象；这一页还没有，就新建一个空的。
 
-    什么时候算「新的一次」：刚打开页面、或刚刷新页面 —— 这两种情况 Streamlit
-    都会重建浏览会话（`st.session_state` 清空），所以从这里一眼能认出来。
-
-    按用户要求（2026-10-15）：**刷新＝重新进入＝上一次的记忆清掉**，从零开始，
-    不做跨刷新的持久记忆。同一页面里接着提问**不会**走到这里（那时 mem 还在
-    session_state 里），所以「那要多久呢？」这种追问照样接得上 ——
-    记忆只活在「这一页、这一轮」里。
+    「一次会话」＝这一页从打开到刷新/关闭。刷新或关掉标签页，Streamlit 会把
+    `st.session_state` 整个丢掉，记忆随之消失 —— 这正是不做持久记忆的意思。
+    同一页里接着提问**不会**走到新建这一步（那时 mem 还在），所以
+    「那要多久呢？」这种追问照样接得上：记忆只活在「这一页、这一轮」里。
     """
     mem = st.session_state.get("mem")
     if isinstance(mem, SessionMemory):
@@ -475,27 +445,10 @@ def get_memory() -> SessionMemory:
             return mem
         except Exception:                                    # noqa: BLE001
             pass
-
-    # —— 本次浏览会话的第一次执行：上一次到此为止，换一个全新的开始 ——
-    _close_previous_session()
     cid = st.session_state.get("client_id") or client_id()
-    mid = new_mem_id()
-    st.query_params[_MEM_PARAM] = mid
-    st.session_state["mem_id"] = mid
-    mem = SessionMemory(mem_id=mid, client_id=cid)
+    mem = SessionMemory(mem_id=new_mem_id(), client_id=cid)
     st.session_state["mem"] = mem
     return mem
-
-
-@st.cache_data(ttl=1800, show_spinner=False)
-def _sweep_idle() -> int:
-    """清掉闲置超过 MEM_IDLE_MIN 分钟的会话记忆（近似「用户已退出」）。
-
-    挂 30 分钟缓存：不必每次刷新都去打云库；一次清理覆盖所有会话，
-    所以由谁触发都一样。返回删掉的行数，取不到返回 -1。
-    """
-    out = sweep_memory(MEM_IDLE_MIN)
-    return -1 if out is None else int(out)
 
 
 def admin_code() -> str:
@@ -926,8 +879,10 @@ def _loading_tip() -> str:
 
 
 def _remember(mem: SessionMemory, prompt: str, meta: dict) -> None:
-    """把这一轮写进会话记忆：超预算就先把最旧几轮压成摘要，再存一份到云库。
+    """把这一轮写进**这一页的**会话记忆：超预算就先把最旧几轮压成摘要。
 
+    只写内存（`st.session_state`），不落云库 —— 所以刷新/关掉页面它就跟着没了，
+    不需要任何清理动作（2026-10-15 用户要求）。
     记忆是**加分项** —— 任何一步失败都只影响「追问顺不顺」，不影响本次作答，
     所以这里一律吞掉异常、不打扰学生（也不静默改结果，只是记忆少一点）。
     """
@@ -942,7 +897,6 @@ def _remember(mem: SessionMemory, prompt: str, meta: dict) -> None:
         if mem.over_budget():
             # 只在超预算时才多花一次模型调用；模型不可用则一条不删（宁可超预算）
             summarize_older(mem, getattr(get_pipeline(), "llm", None))
-        save_memory(mem)
     except Exception:                                       # noqa: BLE001
         pass
 
@@ -1244,29 +1198,19 @@ def render_diag():
             st.caption(("已配置" if ok else "**未配置**") + " —— " + hint)
 
     st.write("")
-    st.markdown("**会话记忆**（临时记忆位，不做持久保存）")
+    st.markdown("**会话记忆**（只在这一页里活着）")
     mem = st.session_state.get("mem")
     if isinstance(mem, SessionMemory):
-        st.markdown(f"会话编号 `{mem.mem_id[:8]}…`（地址栏 `?m=`）")
         c1, c2, c3 = st.columns(3)
         c1.metric("已记轮次", len(mem.turns))
         c2.metric("摘要字数", len(mem.summary))
         c3.metric("历史块字数", len(mem.history_block()))
-        st.caption("记忆只活在「这一页、这一轮」里：**刷新页面 / 重新进来就清空**，"
-                   "同一页里接着追问才记得住；点「清空对话」立刻清掉。"
-                   "云库那份是临时副本，闲置 "
-                   f"{MEM_IDLE_MIN} 分钟后自动清掉（防止有人直接关掉标签页、"
-                   "留一份没主的残留）。它**不是**长期记忆，下次进来是一张白纸。")
+        st.caption("记忆只活在「这一页、这一轮」里：**刷新页面 / 关掉标签页就没了**，"
+                   "同一页里接着追问才记得住；点「清空对话」可以立刻清掉。"
+                   "它**不往服务器写、也不做持久保存** —— 没有定时清理这类动作，"
+                   "也不需要。")
     else:
         st.caption("本次会话还没有记忆（还没提问过）。")
-
-    if st.button("清掉闲置记忆", key="diag_mem_sweep"):
-        st.session_state["diag_mem_r"] = sweep_memory(MEM_IDLE_MIN)
-    r0 = st.session_state.get("diag_mem_r")
-    if r0 is not None:
-        st.caption(f"云库里闲置超过 {MEM_IDLE_MIN} 分钟的会话记忆已清理："
-                   + (f"删掉 {r0} 行" if isinstance(r0, int) and r0 >= 0
-                      else "云库没回结果（可能不通）"))
 
     st.write("")
     st.markdown("**连通性测试**（点一下才发请求，平时不打扰）")
@@ -1307,8 +1251,7 @@ def main():
     st.markdown(_CHIPS, unsafe_allow_html=True)
 
     client_id()                           # 匿名编号：写进地址栏，供使用统计认人
-    get_memory()                          # 会话记忆：刷新即清空，只活在这一次会话里
-    _sweep_idle()                         # 顺手清掉闲置会话的记忆（近似「用户已退出」）
+    get_memory()                          # 会话记忆：只活在这一次会话里，刷新/关闭即没
 
     # 看板视图：学生点开也只是一页要密钥的框，看不到任何数据
     raw_view = (st.session_state.get("view")
@@ -1419,8 +1362,7 @@ def main():
         if st.button("清空对话", key="clear_chat", use_container_width=True):
             st.session_state.messages = []
             mem = get_memory()
-            mem.reset()               # 内存里也清掉，否则追问还会用到已忘掉的上文
-            clear_memory(mem.mem_id)  # 云库那份同步删掉 —— 按下「清空」就是「忘掉这些」
+            mem.reset()               # 记忆也清掉，否则追问还会用到已经「忘掉」的上文
             st.session_state["mem"] = mem
             st.rerun()
     with b2:

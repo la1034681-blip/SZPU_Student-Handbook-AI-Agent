@@ -105,7 +105,8 @@ def main() -> int:
     ck("记忆长到 4 条（两轮各一问一答）",
        len(at.session_state.filtered_state["mem"].turns) == 4,
        f"实际 {len(at.session_state.filtered_state['mem'].turns)} 条")
-    ck("地址栏仍带着 ?m=", bool(at.query_params.get("m")))
+    ck("地址栏里不再有 ?m=（会话号机制已随云库副本一起去掉）",
+       not at.query_params.get("m"))
 
     print("\n" + ("全部通过 ✓" if _fail == 0 else f"有 {_fail} 项失败 ✗"))
     return 0 if _fail == 0 else 1
