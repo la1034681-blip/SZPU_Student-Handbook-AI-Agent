@@ -22,6 +22,8 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+from _browser import content_view   # 穿透线上 Cloud 的 iframe，见该模块 docstring
+
 URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8502/"
 CODE = "SZPU666"
 ADMIN = "9925"
@@ -37,29 +39,29 @@ def ck(name: str, cond: bool, extra: str = ""):
           flush=True)
 
 
-def at_gate(pg) -> bool:
-    """还在门口（有口令框）。"""
-    return pg.locator('input[type="password"]').count() > 0
+def at_gate(view) -> bool:
+    """还在门口（有口令框）。`view` = content_view()。"""
+    return view.locator('input[type="password"]').count() > 0
 
 
-def page_crashed(pg) -> str:
+def page_crashed(view) -> str:
     """页面上有没有那行红字报错。返回报错文本（没有则空串）。"""
-    if pg.locator(".stException").count() == 0:
+    if view.locator(".stException").count() == 0:
         return ""
-    return (pg.locator(".stException").first.inner_text() or "")[:200]
+    return (view.locator(".stException").first.inner_text() or "")[:200]
 
 
-def try_code(pg, value: str, label: str):
+def try_code(view, value: str, label: str):
     """在门口输一个值提交，返回 (是否崩, 崩的内容, 是否进去了)。"""
-    box = pg.locator('input[type="password"]').first
+    box = view.locator('input[type="password"]').first
     box.fill(value)
-    pg.get_by_role("button", name="进 入").click()
+    view.get_by_role("button", name="进 入").click()
     for _ in range(40):                 # 最多等 20 秒
-        pg.wait_for_timeout(500)
-        if not at_gate(pg):
+        view.wait_for_timeout(500)
+        if not at_gate(view):
             break
-    crash = page_crashed(pg)
-    inside = not at_gate(pg) and "问答" in pg.inner_text("body")
+    crash = page_crashed(view)
+    inside = not at_gate(view) and "问答" in view.inner_text("body")
     print(f"   [{label}] 崩={bool(crash)} 进去了={inside}"
           + (f"　崩的内容：{crash}" if crash else ""), flush=True)
     return bool(crash), crash, inside
@@ -78,22 +80,24 @@ def main():
         print("⓪ 正常情况：输对口令应该进得去", flush=True)
         pg0 = br.new_page(viewport={"width": 1080, "height": 900})
         pg0.goto(URL, wait_until="domcontentloaded")
+        v0 = content_view(pg0)          # 线上是 iframe，本地是主文档
         for _ in range(60):
-            if at_gate(pg0):
+            if at_gate(v0):
                 break
             pg0.wait_for_timeout(500)
-        ck("门口正常显示（有口令框）", at_gate(pg0))
-        pg0.locator('input[type="password"]').first.fill(CODE)
-        pg0.get_by_role("button", name="进 入").click()
+        ck("门口正常显示（有口令框）", at_gate(v0))
+        v0.locator('input[type="password"]').first.fill(CODE)
+        v0.get_by_role("button", name="进 入").click()
         inside0 = False
         for _ in range(60):
             pg0.wait_for_timeout(500)
-            if not at_gate(pg0):
+            if not at_gate(v0):
                 inside0 = True
                 break
-        ck("正确口令进得去", inside0 and "问答" in pg0.inner_text("body"),
+        v0 = content_view(pg0)          # 进门后重渲染，重新取
+        ck("正确口令进得去", inside0 and "问答" in v0.inner_text("body"),
            "正确口令都被挡住了 —— 门口功能本身坏了")
-        ck("进去后页面没崩", not page_crashed(pg0))
+        ck("进去后页面没崩", not page_crashed(v0))
         pg0.screenshot(path=str(OUT / "g0_inside.png"), full_page=True)
 
         # ---- 顺路查「使用统计」看板：进门后点进去，输密钥，看能不能出数 ----
@@ -104,37 +108,40 @@ def main():
         #      没了 → 会先回到门禁页。所以得：先过口令 → 再看是不是在问密钥 → 再输密钥。
         print("\n⓪b 使用统计页（要密钥 9925）", flush=True)
         pg0.goto(URL.rstrip("/") + "/?view=stats", wait_until="domcontentloaded")
+        v0 = content_view(pg0)                    # 这次导航后必须重新取
 
-        def box_by_ph(pg, ph: str):
-            loc = pg.locator(f'input[placeholder="{ph}"]')
+        def box_by_ph(view, ph: str):
+            loc = view.locator(f'input[placeholder="{ph}"]')
             return loc.first if loc.count() else None
 
         for _ in range(60):                       # 等首屏画出来
-            if pg0.locator('input[type="password"]').count():
+            if v0.locator('input[type="password"]').count():
                 break
             pg0.wait_for_timeout(500)
         got_ph = None
-        b = box_by_ph(pg0, "请输入访问口令")
+        b = box_by_ph(v0, "请输入访问口令")
         if b:                                    # 被拦在门禁 → 先过口令
             b.fill(CODE)
-            pg0.get_by_role("button", name="进 入").click()
+            v0.get_by_role("button", name="进 入").click()
             for _ in range(60):
-                pg0.wait_for_timeout(500)
-                if not box_by_ph(pg0, "请输入访问口令"):
+                v0.wait_for_timeout(500)
+                if not box_by_ph(v0, "请输入访问口令"):
                     break
-        b = box_by_ph(pg0, "请输入查看密钥")
+        v0 = content_view(pg0)
+        b = box_by_ph(v0, "请输入查看密钥")
         ck("统计页确实在问查看密钥（而不是还在门口）", b is not None,
            "没看到「请输入查看密钥」—— 可能还在门禁页")
         if b:
             b.fill(ADMIN)
-            pg0.get_by_role("button", name="进 入").click()
+            v0.get_by_role("button", name="进 入").click()
             for _ in range(60):
-                pg0.wait_for_timeout(500)
-                if not box_by_ph(pg0, "请输入查看密钥"):
+                v0.wait_for_timeout(500)
+                if not box_by_ph(v0, "请输入查看密钥"):
                     break
             got_ph = "查看密钥"
-        body0 = pg0.inner_text("body")
-        ck("统计页没崩", not page_crashed(pg0))
+        v0 = content_view(pg0)
+        body0 = v0.inner_text("body")
+        ck("统计页没崩", not page_crashed(v0))
         ck("密钥认了（没再问密钥、也没说密钥不对）",
            got_ph == "查看密钥" and "密钥不对" not in body0, body0[-200:])
         # 判据要具体：看板要么给出数字，要么明说取不到；不能拿「次」这种字瞎蒙
@@ -147,38 +154,39 @@ def main():
         # ---- 剩下的：在**另一页**上折腾坏输入，只看会不会崩 ----
         pg = br.new_page(viewport={"width": 1080, "height": 900})
         pg.goto(URL, wait_until="domcontentloaded")
+        v = content_view(pg)
         for _ in range(60):             # 等首屏画出来再动手（Streamlit 异步渲染）
-            if at_gate(pg):
+            if at_gate(v):
                 break
             pg.wait_for_timeout(500)
-        ck("新页也在门口", at_gate(pg))
+        ck("新页也在门口", at_gate(v))
 
         print("\n① 输汉字（用户切中文输入法时的真实场景）", flush=True)
-        crash, _, inside = try_code(pg, "口令", "汉字「口令」")
+        crash, _, inside = try_code(v, "口令", "汉字「口令」")
         ck("页面没崩", not crash, crash)
         ck("也没放进去", not inside)
         pg.screenshot(path=str(OUT / "g1_chinese.png"), full_page=True)
 
         print("\n② 汉字夹在正确口令里", flush=True)
-        crash, _, inside = try_code(pg, "SZPU666中", "混合")
+        crash, _, inside = try_code(v, "SZPU666中", "混合")
         ck("页面没崩", not crash, crash)
         ck("也没放进去", not inside)
 
         print("\n③ emoji", flush=True)
-        crash, _, inside = try_code(pg, "🎉🎉", "emoji")
+        crash, _, inside = try_code(v, "🎉🎉", "emoji")
         ck("页面没崩", not crash, crash)
         ck("也没放进去", not inside)
 
         print("\n④ 空口令", flush=True)
-        crash, _, inside = try_code(pg, "", "空")
+        crash, _, inside = try_code(v, "", "空")
         ck("页面没崩", not crash, crash)
         ck("也没放进去", not inside)
 
         print("\n⑤ 普通的错口令（英文数字）", flush=True)
-        crash, _, inside = try_code(pg, "wrong123", "错口令")
+        crash, _, inside = try_code(v, "wrong123", "错口令")
         ck("页面没崩", not crash, crash)
         ck("也没放进去", not inside)
-        ck("连错后页面照样只是提示，没红字", not page_crashed(pg))
+        ck("连错后页面照样只是提示，没红字", not page_crashed(v))
 
         br.close()
 

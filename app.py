@@ -359,8 +359,10 @@ def load_secrets():
         ADMIN_CODE = "9925"
         FREE_LLM_API_KEY = "…"
         EMBED_BACKEND = "api"
+        EMBED_API_BASE = "https://api.moark.com/v1"
+        EMBED_API_MODEL = "bge-m3"
+        EMBED_API_RERANK_MODEL = "bge-reranker-v2-m3"
         EMBED_API_KEY = "…"
-        EMBED_API_BASE = "https://api.siliconflow.cn/v1"
 
     注意：在 Streamlit Cloud 的 Settings → Environment variables 里设的变量
     不会自动进 st.secrets，密钥请统一写在 Secrets 里。

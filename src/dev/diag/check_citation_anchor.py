@@ -31,6 +31,8 @@ import time
 
 from playwright.sync_api import sync_playwright
 
+from _browser import content_view   # 穿透线上 Cloud 的 iframe，见该模块 docstring
+
 URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8501/"
 CODE = "SZPU666"
 PROBLEMS: list[str] = []
@@ -43,57 +45,58 @@ def ck(name: str, cond: bool, extra: str = ""):
     print(f"   {tag} {name}" + (f"　—— {extra}" if extra else ""), flush=True)
 
 
-def wait_first_screen(pg, limit=90) -> str:
-    """等首屏真画出来，返回 "gate" / "app" / "unknown"。
+def wait_first_screen(view, limit=90) -> str:
+    """等首屏真画出来，返回 "gate" / "app" / "unknown"。`view` = content_view()。
 
     Streamlit 是异步渲染，goto 一返回 DOM 还是空的 —— 这时数「有没有口令框」
     必然数到 0，会误判成「已经在里面」。所以必须等到两者之一出现再判断。
     """
     for _ in range(limit):
         try:
-            if "试试这样问" in pg.inner_text("body"):
+            if "试试这样问" in view.inner_text("body"):
                 return "app"
-            if pg.locator('input[type="password"]').count():
+            if view.locator('input[type="password"]').count():
                 return "gate"
         except Exception:                                   # noqa: BLE001
             pass
-        pg.wait_for_timeout(1000)
+        view.wait_for_timeout(1000)
     return "unknown"
 
 
-def pass_gate(pg) -> bool:
-    state = wait_first_screen(pg)
+def pass_gate(view) -> bool:
+    state = wait_first_screen(view)
     if state == "app":
         return True
     if state != "gate":
         return False
     for _ in range(3):
-        box = pg.locator('input[type="password"]').first
+        box = view.locator('input[type="password"]').first
         box.fill(CODE)
         if box.input_value() != CODE:
-            pg.wait_for_timeout(800)
+            view.wait_for_timeout(800)
             continue
-        pg.get_by_role("button", name="进 入").click()
+        view.get_by_role("button", name="进 入").click()
         for _ in range(120):
-            pg.wait_for_timeout(500)
-            if not pg.locator('input[type="password"]').count():
+            view.wait_for_timeout(500)
+            if not view.locator('input[type="password"]').count():
                 return True
     return False
 
 
-def ask(pg, q: str, want_rounds: int, timeout: int = 420):
-    """问一题，等第 want_rounds 轮答案出来。
+def ask(view, q: str, want_rounds: int, timeout: int = 420):
+    """问一题，等第 want_rounds 轮答案出来。`view` = content_view()。
 
     返回 (是否答完, 等待期间出现过的提示语集合)。
     提示语是在 spinner 里一闪而过的，所以边等边抓，别等完了再找。
     """
-    pg.locator('[data-testid="stTextInput"] input').first.fill(q)
-    pg.keyboard.press("Enter")
+    qbox = view.locator('[data-testid="stTextInput"] input').first
+    qbox.fill(q)
+    qbox.press("Enter")          # 不能用 page.keyboard：按不到 iframe 里的元素
     tips: set[str] = set()
     t0 = time.time()
     while time.time() - t0 < timeout:
         try:
-            body = pg.inner_text("body")
+            body = view.inner_text("body")
         except Exception:                                   # noqa: BLE001
             body = ""
         for line in body.splitlines():
@@ -101,7 +104,7 @@ def ask(pg, q: str, want_rounds: int, timeout: int = 420):
                 tips.add(line.strip())
         if body.count("耗时") >= want_rounds:
             return True, tips
-        pg.wait_for_timeout(300)
+        view.wait_for_timeout(300)
     return False, tips
 
 
@@ -110,17 +113,19 @@ def main() -> int:
         br = p.chromium.launch(channel="chrome", headless=True, args=["--disable-gpu"])
         pg = br.new_page(viewport={"width": 1280, "height": 900})
         pg.goto(URL, wait_until="domcontentloaded")
+        view = content_view(pg)          # 线上 Cloud 在里面那层 iframe，本地是主文档
 
         print("① 进门")
-        if not pass_gate(pg):
+        if not pass_gate(view):
             print("   ✗ 没进得去，后面无法验证")
             br.close()
             return 1
         ck("进得去", True)
+        view = content_view(pg)          # 进门后整页重渲染，重新取一次
 
         print("\n② 第一题（模型应还没加载）")
         t0 = time.time()
-        ok1, tips1 = ask(pg, "必修课考试不及格怎么办", 1)
+        ok1, tips1 = ask(view, "必修课考试不及格怎么办", 1)
         ck("答出来了", ok1, f"用了 {time.time()-t0:.1f} 秒")
         tip1 = "；".join(sorted(tips1)) or "（没抓到提示语）"
         print(f"      等待提示：{tip1}")
@@ -129,7 +134,7 @@ def main() -> int:
 
         print("\n③ 第二题（模型已在内存，不该再喊加载）")
         t0 = time.time()
-        ok2, tips2 = ask(pg, "那它算不算迟到早退", 2)
+        ok2, tips2 = ask(view, "那它算不算迟到早退", 2)
         ck("答出来了", ok2, f"用了 {time.time()-t0:.1f} 秒")
         tip2 = "；".join(sorted(tips2)) or "（没抓到提示语）"
         print(f"      等待提示：{tip2}")
@@ -137,8 +142,8 @@ def main() -> int:
            not any("加载模型" in t for t in tips2), tip2)
 
         print("\n④ 两轮问答的角标锚点")
-        ids = pg.eval_on_selector_all("[id^='ev-']", "els => els.map(e => e.id)")
-        hrefs = pg.eval_on_selector_all(
+        ids = view.eval_on_selector_all("[id^='ev-']", "els => els.map(e => e.id)")
+        hrefs = view.eval_on_selector_all(
             "a.cite-badge", "els => els.map(e => e.getAttribute('href'))")
         print(f"      锚点 id：{ids}")
         print(f"      角标 href：{hrefs}")
@@ -150,15 +155,15 @@ def main() -> int:
         ck("两轮问答的角标前缀不同", len(pres) >= 2, f"前缀只有 {pres}")
 
         print("\n⑤ 点第二轮的角标（bug① 的核心判据）")
-        last = pg.locator("a.cite-badge").last
+        last = view.locator("a.cite-badge").last
         target = last.get_attribute("href")
         last.click()
-        pg.wait_for_timeout(1000)
-        h = pg.evaluate("location.hash")
+        view.wait_for_timeout(1000)
+        h = view.evaluate("location.hash")
         ck("点下去地址栏落到该轮的锚点", h == target, f"想要 {target}，实际 {h}")
 
         # 目标卡片是不是真滚进了视口
-        rect = pg.evaluate(
+        rect = view.evaluate(
             """(id) => { const el = document.getElementById(id);
                  if (!el) return null;
                  const r = el.getBoundingClientRect();

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""在线编码与重排（硅基流动 SiliconFlow）—— 把「问题侧推理」搬出本机显卡。
+"""在线编码与重排（模力方舟 moark / 硅基流动 SiliconFlow 等在线接口）
+—— 把「问题侧推理」搬出本机显卡。
 
 为什么需要它
 ------------
@@ -18,10 +19,11 @@ Streamlit Community Cloud 免费档**没有 GPU、内存上限 2.7 GB**，这两
 
 两个硬约束（改动前务必先读）
 --------------------------
-1. **模型必须是 `BAAI/bge-m3`（1024 维）**。库里存的向量就是它算的，换任何别的
+1. **模型必须是 bge-m3（1024 维）**。库里存的向量就是它算的，换任何别的
    embedding 模型，维度或语义空间对不上，整个向量库作废。
-2. **免费档的模型 ID 不带 `Pro/` 前缀**：`BAAI/bge-m3` 免费；
-   `Pro/BAAI/bge-m3` 是收费版（¥0.07/百万 tokens）—— 写错 ID 就会开始扣钱。
+2. **模型 ID 怎么写，看服务商，别凭记忆**：硅基流动要带组织前缀 `BAAI/bge-m3`
+   （且必须是非 `Pro/` 那档，否则按 ¥0.07/百万 tokens 计费）；模力方舟**不带前缀**，
+   写 `bge-m3`。写错 ID 轻则 400/404，硅基那边误带 `Pro/` 还会开始扣钱。
 
 归一化：本机 encode 时用了 `normalize_embeddings=True`，所以接口返回后
 我们**自己补一次 L2 归一化**，保证与库里向量同一尺度（否则余弦退化成内积）。
@@ -37,6 +39,9 @@ import numpy as np
 sys.stdout.reconfigure(encoding="utf-8")
 
 DEFAULT_BASE = "https://api.siliconflow.cn/v1"
+# ⚠ 上面三个 DEFAULT_* 只在环境变量一个都没配时兜底。**当前线上/本地实际用的是
+#   模力方舟**（`EMBED_API_BASE=https://api.moark.com/v1`、模型名不带前缀），
+#   真实取值一律以 .env / Streamlit Secrets 为准，别照 DEFAULT 猜。
 DEFAULT_EMBED_MODEL = "BAAI/bge-m3"
 DEFAULT_RERANK_MODEL = "BAAI/bge-reranker-v2-m3"
 
@@ -49,7 +54,8 @@ def _friendly(status: int, body: str) -> str:
     """把 HTTP 错误翻译成能照着做的事，而不是甩一串 JSON 给用户。"""
     head = f"HTTP {status}"
     if status == 401:
-        return f"{head}：密钥无效或没填 —— 检查 EMBED_API_KEY（硅基流动控制台 → API 密钥）"
+        return (f"{head}：密钥无效或没填 —— 检查 EMBED_API_KEY"
+                "（到所用服务商的控制台 → API 密钥页重新复制一把）")
     if status == 402:
         return f"{head}：额度不足 —— 确认用的是免费的 `BAAI/...` 而不是 `Pro/BAAI/...`"
     if status == 429:
@@ -71,7 +77,7 @@ class _Client:
         self.retries = int(retries)
         if not self.key:
             raise ApiError(
-                "缺少 EMBED_API_KEY —— 在线编码需要硅基流动的密钥。\n"
+                "缺少 EMBED_API_KEY —— 在线编码需要服务商的密钥。\n"
                 "  本地：写在项目根 .env\n"
                 "  线上：写在 Streamlit Cloud → Settings → Secrets（TOML 格式）")
 
