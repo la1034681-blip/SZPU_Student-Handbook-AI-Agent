@@ -35,7 +35,10 @@ from pathlib import Path
 
 import requests
 
-_ROOT = Path(__file__).resolve().parent.parent
+# 项目根目录：从本文件往上找，第一个含 app.py 的目录就是（模块已按分类住进
+# src/infra/ 等子目录，不能再写死往上两级）。见 src/_paths.py 的目录约定。
+_ROOT = next((d for d in Path(__file__).resolve().parents if (d / "app.py").exists()),
+             Path(__file__).resolve().parents[2])
 _LOCAL_LOG = _ROOT / "logs" / "access.log"
 _SENTINEL = object()
 

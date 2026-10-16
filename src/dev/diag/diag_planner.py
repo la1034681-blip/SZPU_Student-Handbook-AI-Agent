@@ -13,7 +13,7 @@
 
 用法
 ----
-    python src/diag_planner.py
+    python src/dev/diag/diag_planner.py
 """
 import json
 import sys
@@ -22,6 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 sys.stdout.reconfigure(encoding="utf-8")
 
 from agent_qa import AgentQAPipeline          # noqa: E402

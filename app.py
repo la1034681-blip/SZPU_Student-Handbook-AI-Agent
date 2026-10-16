@@ -36,11 +36,12 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 # 先把内存里的模块与磁盘对齐，**再** import —— 于是「改完后台代码，刷新一下网页」
 # 就生效，不必去找那个启动服务的黑窗口。为什么必须写在这两行前面：Python 的
 # import 是幂等的，模块已加载就直接从内存取，不会重新读文件；只有先对齐，
-# 下面这句 `from qa_chain import ...` 才拿得到新对象。详见 src/hot_reload.py。
+# 下面这句 `from qa_chain import ...` 才拿得到新对象。详见 src/infra/hot_reload.py。
 import hot_reload                                       # noqa: E402
 _RELOADED = hot_reload.refresh()        # 本次真的换掉了哪几个模块（平时是空的）
 
@@ -421,7 +422,7 @@ def client_id() -> str:
 # 反而会留下没有主的残留行，只能靠「闲置多久」去猜着清 —— 那是一套多余的近似。
 # 干脆不写：关闭即清、刷新即清，天然成立，也不用再猜。
 #
-# 三层结构（最近几轮原文 / 更早的压成摘要 / 追问改写）见 src/memory.py 的说明。
+# 三层结构（最近几轮原文 / 更早的压成摘要 / 追问改写）见 src/infra/memory.py 的说明。
 
 
 def get_memory() -> SessionMemory:
@@ -653,7 +654,7 @@ def friendly_refuse(reason: str, question: str = ""):
 
     2026-10-16 补：给了 `question` 且问句里有口语词（体测/挂科/翘课…）时，
     额外告诉学生手册里的写法 —— 干巴巴一句「查不到」最让人束手无策，
-    而这类查不到**多半就是词没对上**（见 src/term_alias.py）。
+    而这类查不到**多半就是词没对上**（见 src/retrieval/term_alias.py）。
 
     ⚠ 2026-10-16 再补（当日线上事故）：**必须先把「技术故障」和「手册里没有」
     分开**。原来只认「模型调用失败 / 未接入」两个词，可是「大模型或检索接口
@@ -700,7 +701,7 @@ def get_pipeline():
      按需求把「可切换」这层壳去掉了：QA_MODE 开关、页面上的通道小字、
      程序化过程面板都已删除。但程序化实现本身**保留**，退居为模型失效时的
      **兜底安全网** —— 大模型炸或调用失败时，`AgentQAPipeline._rescue()` 会
-     让 `src/procedural_qa.py` 照抄手册原文作答，并在页面上明说「本次是兜底」。
+     让 `src/core/procedural_qa.py` 照抄手册原文作答，并在页面上明说「本次是兜底」。
      相关测试见 `src/tests/test_fallback.py`。）
 
     检索的「问题侧编码」会在本机模型与在线接口之间自动选择（见
@@ -1023,7 +1024,7 @@ def ask_and_render(prompt: str) -> bool:
     限流代码整体备份在 .trash_tmp/限流下线-20261015/，需要时拿回来接上即可。
 
     多轮记忆（2026-10-15 新增）：本次提问**之前**的对话会作为背景一起送给模型，
-    追问里的「它／这个」才接得上；做法与原理见 src/memory.py。
+    追问里的「它／这个」才接得上；做法与原理见 src/infra/memory.py。
     """
     sid = st.session_state.get("sid") or "anon"
     cid = st.session_state.get("client_id") or client_id()
@@ -1056,7 +1057,7 @@ def ask_and_render(prompt: str) -> bool:
 
     _remember(mem, prompt, meta)          # 本轮进记忆（失败不影响上面的作答）
 
-    # 留痕：后台异步写云库，失败也不影响用户（详见 src/oplog.py）
+    # 留痕：后台异步写云库，失败也不影响用户（详见 src/infra/oplog.py）
     # 两条：qa_log 存完整问答（只授 INSERT），qa_usage 只存「谁何时问了一次」
     # （公开读，供统计看板）。
     lg = get_logger()
@@ -1228,7 +1229,7 @@ def _missing_config() -> list:
     return [name for name, ok, _ in _config_rows() if not ok]
 
 
-# 关键接口探针（判据与说明都在 src/hot_reload.py，那边一处维护）。
+# 关键接口探针（判据与说明都在 src/infra/hot_reload.py，那边一处维护）。
 _STALE_PROBES = hot_reload.PROBES
 
 
@@ -1237,7 +1238,7 @@ def _stale_modules() -> list:
 
     平时这条不该有输出：页面每次加载都会先自动对齐一次模块（见文件开头
     `hot_reload.refresh()`）。它冒出来，说明自动对齐也没辙了 —— 页面会顺势
-    提示「重启一下」。判据见 src/hot_reload.py。
+    提示「重启一下」。判据见 src/infra/hot_reload.py。
     """
     return hot_reload.stale_modules()
 
@@ -1250,7 +1251,7 @@ def _render_stale_warning():
     st.error(
         "**后台代码已更新，但跑着的网页还是旧的**\n\n"
         + "\n".join(f"- {b}" for b in bad) + "\n\n"
-        "页面已经试过自动换新（见 src/hot_reload.py），还是没对上。"
+        "页面已经试过自动换新（见 src/infra/hot_reload.py），还是没对上。"
         "把启动网页时那个黑色窗口关掉，重新双击桌面的「启动网页问答.bat」。")
 
 
@@ -1333,7 +1334,7 @@ def render_diag():
         for b in _stale:
             st.caption("· " + b)
         st.caption("正常情况不会看到这一条：页面每次加载都会自动把旧模块换成新的"
-                   "（见 src/hot_reload.py），刷新一下网页就生效。"
+                   "（见 src/infra/hot_reload.py），刷新一下网页就生效。"
                    "若它反复出现，就把启动网页的那个黑色窗口关掉，"
                    "重新双击「启动网页问答.bat」。")
     else:

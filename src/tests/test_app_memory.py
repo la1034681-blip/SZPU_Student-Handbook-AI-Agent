@@ -39,6 +39,7 @@ os.environ["CLOUD_LOG_ENABLED"] = "0"
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 sys.path.insert(0, str(ROOT / "src" / "tests"))
 
 import memory as memmod                           # noqa: E402

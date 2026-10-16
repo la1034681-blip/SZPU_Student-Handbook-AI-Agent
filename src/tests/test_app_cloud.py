@@ -23,6 +23,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 ROOT = Path(__file__).resolve().parent.parent.parent
 APP = str(ROOT / "app.py")
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 # 必须在 import app 之前：load_env_file 只填「尚未存在」的变量
 os.environ["ACCESS_CODE"] = "SZPU666"

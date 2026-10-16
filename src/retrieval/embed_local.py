@@ -13,9 +13,9 @@
 
 用法
 ----
-  python src/embed_local.py data                  # 全量（1510 块）
-  python src/embed_local.py data --limit 20       # 只跑前 20 块，验证链路
-  python src/embed_local.py data --force          # 忽略缓存强制重算
+  python src/retrieval/embed_local.py data                  # 全量（1510 块）
+  python src/retrieval/embed_local.py data --limit 20       # 只跑前 20 块，验证链路
+  python src/retrieval/embed_local.py data --force          # 忽略缓存强制重算
 """
 import argparse
 import json

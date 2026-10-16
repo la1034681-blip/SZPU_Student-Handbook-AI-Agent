@@ -6,6 +6,7 @@ import sys
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
 

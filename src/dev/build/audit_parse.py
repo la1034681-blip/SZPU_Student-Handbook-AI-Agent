@@ -5,7 +5,7 @@
 只要该行（去空白后）是产出文本池的子串，就认为它被成功回收；
 否则列为"丢失行"。同时检查跨页续句、条款覆盖、表格收录。
 
-用法: python src/audit_parse.py 手册.pdf data
+用法: python src/dev/build/audit_parse.py 手册.pdf data
 """
 import json
 import re

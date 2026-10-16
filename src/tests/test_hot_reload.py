@@ -30,6 +30,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 import hot_reload                                    # noqa: E402
 
@@ -88,7 +89,11 @@ def main() -> int:
         ck("被引用的排在引用者前面（依赖顺序）",
            keep_order.index("qa_chain") < keep_order.index("agent_qa"))
         ck("清单里的文件都存在",
-           all((ROOT / "src" / f"{n}.py").exists() for n in keep_order))
+           # 用 hot_reload 自己的定位函数，别写死 src/<模块>.py ——
+           # 2026-10-17 模块按分类搬进了 core/retrieval/infra/cli 子目录。
+           all(hot_reload._file_of(n).exists() for n in keep_order))
+        ck("WHERE 登记了 ORDER 里的每个模块（新加模块别忘了登记目录）",
+           all(n in hot_reload.WHERE for n in keep_order))
     finally:
         hot_reload.ORDER = keep_order
         hot_reload._SEEN.clear()

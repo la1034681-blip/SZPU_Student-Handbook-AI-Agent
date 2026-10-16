@@ -11,9 +11,9 @@
 所以这里把它做成构建期的强制步骤，并在最后做一致性校验。
 
 用法:
-  python src/build_stage2.py data            # 全量
-  python src/build_stage2.py data --limit 20 # 小样验证链路
-  python src/build_stage2.py data --force    # 强制重算向量
+  python src/dev/build/build_stage2.py data            # 全量
+  python src/dev/build/build_stage2.py data --limit 20 # 小样验证链路
+  python src/dev/build/build_stage2.py data --force    # 强制重算向量
 """
 import argparse
 import json
@@ -23,6 +23,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 from store import ChunkStore  # noqa: E402
 
 

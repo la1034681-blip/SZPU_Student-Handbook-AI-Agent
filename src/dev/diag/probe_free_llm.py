@@ -15,6 +15,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 SRC = Path(__file__).resolve().parent.parent.parent
 ROOT = SRC.parent
 sys.path.insert(0, str(SRC))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 from qa_chain import load_env_file                      # noqa: E402
 load_env_file()
 

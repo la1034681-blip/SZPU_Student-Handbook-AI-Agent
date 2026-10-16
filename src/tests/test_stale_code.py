@@ -11,7 +11,7 @@
 于是出现 app.py 是新的、agent_qa 还是旧的 —— 参数对不上就炸。
 这不是功能坏了。
 
-现在的两级处理（配合 src/hot_reload.py）
+现在的两级处理（配合 src/infra/hot_reload.py）
   第一级：页面每次加载先自动把旧模块换成新的 —— 刷一下网页就好了，不麻烦人
   第二级：自动也换不掉（比如真不兼容），才在页面顶部红字说清「重启一下」
 
@@ -42,6 +42,7 @@ os.environ["CLOUD_LOG_ENABLED"] = "0"
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 sys.path.insert(0, str(ROOT / "src" / "tests"))
 
 import importlib                                  # noqa: E402

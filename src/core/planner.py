@@ -29,7 +29,7 @@
     # -> {"need_split": True, "sub_questions": [...], "levels": "未指明",
     #     "standalone": "…"}
     # 给了 history_block 时，standalone 是「把追问补全成可独立理解的问题」，
-    # 由检索与生成共用 —— 见 src/memory.py 的说明。
+    # 由检索与生成共用 —— 见 src/infra/memory.py 的说明。
 """
 from __future__ import annotations
 

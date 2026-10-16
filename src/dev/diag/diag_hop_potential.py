@@ -26,6 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 sys.stdout.reconfigure(encoding="utf-8")
 
 from retrievers import HandbookRetriever, RE_FILE_REF  # noqa: E402

@@ -9,7 +9,7 @@ cross-encoder 不需要 pooling / sentence_bert_config，故白名单只保留
 config + tokenizer + 权重。约 2.19 GB。
 
 用法：
-    python src/fetch_reranker.py [目标目录，默认 models/bge-reranker-v2-m3]
+    python src/dev/build/fetch_reranker.py [目标目录，默认 models/bge-reranker-v2-m3]
 """
 import json
 import os

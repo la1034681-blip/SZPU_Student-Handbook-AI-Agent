@@ -9,9 +9,9 @@
 
 用法
 ----
-    python src/diag_reflect.py                 # 跑默认代表题集
-    python src/diag_reflect.py --qids Q36,Q24  # 指定题
-    python src/diag_reflect.py --all           # 跑全部非拒答题
+    python src/dev/diag/diag_reflect.py                 # 跑默认代表题集
+    python src/dev/diag/diag_reflect.py --qids Q36,Q24  # 指定题
+    python src/dev/diag/diag_reflect.py --all           # 跑全部非拒答题
 """
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 from agent_qa import AgentQAPipeline      # noqa: E402
 from qa_chain import build_llm            # noqa: E402

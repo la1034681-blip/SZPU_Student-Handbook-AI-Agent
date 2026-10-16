@@ -7,7 +7,7 @@
 - 实时打印进度，写入 models/_download.log 便于外部观察。
 
 用法：
-    python src/fetch_bge_m3.py [目标目录，默认 models/bge-m3]
+    python src/dev/build/fetch_bge_m3.py [目标目录，默认 models/bge-m3]
 """
 import json
 import os

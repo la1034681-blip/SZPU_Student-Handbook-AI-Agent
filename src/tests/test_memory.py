@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""离线单测：会话记忆模块 src/memory.py（2026-10-15 新增多轮记忆）。
+"""离线单测：会话记忆模块 src/infra/memory.py（2026-10-15 新增多轮记忆）。
 
 测什么
 ------
@@ -31,6 +31,7 @@ os.environ["CLOUD_LOG_ENABLED"] = "0"
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 from memory import (MAX_HISTORY_CHARS, MAX_TURNS_STORED,  # noqa: E402
                     MSG_TRUNC, SUMMARY_CHARS, SessionMemory, _as_count,

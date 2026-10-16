@@ -2,7 +2,7 @@
 """Intern-S1-mini GGUF 下载器（多源 + 断点续传 + 自动重试 + 进度日志）
 
 用法：
-    python src/download_model.py <目标目录> [档位]
+    python src/dev/build/download_model.py <目标目录> [档位]
 档位：q8（默认，官方 Q8_0，走国内 ModelScope 最快）/ q4 / q5（社区 imatrix，走 HF 镜像）
 """
 import os

@@ -31,6 +31,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 from qa_chain import backfill_citations             # noqa: E402
 from verify_citations import parse_citations, verify  # noqa: E402

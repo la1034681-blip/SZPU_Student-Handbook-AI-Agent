@@ -13,6 +13,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 from store import ChunkStore   # noqa: E402
 
 QUERIES = [

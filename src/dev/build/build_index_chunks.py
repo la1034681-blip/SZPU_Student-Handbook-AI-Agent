@@ -11,7 +11,7 @@
  4. 生成引用标签 cite —— 供答案引用与前端展示，形如
     《深圳职业技术大学学生考勤管理规定》第一章 第一条
 
-用法: python src/build_index_chunks.py data
+用法: python src/dev/build/build_index_chunks.py data
 输出: data/index_chunks.jsonl, data/clause_index.json, data/index_meta.json
 """
 import hashlib

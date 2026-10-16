@@ -5,7 +5,7 @@
 和内容 —— 比如模型出问题了有程序化兜底」。于是：
   · 「程序化作答通道」这层壳（QA_MODE 开关、ProceduralPipeline、可切换的
     过程面板）全部删除；
-  · `src/procedural_qa.py` 保留，但身份变成**兜底生成器**，两处会被调用：
+  · `src/core/procedural_qa.py` 保留，但身份变成**兜底生成器**，两处会被调用：
       ① `AgentQAPipeline.ask()` 抛异常时 → `_rescue()` 照抄原文作答；
       ② 模型两次坚持拒答时 → 同样改照抄（零幻觉保底）。
 
@@ -27,6 +27,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 os.environ["ACCESS_CODE"] = "off"

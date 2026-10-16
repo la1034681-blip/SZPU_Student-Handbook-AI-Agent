@@ -112,7 +112,7 @@ class AgentQAPipeline:
         self.enable_reflect = enable_reflect
         self.max_reflect_rounds = max_reflect_rounds
         # 组件四 · 拒答前置：证据最高分低于 gate_min_top1 就直接判 R1，省两次调用。
-        # 阈值依据见 src/diag_gate.py：44 题里拒答题最高 0.1104、正常题最低 0.1124，
+        # 阈值依据见 src/dev/diag/diag_gate.py：44 题里拒答题最高 0.1104、正常题最低 0.1124，
         # 两档空档仅 0.002 —— 取"中值"必然过拟合，任何一道正常题抖动就会被误拒。
         # 所以这里取远低于正常题最低分的 0.03（余量 0.08），只为拦"最不沾边"那一档，
         # 宁可漏拦、绝不误拦（误拒率 0% 是红线）。
@@ -244,7 +244,7 @@ class AgentQAPipeline:
         """主导航：一切都由大模型驱动；只有模型自己坏了才交给程序化兜底。
 
         `history_block`（可选）：本次会话之前的对话摘要 + 最近几轮原文，
-        由 `src/memory.py` 拼好。它有两个用处 ——
+        由 `src/infra/memory.py` 拼好。它有两个用处 ——
           ① 规划器据此产出 standalone（把「它/这个」补成完整问题），检索拿
              完整语义去搜，追问题才搜得到东西；
           ② 生成时作为背景喂进提示词，让回答接得上上文（但它**不是证据**，
@@ -337,7 +337,7 @@ class AgentQAPipeline:
         # 字面一个字都不重合 → BM25 零命中、向量也拉不起来，最高分只有 0.05，
         # 最后被引用校验判「证据只是擦边」整题拒答。这里多走几路「换过词的
         # 同义问句」（追加/前缀/替换三种写法），合并时按条款取最高分，
-        # 所以只会多找到东西、不会弄丢原来的。命中的词见 src/term_alias.py。
+        # 所以只会多找到东西、不会弄丢原来的。命中的词见 src/retrieval/term_alias.py。
         # 没命中任何口语词时 term_alias.variants 返回空，等于完全没有开销。
         _alias_used = []
         try:

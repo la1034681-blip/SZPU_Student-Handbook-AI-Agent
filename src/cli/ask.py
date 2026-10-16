@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """阶段 4 · 命令行问答入口
 
-    python src/ask.py "考核不及格可以补考吗"          # 正常问答
-    python src/ask.py --dry-run "……"                  # 不调 LLM，只看检索到的证据与拼好的 prompt
-    python src/ask.py -i                              # 交互模式
-    python src/ask.py --show-prompt "……"              # 显示送进模型的完整 prompt
+    python src/cli/ask.py "考核不及格可以补考吗"          # 正常问答
+    python src/cli/ask.py --dry-run "……"                  # 不调 LLM，只看检索到的证据与拼好的 prompt
+    python src/cli/ask.py -i                              # 交互模式
+    python src/cli/ask.py --show-prompt "……"              # 显示送进模型的完整 prompt
 
 密钥：在项目根建 .env（照 .env.example 填 DEEPSEEK_API_KEY），或设同名环境变量。
 """
@@ -14,7 +14,8 @@ import sys
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # src/
+import _paths  # noqa: E402,F401
 
 from retrievers import HandbookRetriever          # noqa: E402
 from qa_chain import QAPipeline, build_llm, load_env_file   # noqa: E402
@@ -87,7 +88,7 @@ def main():
 
     q = " ".join(a.question).strip()
     if not q:
-        ap.error("请给出问题，例如：python src/ask.py \"考核不及格可以补考吗\"")
+        ap.error("请给出问题，例如：python src/cli/ask.py \"考核不及格可以补考吗\"")
     one(a, pipe, q)
 
 

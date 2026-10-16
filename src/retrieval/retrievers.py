@@ -56,7 +56,10 @@ SIBLING_PER_FILE = 8           # 每份文件最多补多少条相邻条款
 SIBLING_MAX_DIST = 6           # 相邻判定：与命中条款的条号差 <= 此值
 SIBLING_MAX_EXTRA = 16         # 兄弟扩展总共最多补多少条
 
-ROOT = Path(__file__).resolve().parent.parent
+# 项目根目录：从本文件往上找，第一个含 app.py 的目录就是（模块已按分类住进
+# src/retrieval/ 等子目录，不能再写死往上两级）。见 src/_paths.py 的目录约定。
+ROOT = next((d for d in Path(__file__).resolve().parents if (d / "app.py").exists()),
+            Path(__file__).resolve().parents[2])
 LOCAL_EMBED = ROOT / "models" / "bge-m3"
 LOCAL_RERANK = ROOT / "models" / "bge-reranker-v2-m3"
 

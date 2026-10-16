@@ -38,7 +38,10 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 from verify_citations import parse_citations, verify  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+# 项目根目录：从本文件往上找，第一个含 app.py 的目录就是。不写死往上两级，
+# 是因为模块已按分类住进 src/core/、src/retrieval/ 等子目录（见 src/_paths.py）。
+ROOT = next((d for d in Path(__file__).resolve().parents if (d / "app.py").exists()),
+            Path(__file__).resolve().parents[2])
 DEFAULT_BASE_URL = "https://api.deepseek.com/v1"
 DEFAULT_MODEL = "deepseek-chat"
 

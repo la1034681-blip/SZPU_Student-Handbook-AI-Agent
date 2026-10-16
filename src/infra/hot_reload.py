@@ -47,9 +47,10 @@ import time
 from pathlib import Path
 
 # 本项目会被热重载的模块，**顺序＝依赖顺序**：被引用的排前面。
-# 只列 src/ 下的平级模块；子目录里的（dev/、tests/）不参与。
+# 只列运行时模块；dev/、tests/ 里的不参与。
 ORDER = (
     "bm25",
+    "term_alias",
     "store",
     "verify_citations",
     "embed_local",
@@ -64,6 +65,29 @@ ORDER = (
     "memory",
     "agent_qa",
 )
+
+# 每个模块住在哪个分类子目录下（2026-10-17 按职责重组目录后新增）。
+# 模块名本身不变（代码里仍是 `from retrievers import ...`），只是文件位置变了，
+# 所以按名字找文件这一步要来这里查一次。见 src/_paths.py 的目录约定。
+WHERE = {
+    "bm25": "retrieval",
+    "term_alias": "retrieval",
+    "embed_local": "retrieval",
+    "embed_api": "retrieval",
+    "retrievers": "retrieval",
+    "qa_chain": "core",
+    "planner": "core",
+    "reflect": "core",
+    "procedural_qa": "core",
+    "verify_citations": "core",
+    "agent_qa": "core",
+    "hot_reload": "infra",
+    "oplog": "infra",
+    "cloudstore": "infra",
+    "store": "infra",
+    "memory": "infra",
+    "ask": "cli",
+}
 
 # 关键接口探针：（模块名，类.函数路径，该函数必须认得的参数名）。
 # 每改一次会牵动别处的接口，就往这里加一条 —— 这是「新旧混用」最可靠的照妖镜。
@@ -84,11 +108,13 @@ HISTORY: list = []      # 本进程里历次自动重载的记录，供「系统
 
 
 def src_dir() -> Path:
-    return Path(__file__).resolve().parent
+    """src/ 目录（本文件住在 src/infra/ 下，往上退一级）。"""
+    return Path(__file__).resolve().parent.parent
 
 
 def _file_of(name: str) -> Path:
-    return src_dir() / f"{name}.py"
+    """模块名 → 源文件。位置查 WHERE，查不到就按老规矩当平级文件找。"""
+    return src_dir() / WHERE.get(name, "") / f"{name}.py"
 
 
 def _probe(name: str, dotted: str, param):

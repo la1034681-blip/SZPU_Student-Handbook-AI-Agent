@@ -34,6 +34,11 @@ from __future__ import annotations
 import json
 import re
 import sys
+from pathlib import Path
+
+# 路径自举：src 与 core/retrieval/infra/cli 挂上搜索路径（见 src/_paths.py）
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))   # src/
+import _paths  # noqa: E402,F401
 
 sys.stdout.reconfigure(encoding="utf-8")
 

@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[3]
 os.environ["EMBED_BACKEND"] = os.environ.get("SAMPLE_EMBED_BACKEND", "api")
 
 sys.path.insert(0, str(ROOT / "src"))
+import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 sys.stdout.reconfigure(encoding="utf-8")
 
 from qa_chain import build_llm, load_env_file          # noqa: E402
