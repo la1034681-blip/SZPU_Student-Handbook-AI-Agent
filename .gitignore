@@ -1,5 +1,7 @@
 # 密钥与本地产物
 .env
+.env.bak.*
+# 换钥匙脚本（src/dev/diag/set_sf_key.py）自动生成的备份，同样是密钥，不进仓库
 __pycache__/
 *.pyc
 .pytest_cache/
