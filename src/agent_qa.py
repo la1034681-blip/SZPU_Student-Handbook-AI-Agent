@@ -290,6 +290,10 @@ class AgentQAPipeline:
         res.evidences = evs
         res.hops = 1
         res.n_evidence = len(evs)
+        # 兜底这一路可能也是降级检索（向量接口不可用 → 只用关键词），留痕。
+        _deg = list(getattr(self.retriever, "degraded", []) or [])
+        if _deg:
+            res.plan["degraded_retrieval"] = _deg
         try:
             from procedural_qa import generate, _verify as _pverify
             out = generate(question, evs, max_evidence=3)
@@ -303,7 +307,12 @@ class AgentQAPipeline:
             res.plan["fallback_ok"] = True
         else:
             res.refused = True
-            res.refuse_reason = "手册里没有找到与问题相关的条款"
+            # ⚠ 这里**不能**照抄「手册里没有」——本次根本没走成智能体链路
+            # （大模型或检索挂了一环），而程序化兜底又只会照抄原文、不会改写
+            # 措辞，所以「它没找到」≠「手册里没有」。说成前者会让学生以为
+            # 手册里就是没规定，其实过几分钟再问就能答（2026-10-16 线上
+            # 编码接口额度用完，整站每题都栽在这一步，页面却谎称「手册里没有」）。
+            res.refuse_reason = f"大模型不可用（{note}），程序化兜底也没找到可用条款"
             res.plan["fallback_ok"] = True
         res.latency = time.time() - t0
         return res
@@ -345,6 +354,15 @@ class AgentQAPipeline:
             plan = dict(plan)
             plan["alias_queries"] = _alias_used
         evs = self._merge(queries)
+
+        # 检索降级留痕（2026-10-16）：向量编码 / 重排走的是外部接口，接口一旦
+        # 不可用，检索会**自动降级**成只用关键词匹配（见 retrievers._mark_degraded），
+        # 而不是把整道题判死。这里把降级原因带出来，页面上要明说 ——
+        # 隐性的质量下降比明确的失败更坏：学生会以为「手册里就那么写的」。
+        _deg = list(getattr(self.retriever, "degraded", []) or [])
+        if _deg:
+            plan = dict(plan)
+            plan["degraded_retrieval"] = _deg
 
         # ---------- 拒答前置（组件四） ----------
         # 生成之前先看一眼：连最高分的证据都很不沾边 → 直接判 R1 拒答，

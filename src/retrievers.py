@@ -151,6 +151,12 @@ class HandbookRetriever:
         self._dtype = dtype          # None = 自动（CUDA 用 fp16，CPU 用 fp32）
         self.backend = self._pick_backend(backend)
         self._ready = False
+        # 降级记录（2026-10-16）：向量编码 / 重排这两路都依赖外部接口，
+        # 接口一旦不可用（额度用完、限流、断网），原来会**直接抛异常**，
+        # 于是一道明明有答案的题也会被整条链路判成「答不出来」。现在改为
+        # **记一笔、继续用关键词路（BM25）检索** —— 质量略降，但照样有货。
+        # 每条一句话的人话说明，页面上要明说，不许静默降级（见 app.py）。
+        self.degraded = []
 
     # -------------------------------------------------------------- 后端选择
     @staticmethod
@@ -174,6 +180,21 @@ class HandbookRetriever:
         if v in ("local", "api"):
             return v
         return "local" if (LOCAL_EMBED / "config.json").exists() else "api"
+
+    # -------------------------------------------------------------- 降级
+    def _mark_degraded(self, kind: str, err: Exception) -> str:
+        """记下「哪一路用不了」，但不中断检索。
+
+        检索本来是「向量 + 关键词」双路，缺了一路还有一路。所以某一路报错时
+        正确的反应是**降级继续**，而不是把整道题判死 —— 2026-10-16 踩过：
+        线上在线编码的额度用完（HTTP 402），向量路每次提问都抛异常，导致
+        **每一道题都在检索这一步失败**，学生看到的却是「本手册中没有对应内容」。
+        """
+        note = f"{kind}不可用（{type(err).__name__}: {str(err)[:160]}）"
+        if note not in self.degraded:
+            self.degraded.append(note)
+            self._log(f"[降级] {note} —— 本次改用剩下的路继续检索")
+        return note
 
     # -------------------------------------------------------------- 加载
     def _log(self, msg):
@@ -218,49 +239,62 @@ class HandbookRetriever:
         # ---------------- 在线后端：一行 torch 都不 import ----------------
         # 部署到 Streamlit Cloud 走的就是这条：那边没显卡、内存上限 2.7 GB，
         # 本机这套模型（共 4.4 GB）根本放不下。
+        # ⚠ 构造本身也可能失败（密钥没配）→ 同样只降级、不抛，见 _mark_degraded。
         if self.backend == "api":
-            from embed_api import ApiEmbedder, ApiReranker
-            t0 = time.time()
-            self.embedder = ApiEmbedder()
-            self.reranker = ApiReranker() if self.use_rerank else None
-            self._dev = "api"
-            self._dtype_eff = None
-            self._log(f"在线编码就绪 {time.time()-t0:.1f}s [{self.embedder.model}]")
+            self.embedder = None
+            self.reranker = None
+            try:
+                from embed_api import ApiEmbedder, ApiReranker
+                t0 = time.time()
+                self.embedder = ApiEmbedder()
+                self.reranker = ApiReranker() if self.use_rerank else None
+                self._dev = "api"
+                self._dtype_eff = None
+                self._log(f"在线编码就绪 {time.time()-t0:.1f}s "
+                          f"[{self.embedder.model}]")
+            except Exception as e:                          # noqa: BLE001
+                self._dev, self._dtype_eff = "api", None
+                self._mark_degraded("在线编码", e)
             self._models_ready = True
             return
 
         # ---------------- 本机后端（原逻辑，未改动） ----------------
-        import torch
-        dev = self._device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self._dev = dev
-        # 精度：CUDA 上默认 **fp16**。
-        # 本机 8GB 显存要同时驻留 bge-m3 + bge-reranker-v2-m3（各 ~568M），
-        # fp32 下实测已逼近上限（7.7/8.1 GB），batch 调大反而更慢；
-        # 半精度让显存减半、矩阵算力翻倍。重排只需相对次序，fp16 对 top-k
-        # 排序影响极小（见 diag_precision 对比：召回集合一致）。
-        dtype = self._dtype
-        if dtype is None:
-            dtype = torch.float16 if str(dev).startswith("cuda") else torch.float32
-        self._dtype_eff = dtype
-        mkw = {"torch_dtype": dtype}
-
-        from sentence_transformers import SentenceTransformer
-        src = str(LOCAL_EMBED) if (LOCAL_EMBED / "config.json").exists() else "BAAI/bge-m3"
-        t0 = time.time()
-        self.embedder = SentenceTransformer(src, device=dev, model_kwargs=mkw)
+        self.embedder, self.reranker = None, None
         try:
-            self.embedder.max_seq_length = 8192
-        except Exception:
-            pass
-        self._log(f"bge-m3 就绪 {time.time()-t0:.1f}s [{dev}/{dtype}]")
+            import torch
+            dev = self._device or ("cuda" if torch.cuda.is_available() else "cpu")
+            self._dev = dev
+            # 精度：CUDA 上默认 **fp16**。
+            # 本机 8GB 显存要同时驻留 bge-m3 + bge-reranker-v2-m3（各 ~568M），
+            # fp32 下实测已逼近上限（7.7/8.1 GB），batch 调大反而更慢；
+            # 半精度让显存减半、矩阵算力翻倍。重排只需相对次序，fp16 对 top-k
+            # 排序影响极小（见 diag_precision 对比：召回集合一致）。
+            dtype = self._dtype
+            if dtype is None:
+                dtype = torch.float16 if str(dev).startswith("cuda") else torch.float32
+            self._dtype_eff = dtype
+            mkw = {"torch_dtype": dtype}
 
-        self.reranker = None
-        if self.use_rerank and (LOCAL_RERANK / "config.json").exists():
-            from sentence_transformers import CrossEncoder
+            from sentence_transformers import SentenceTransformer
+            src = (str(LOCAL_EMBED) if (LOCAL_EMBED / "config.json").exists()
+                   else "BAAI/bge-m3")
             t0 = time.time()
-            self.reranker = CrossEncoder(str(LOCAL_RERANK), device=dev,
-                                         max_length=1024, model_kwargs=mkw)
-            self._log(f"bge-reranker-v2-m3 就绪 {time.time()-t0:.1f}s [{dev}/{dtype}]")
+            self.embedder = SentenceTransformer(src, device=dev, model_kwargs=mkw)
+            try:
+                self.embedder.max_seq_length = 8192
+            except Exception:
+                pass
+            self._log(f"bge-m3 就绪 {time.time()-t0:.1f}s [{dev}/{dtype}]")
+
+            if self.use_rerank and (LOCAL_RERANK / "config.json").exists():
+                from sentence_transformers import CrossEncoder
+                t0 = time.time()
+                self.reranker = CrossEncoder(str(LOCAL_RERANK), device=dev,
+                                             max_length=1024, model_kwargs=mkw)
+                self._log(f"bge-reranker-v2-m3 就绪 {time.time()-t0:.1f}s "
+                          f"[{dev}/{dtype}]")
+        except Exception as e:                              # noqa: BLE001
+            self._mark_degraded("本机向量模型", e)
         self._models_ready = True
 
     # -------------------------------------------------------------- 两路召回
@@ -381,12 +415,28 @@ class HandbookRetriever:
         self._ensure_models()
         t0 = time.time()
 
-        dense_res = self._dense(query, self.pool)
+        # 向量路：接口挂了就跳过（别让一道有答案的题因为外部接口而整题失败）。
+        # 记过一次之后就把 embedder 置空 —— 否则每一路问句都要白等一次失败。
+        dense_res = []
+        if getattr(self, "embedder", None) is not None:
+            try:
+                dense_res = self._dense(query, self.pool)
+            except Exception as e:                          # noqa: BLE001
+                self._mark_degraded("向量检索", e)
+                self.embedder = None
         bm25_res = self._bm25(query, self.pool)
-        fused = self._rrf([[c for c, _ in dense_res], [c for c, _ in bm25_res]],
-                          [DENSE_WEIGHT, BM25_WEIGHT])
-        fused_ids = [c for c, _ in fused]
-        fscore = dict(fused)
+
+        if dense_res:
+            fused = self._rrf([[c for c, _ in dense_res], [c for c, _ in bm25_res]],
+                              [DENSE_WEIGHT, BM25_WEIGHT])
+            fused_ids = [c for c, _ in fused]
+            fscore = dict(fused)
+        else:
+            # 降级：只剩关键词这一路，就用 BM25 的**原始分**当相关分
+            # （0 = 一个字都没对上），这样下面「拒答前置」的门槛仍然有意义 ——
+            # 换成 RRF 分（恒为 1/61 量级）会让阈值判断完全失真。
+            fused_ids = [c for c, _ in bm25_res]
+            fscore = {c: float(s) for c, s in bm25_res}
 
         # 条款号直达 → 前置
         direct = self._direct_hits(query)
@@ -398,11 +448,18 @@ class HandbookRetriever:
         scores = {c: fscore.get(c, 0.0) for c in cand}
 
         if self.reranker is not None and cand:
-            pairs = [(query, self.cmap[c]["embed_text"]) for c in cand]
-            sc = self.reranker.predict(pairs, batch_size=16, show_progress_bar=False)
-            order = np.argsort(-np.asarray(sc))
-            scores = {cand[int(i)]: float(sc[int(i)]) for i in order}
-            cand = [cand[int(i)] for i in order]
+            try:
+                pairs = [(query, self.cmap[c]["embed_text"]) for c in cand]
+                sc = self.reranker.predict(pairs, batch_size=16,
+                                           show_progress_bar=False)
+                order = np.argsort(-np.asarray(sc))
+                scores = {cand[int(i)]: float(sc[int(i)]) for i in order}
+                cand = [cand[int(i)] for i in order]
+            except Exception as e:                          # noqa: BLE001
+                # 重排也走外部接口，同样可能挂。挂了就按融合顺序出结果 ——
+                # 位置就是「关键词 + 向量」的共识排序，不是瞎排。
+                self._mark_degraded("重排", e)
+                self.reranker = None
 
         # 条款级去重 → 证据
         seen, evidences = set(), []

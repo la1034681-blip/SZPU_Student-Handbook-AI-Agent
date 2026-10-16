@@ -646,10 +646,25 @@ def friendly_refuse(reason: str, question: str = ""):
     2026-10-16 补：给了 `question` 且问句里有口语词（体测/挂科/翘课…）时，
     额外告诉学生手册里的写法 —— 干巴巴一句「查不到」最让人束手无策，
     而这类查不到**多半就是词没对上**（见 src/term_alias.py）。
+
+    ⚠ 2026-10-16 再补（当日线上事故）：**必须先把「技术故障」和「手册里没有」
+    分开**。原来只认「模型调用失败 / 未接入」两个词，可是「大模型或检索接口
+    不可用」这条路写的是「大模型不可用（…），检索也失败（…）」，一个都没命中
+    → 于是接口挂掉的时候，页面用一句「本手册中没有对应内容」把**所有题**都说成
+    「手册里没规定」，还贴心地建议学生「换个说法再问」—— 学生照着换一百个说法
+    也没用，管理端则完全看不出后台已经瘫了。技术故障一律走上面那条分支，
+    并且**不加**换说法提示（那不是措辞问题）。
     """
     r = reason or ""
-    if "模型调用失败" in r or "未接入" in r:
-        return ("服务暂时出了点小状况", "请稍等片刻，再试一次。")
+    if ("模型调用失败" in r or "未接入" in r or "大模型不可用" in r
+            or "检索也失败" in r or "超时" in r or "timeout" in r.lower()
+            or "ApiError" in r or "HTTP 4" in r or "HTTP 5" in r
+            or "ConnectionError" in r or "请求失败" in r):
+        return ("服务暂时出了点小状况",
+                "这次没能连上后台（多半是接口额度用完、被限流，或网络抖了一下），"
+                "不是手册里没有规定。请过一两分钟再问一次；"
+                "要是一直这样，请找管理员看一下后台配置（技术细节在下方"
+                "「内部过程」里）。")
     tip = ("这个问题在《学生手册（2025 年修订）》里没有找到可以依据的规定。"
            "你可以换个问法，或者改问手册里的事项"
            "（学籍、考试、奖助学金、宿舍、违纪处分等）。")
@@ -830,6 +845,10 @@ def render_process(meta: dict):
                        + "；".join(alias_q))
 
         st.markdown("**② 检索与生成**")
+        deg = plan.get("degraded_retrieval") or []
+        if deg:
+            st.warning("检索降级（本应是「向量 + 关键词」双路，实际只有一路）："
+                       + "；".join(str(x) for x in deg))
         if meta["refused"]:
             st.write("未生成答案，已按「无可靠依据」处理。")
             st.caption(f"技术细节：{meta['refuse_reason']}")
@@ -871,6 +890,20 @@ def render_assistant(meta: dict):
                 "已自动改用**程序化兜底**：下面是把手册里最相关的原文**照抄**给你，"
                 "一字未改、出处带页码，所以读起来会像手册摘录。"
                 "稍等一两分钟再问一次，就能恢复模型的正常作答。")
+
+    # 检索降级也要说出来（2026-10-16 线上事故）：向量检索与重排走的是外部
+    # 接口，接口一挂（例如额度用完），原来整道题会直接失败；现在改为只用
+    # 关键词匹配继续答。**这是质量打了折扣，不是失败** —— 隐性降质比明着
+    # 报错更坏：学生会以为「手册里就是这么规定的」。
+    deg = plan.get("degraded_retrieval") or []
+    if deg:
+        st.warning("**本次检索打了折扣**：智能匹配那一环没能连上，"
+                   "只用了关键词匹配。答案仍然逐字来自手册原文，"
+                   "但可能漏掉「换了种说法写」的条款 —— 换个问法再问一次，"
+                   "通常就能找到了。")
+        with st.expander("技术细节（给管理员）", expanded=False):
+            for d in deg:
+                st.caption("· " + str(d))
 
     if meta["refused"]:
         title, tip = friendly_refuse(meta["refuse_reason"],
@@ -1210,6 +1243,29 @@ def _render_config_warning():
         "具体缺什么看启动网页时那个黑窗口里的输出。")
 
 
+def _render_degraded_warning():
+    """检索降级了没有？降了就在页面上明说，别等学生一道道题去撞。
+
+    降级记录挂在检索器实例上（进程级），所以**上一次提问踩到的坑，这次
+    一进页面就能看见** —— 不用再问一道题才知道后台的编码接口已经挂了。
+    判据见 `retrievers._mark_degraded`：向量检索 / 重排走外部接口，
+    接口不可用（额度、限流、断网）时只剩关键词路。
+    """
+    try:
+        deg = list(getattr(get_pipeline().retriever, "degraded", []) or [])
+    except Exception:                                       # noqa: BLE001
+        return                                              # 取不到就不说，别因此报错
+    if not deg:
+        return
+    st.warning(
+        "**检索正在降级运行**（本应是「向量 + 关键词」双路，现在只剩关键词）：\n\n"
+        + "\n".join(f"- {d}" for d in deg)
+        + "\n\n答案仍取自手册原文，但「换了说法写」的条款容易漏。"
+        "要恢复完整检索：本地跑就在 .env 里配 `EMBED_BACKEND=\"local\"`；"
+        "线上跑就检查在线编码密钥与额度（Streamlit 后台 Secrets 里的 "
+        "`EMBED_API_KEY`）。")
+
+
 def _probe_embed() -> str:
     """真调一次在线编码接口，看通不通、多快。"""
     import time
@@ -1350,6 +1406,7 @@ def main():
         return
 
     _render_config_warning()      # 配置缺了什么，先说清，别让人去猜（2026-10-15 踩过）
+    _render_degraded_warning()    # 检索降级了没有，一进页面就说（2026-10-16 线上踩过）
     _render_stale_warning()       # 代码更新了却没重启进程 → 直接说清（2026-10-15 踩过）
 
     st.markdown(_CULTURE, unsafe_allow_html=True)
