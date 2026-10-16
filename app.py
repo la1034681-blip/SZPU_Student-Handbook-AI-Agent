@@ -616,14 +616,22 @@ def format_answer(text: str) -> str:
     return merged[0] + "\n\n" + "\n".join("- " + p for p in merged[1:])
 
 
-def linkify_citations(text: str, valid_eids) -> str:
-    """把正文里的 [E1] 换成可点击角标，点击滚到对应证据卡片。"""
+def linkify_citations(text: str, valid_eids, scope: str = "") -> str:
+    """把正文里的 [E1] 换成可点击角标，点击滚到对应证据卡片。
+
+    `scope` 用来**区分这是第几轮问答**（2026-10-17 修的用户反馈 bug）：
+    锚点 id 原来固定是 `ev-E1`、`ev-E2`，每一轮问答都用同样几个 id ——
+    页面上只要有过两轮问答，浏览器按 `#ev-E1` 找到的永远是**第一个**同 id
+    元素，于是点第二轮的角标，人会跳到第一轮的手册原文上去。
+    现在每轮带自己的前缀（`ev-t3-E1`），各轮互不干扰。
+    """
     valid = set(valid_eids)
+    pre = f"{scope}-" if scope else ""
 
     def repl(m):
         eid = m.group(1)
         if eid in valid:
-            return (f'<a class="cite-badge" href="#ev-{eid}" '
+            return (f'<a class="cite-badge" href="#ev-{pre}{eid}" '
                     f'title="跳到证据 {eid} 原文">[{eid}]</a>')
         return m.group(0)
 
@@ -881,7 +889,11 @@ def render_process(meta: dict):
             st.error("未通过：存在无法被证据支持的断言（系统已据此降级）。")
 
 
-def render_assistant(meta: dict):
+def render_assistant(meta: dict, scope: str = ""):
+    # `scope`＝这一轮问答的专属前缀，用来把角标锚点与手册原文卡片**配对**。
+    # 不给（比如测试里直接调）就退化成老行为（ev-E1），不影响原有逻辑。
+    pre = f"{scope}-" if scope else ""
+
     # 兜底作答要把话说明白（2026-10-15）：大模型挂了才走程序化照抄，
     # 页面上必须讲清楚这不是模型答的，否则就是「静默降级」。
     plan = meta.get("plan") or {}
@@ -911,7 +923,8 @@ def render_assistant(meta: dict):
         st.warning(f"**{title}**\n\n{tip}")
     else:
         valid = {e["eid"] for e in meta["evidences"]}
-        st.markdown(linkify_citations(format_answer(meta["answer"]) or "（空）", valid),
+        st.markdown(linkify_citations(format_answer(meta["answer"]) or "（空）", valid,
+                                      scope=scope),
                     unsafe_allow_html=True)
 
     emap = {e["eid"]: e for e in meta["evidences"]}
@@ -933,7 +946,7 @@ def render_assistant(meta: dict):
             # `open`：条款默认就是摊开的 —— 答复里只说结论，完整规定在这里看，
             # 点角标滚下来要能直接读全文，不用再点一次（2026-10-15 按用户反馈）。
             cards.append(
-                f'<details class="ev" id="ev-{eid}" open>'
+                f'<details class="ev" id="ev-{pre}{eid}" open>'
                 f'<summary>[{eid}] {cite} ｜ PDF 第 {page} 页</summary>'
                 f'<div class="ev-meta">相关度 {score:.4f}</div>'
                 f'<div class="ev-text">{text}</div>'
@@ -945,6 +958,19 @@ def render_assistant(meta: dict):
 
 
 # ==================================================================== 作答
+def _local_models_ready() -> bool:
+    """本机模型是不是已经进内存了。
+
+    用来回答「还要不要再喊那句『首次需加载模型』」—— 模型在同一个进程里
+    只加载一次，第二题起是 0.7 秒级的速度，再喊就是在骗学生
+    （2026-10-17 用户反馈）。
+    """
+    try:
+        return getattr(get_pipeline().retriever, "embedder", None) is not None
+    except Exception:                                   # noqa: BLE001
+        return False
+
+
 def _loading_tip() -> str:
     """等待提示语跟着「问题侧编码」的后端走。
 
@@ -953,12 +979,18 @@ def _loading_tip() -> str:
     线上是调在线接口（每题多两三秒），根本没有模型可加载 —— 照搬那句话会让
     学生白白等满。判据与 `retrievers._pick_backend` 完全一致：
     显式开关 > 本机模型在不在。
+
+    2026-10-17 补（用户反馈「每次问答都显示首次要加载模型」）：光看「后端是不是
+    本机」还不够 —— 本机后端下模型**只在第一题加载**，之后每题都很快，却句句都
+    在说「约 30 秒」，学生会误以为系统一直这么慢。所以再加一道「模型是否已进
+    内存」的判断：只有真的还没加载，才提前打招呼。
     """
     bk = (os.environ.get("EMBED_BACKEND") or "").strip().lower()
     if bk not in ("local", "api"):
         bk = "local" if (ROOT / "models" / "bge-m3" / "config.json").exists() else "api"
-    return ("正在检索手册并作答…（启动后首次需加载模型，约 30 秒）" if bk == "local"
-            else "正在检索手册并作答…")
+    if bk == "local" and not _local_models_ready():
+        return "正在检索手册并作答…（启动后首次需加载模型，约 30 秒）"
+    return "正在检索手册并作答…"
 
 
 def _remember(mem: SessionMemory, prompt: str, meta: dict) -> None:
@@ -1429,12 +1461,14 @@ def main():
     # —— 页面上半截的问答区空着，学生看到的却是「答案掉到留言墙下面去了」。
     # 现在输入框与作答都收进问答区，示例按钮也走同一条通道（pending_q），
     # 无论点示例还是打字，问题和答案永远出现在同一个位置。
-    for m in st.session_state.messages:
+    for _turn, m in enumerate(st.session_state.messages):
         with st.chat_message(m["role"]):
             if m["role"] == "user":
                 st.markdown(m["content"])
             else:
-                render_assistant(m["meta"])
+                # 轮次前缀：每轮问答的角标锚点必须各不相同，否则点第二轮的
+                # 角标会跳到第一轮的手册原文（2026-10-17 修的用户反馈 bug）。
+                render_assistant(m["meta"], scope=f"t{_turn}")
 
     pending = st.session_state.pop("pending_q", None)
     if pending:
