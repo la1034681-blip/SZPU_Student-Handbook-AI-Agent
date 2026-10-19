@@ -65,7 +65,11 @@ def main():
            "recall_all": hit_tot / max(gold_tot, 1),
            "hit_tot": hit_tot, "gold_tot": gold_tot,
            "search_total_s": dur, "per_q": per_q}
-    json.dump(out, open(f".trash_tmp/precision_{tag}.json", "w", encoding="utf-8"),
+    # 这个目录是临时产物目录，随时可能被清掉（2026-10-19 清理过一次 14.9 GB），
+    # 所以自己建，别指望它还在。
+    out_dir = Path(__file__).resolve().parents[3] / ".trash_tmp"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json.dump(out, open(out_dir / f"precision_{tag}.json", "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
 
     print(f"rerank({len(pairs)} pairs): {rr_ms:.0f} ms", flush=True)
