@@ -119,8 +119,16 @@ class OpLogger:
     # ------------------------------------------------------------ 对外
     def log(self, session_id: str, question: str, answer: str = "",
             refused: bool = False, latency: float = 0.0, n_evidence: int = 0,
-            cited: list | str | None = None):
-        """记一条提问。任何情况下都不会抛异常、不会阻塞。"""
+            cited: list | str | None = None, web: str = ""):
+        """记一条提问。任何情况下都不会抛异常、不会阻塞。
+
+        `web`（2026-10-17 新增）：官网兜底的命中情况，只写**本地日志**，
+        不进云库行 —— 云库那张表是固定结构，加列会让写入整体失败，而这条
+        信息眼下只在排查与对账时用得上。取值形如 "hit:2"（命中 2 段）、
+        "link"（只给链接）、"none"（官网也没有）、""（没走这趟）。
+        ⚠ 「官网命中」必须能和「手册答对」分开看 —— 混在一起，手册的误拒
+        就会被官网的命中掩盖掉。
+        """
         if not self.enabled:
             return
         ts = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -129,7 +137,8 @@ class OpLogger:
         cited = cited or ""
         # 本地安全日志：一行一条，纯文本好查
         self._local(f"{ts}\t{session_id}\trefused={int(bool(refused))}\t"
-                    f"{latency:.2f}s\t{question[:80]}")
+                    + (f"web={web}\t" if web else "")
+                    + f"{latency:.2f}s\t{question[:80]}")
         if not self.remote:
             return
         row = {

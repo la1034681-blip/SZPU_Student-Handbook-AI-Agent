@@ -10,19 +10,19 @@
       "qid": "Q02",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.8666
+      "top1": 0.8673
     },
     {
       "qid": "Q03",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.8681
+      "top1": 0.8678
     },
     {
       "qid": "Q04",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.7896
+      "top1": 0.7905
     },
     {
       "qid": "Q05",
@@ -34,13 +34,13 @@
       "qid": "Q06",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.987
+      "top1": 0.9869
     },
     {
       "qid": "Q07",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.8335
+      "top1": 0.8337
     },
     {
       "qid": "Q08",
@@ -58,19 +58,19 @@
       "qid": "Q10",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.9169
+      "top1": 0.9173
     },
     {
       "qid": "Q11",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.526
+      "top1": 0.5251
     },
     {
       "qid": "Q12",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.7155
+      "top1": 0.7131
     },
     {
       "qid": "Q13",
@@ -82,7 +82,7 @@
       "qid": "Q14",
       "type": "fact",
       "refuse_expected": false,
-      "top1": 0.8026
+      "top1": 0.8032
     },
     {
       "qid": "Q15",
@@ -100,49 +100,49 @@
       "qid": "Q17",
       "type": "numeric",
       "refuse_expected": false,
-      "top1": 0.9706
+      "top1": 0.9705
     },
     {
       "qid": "Q18",
       "type": "numeric",
       "refuse_expected": false,
-      "top1": 0.9183
+      "top1": 0.9186
     },
     {
       "qid": "Q19",
       "type": "numeric",
       "refuse_expected": false,
-      "top1": 0.7669
+      "top1": 0.7703
     },
     {
       "qid": "Q20",
       "type": "numeric",
       "refuse_expected": false,
-      "top1": 0.8863
+      "top1": 0.886
     },
     {
       "qid": "Q21",
       "type": "numeric",
       "refuse_expected": false,
-      "top1": 0.99
+      "top1": 0.9899
     },
     {
       "qid": "Q22",
       "type": "numeric",
       "refuse_expected": false,
-      "top1": 0.9605
+      "top1": 0.9604
     },
     {
       "qid": "Q23",
       "type": "numeric",
       "refuse_expected": false,
-      "top1": 0.9896
+      "top1": 0.9897
     },
     {
       "qid": "Q24",
       "type": "synthesis",
       "refuse_expected": false,
-      "top1": 0.8064
+      "top1": 0.8059
     },
     {
       "qid": "Q25",
@@ -154,13 +154,13 @@
       "qid": "Q26",
       "type": "synthesis",
       "refuse_expected": false,
-      "top1": 0.9793
+      "top1": 0.9792
     },
     {
       "qid": "Q27",
       "type": "synthesis",
       "refuse_expected": false,
-      "top1": 0.9896
+      "top1": 0.9897
     },
     {
       "qid": "Q28",
@@ -172,7 +172,7 @@
       "qid": "Q29",
       "type": "synthesis",
       "refuse_expected": false,
-      "top1": 0.9984
+      "top1": 0.9985
     },
     {
       "qid": "Q30",
@@ -190,7 +190,7 @@
       "qid": "Q32",
       "type": "synthesis",
       "refuse_expected": false,
-      "top1": 0.9959
+      "top1": 0.9958
     },
     {
       "qid": "Q33",
@@ -202,31 +202,31 @@
       "qid": "Q34",
       "type": "cross",
       "refuse_expected": false,
-      "top1": 0.7888
+      "top1": 0.7883
     },
     {
       "qid": "Q35",
       "type": "cross",
       "refuse_expected": false,
-      "top1": 0.1124
+      "top1": 0.1118
     },
     {
       "qid": "Q36",
       "type": "cross",
       "refuse_expected": false,
-      "top1": 0.9461
+      "top1": 0.9462
     },
     {
       "qid": "Q37",
       "type": "cross",
       "refuse_expected": false,
-      "top1": 0.9492
+      "top1": 0.9493
     },
     {
       "qid": "Q38",
       "type": "refuse",
       "refuse_expected": true,
-      "top1": 0.0168
+      "top1": 0.0167
     },
     {
       "qid": "Q39",
@@ -238,13 +238,13 @@
       "qid": "Q40",
       "type": "refuse",
       "refuse_expected": true,
-      "top1": 0.0207
+      "top1": 0.0385
     },
     {
       "qid": "Q41",
       "type": "refuse",
       "refuse_expected": true,
-      "top1": 0.1104
+      "top1": 0.1093
     },
     {
       "qid": "Q42",
@@ -262,9 +262,105 @@
       "qid": "Q44",
       "type": "refuse",
       "refuse_expected": true,
-      "top1": 0.0009
+      "top1": 0.001
+    },
+    {
+      "qid": "N01",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9838
+    },
+    {
+      "qid": "N02",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.8487
+    },
+    {
+      "qid": "N03",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9499
+    },
+    {
+      "qid": "N04",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9778
+    },
+    {
+      "qid": "N05",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.6834
+    },
+    {
+      "qid": "N06",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9775
+    },
+    {
+      "qid": "N07",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.8573
+    },
+    {
+      "qid": "N08",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9662
+    },
+    {
+      "qid": "N09",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.8595
+    },
+    {
+      "qid": "N10",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9921
+    },
+    {
+      "qid": "N11",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9942
+    },
+    {
+      "qid": "N12",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9936
+    },
+    {
+      "qid": "N13",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9764
+    },
+    {
+      "qid": "N14",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.917
+    },
+    {
+      "qid": "N15",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9854
+    },
+    {
+      "qid": "N16",
+      "type": "cross",
+      "refuse_expected": false,
+      "top1": 0.9828
     }
   ],
-  "refuse_max": 0.1104,
-  "normal_min": 0.1124
+  "refuse_max": 0.1093,
+  "normal_min": 0.1118
 }

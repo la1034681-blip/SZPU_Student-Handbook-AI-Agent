@@ -221,6 +221,30 @@ details.ev summary{ cursor:pointer; font-weight:600; color:#3A342F; }
 .ev-meta{ color:var(--szpu-gray); font-size:.83em; margin:6px 0 4px; }
 .ev-text{ white-space:pre-wrap; line-height:1.72; font-size:.93em; color:#413B36; }
 
+/* ---- 官网来源卡（2026-10-17）：刻意用蓝灰系，一眼和「手册条款」的暖红分开 ---- */
+details.ev-web{
+  border:1px solid #D8E0EA; border-left:3px solid #5B7FA6; border-radius:10px;
+  margin:8px 0; padding:6px 13px 9px; background:#FAFCFE;
+}
+details.ev-web summary{ cursor:pointer; font-weight:600; color:#2F4560; }
+.ev-web-src{ font-size:.83em; color:var(--szpu-gray); margin:6px 0 4px; }
+.ev-web-src a{ color:#3F6690 !important; }
+.ev-web-tbl{ border-collapse:collapse; width:100%; margin:8px 0; font-size:.9em;
+             table-layout:fixed; }
+.ev-web-tbl th, .ev-web-tbl td{
+  border:1px solid #E2E8F0; padding:5px 8px; text-align:left; vertical-align:top;
+  word-break:break-word; overflow-wrap:anywhere; line-height:1.6;
+}
+/* 第一列多给一点：作息表第一列是「上午/下午/晚上」这种 2~4 字的行标签，
+   等宽分配会把它挤成竖排一个字一行（2026-10-17 目检发现）。 */
+.ev-web-tbl tr > :first-child{ width:13%; color:#2F4560; font-weight:600; }
+.ev-web-tbl th{ background:#F1F5F9; color:#2F4560; font-weight:600; }
+.web-tag{
+  display:inline-block; padding:0 7px; margin-right:4px; border-radius:7px;
+  background:#EAF1F8; color:#2F4560 !important; font-size:.8em; font-weight:700;
+  border:1px solid #CFDCEA;
+}
+
 /* ---------------- 访问口令门禁 ---------------- */
 .gate-tip{ text-align:center; color:var(--szpu-gray); font-size:.93rem; line-height:1.75; }
 .gate-tip b{ color:var(--szpu-red); }
@@ -796,6 +820,11 @@ def serialize(res) -> dict:
         "reflect_log": res.reflect_log or [],
         "verify": res.verify or {},
         "badge_backfill": bool(getattr(res, "badge_backfill", False)),
+        # 官网兜底（2026-10-17）：手册判「没有」之后去官网找的素材。
+        # ⚠ 它**不进** citations —— 官网内容不参与「手册答对率」，
+        # 页面单独一张「官网来源」卡，单独标 W1/W2…
+        "web": getattr(res, "web", {}) or {},
+        "web_login": getattr(res, "web_login", {}) or {},
     })
 
 
@@ -806,7 +835,14 @@ def render_process(meta: dict):
     need_split = bool(plan.get("need_split"))
     subs = plan.get("sub_questions") or []
     if meta["refused"]:
-        head = "内部过程 ｜ 已拒答（技术细节）"
+        # 手册没答，但官网答了 / 走了登录引导时，别写「已拒答」——
+        # 学生并没有被拒之门外，只是换了来源（2026-10-17 目检发现）。
+        if meta.get("web_login"):
+            head = "内部过程 ｜ 个人数据，已转登录引导（技术细节）"
+        elif (meta.get("web") or {}).get("found"):
+            head = "内部过程 ｜ 手册未覆盖，内容来自官网（技术细节）"
+        else:
+            head = "内部过程 ｜ 已拒答（技术细节）"
     elif plan.get("fallback") == "procedural":
         head = (f"内部过程 ｜ **程序化兜底**（大模型不可用）"
                 f" ｜ 检索 {meta['hops']} 次 ｜ 证据 {meta['n_evidence']} 条")
@@ -860,6 +896,15 @@ def render_process(meta: dict):
         if deg:
             st.warning("检索降级（本应是「向量 + 关键词」双路，实际只有一路）："
                        + "；".join(str(x) for x in deg))
+        # 主体一致闸留痕（2026-10-18）：说明"为什么明明检索到了东西却没答"。
+        # 不写清楚的话，学生只会看到一句拒答，以为是系统坏了。
+        subj = plan.get("subject_mismatch") or {}
+        if subj:
+            st.caption(
+                f"主体一致闸：问的是「{subj.get('subject')}」，但检索回来的条款里"
+                f"没有一处提到它（主体相关分 {subj.get('support')}，最高分 "
+                f"{subj.get('top')}）—— 判为「手册里没这个内容」，"
+                "没有交给模型拿别的条款硬套。")
         if meta["refused"]:
             st.write("未生成答案，已按「无可靠依据」处理。")
             st.caption(f"技术细节：{meta['refuse_reason']}")
@@ -891,6 +936,124 @@ def render_process(meta: dict):
         else:
             st.error("未通过：存在无法被证据支持的断言（系统已据此降级）。")
 
+        # ---------- ⑤ 官网兜底（2026-10-17） ----------
+        # 只在「手册判了没有」时才有这一段。手册能答的题不显示，
+        # 免得让人以为每道题都去上网查了一圈。
+        web = meta.get("web") or {}
+        login = meta.get("web_login") or {}
+        if web or login:
+            st.markdown("**⑤ 官网兜底**")
+            if login:
+                st.write(f"判定为**个人数据**（{login.get('topic')}），"
+                         "直接给登录引导，**没有**去搜官网 —— 公开网页里本来就没有。")
+            elif web.get("error"):
+                # 官网这条路自己坏了：说清楚是「坏了」，不是「没有」
+                st.error("官网这条路出错了（不影响手册那条路）："
+                         + str(web.get("error"))[:200])
+            elif web.get("found"):
+                st.write(f"手册里没有，去官网查到 "
+                         f"{len(web.get('passages') or [])} 段原文、"
+                         f"{len(web.get('tables') or [])} 张表格，"
+                         f"已按「只照抄、标注来源」摊在页面上。")
+                st.caption(f"搜过这些词：{'、'.join(web.get('stats', {}).get('keywords') or [])}")
+                srcs = {(p.get("title"), p.get("url")) for p in (web.get("passages") or [])}
+                for t, u in list(srcs)[:3]:
+                    st.caption(f"来源：{t} ｜ {u}")
+            elif web.get("links"):
+                st.write("官网只有影印件（读不出文字），已按约定只给链接。")
+            else:
+                st.write(f"官网也没有查到（{web.get('reason') or 'no_result'}），"
+                         "按「宁可拒答也不编」处理。")
+            st.caption(f"耗时 {web.get('stats', {}).get('elapsed', 0)} 秒"
+                       "（预算 8 秒，超时就照旧拒答）")
+
+
+def render_web_answer(web: dict, login: dict, scope: str = "") -> bool:
+    """手册判「没有」之后，把官网查到的内容摊给学生看。
+
+    返回 True ＝ 这一屏已经交代完了（不用再贴「本手册中没有对应内容」）；
+    返回 False ＝ 官网也没有 / 官网这条路坏了 → 交回原来的拒答话术。
+
+    三条口径（与 `src/retrieval/web_fallback.py` 文件头一致）：
+      ① **手册优先** —— 本函数只在「手册已判拒」时被调用，手册能答的题
+         一个字都不掺官网内容；
+      ② **来源单标** —— 编号是 W1、W2…（不是 E1），卡片用蓝灰系，
+         顶部明说「不是学生手册」；页脚写明抓取时间，学生能自己复核；
+      ③ **只许照抄** —— 这里只贴抓回来的原句与表格，既不重写也不让模型
+         转述。学生看到的每一句都能在链接的那个页面里逐字找到。
+    """
+    # ① 得登录才能查 —— 只说该去哪儿看，不说「查不到」（学生要的是这句话）
+    if login and login.get("text"):
+        st.info("**这个要你登录学校系统自己看**\n\n" + str(login["text"]))
+        return True
+
+    passages = web.get("passages") or []
+    tables = web.get("tables") or []
+    links = web.get("links") or []
+    if not (passages or tables or links):
+        return False                       # 官网也没有 / 超时 / 出错 → 交回拒答
+
+    st.info("**《学生手册》里没有找到对应规定，下面是从学校官网查到的内容**\n\n"
+            "⚠ 以下内容来自**学校官网**，不是《学生手册》，仅供参考；"
+            "办事与认定请以官网原文和通知为准。")
+
+    pre = f"{scope}-" if scope else ""
+    fetched = _html.escape(str(web.get("fetched_at") or ""))
+    blocks = []
+
+    for i, p in enumerate(passages, 1):
+        eid = f"W{i}"
+        title = _html.escape(str(p.get("title") or "学校官网"))
+        url = _html.escape(str(p.get("url") or ""))
+        text = _html.escape(str(p.get("text") or ""))
+        src = f'<a href="{url}" target="_blank" rel="noopener">{title}</a>'
+        if p.get("published"):
+            src += f" ｜ 发布于 {_html.escape(str(p['published']))}"
+        if fetched:
+            src += f" ｜ 抓取于 {fetched}"
+        blocks.append(
+            f'<details class="ev-web" id="ev-{pre}{eid}" open>'
+            f'<summary><span class="web-tag">[{eid}]</span>官网原文</summary>'
+            f'<div class="ev-web-src">{src}</div>'
+            f'<div class="ev-text">{text}</div>'
+            f'</details>')
+
+    # 表格原样画（表头/栅格都在）：学生看表比看我转述准得多。
+    # 只画前 2 张 —— 作息时间这种表一张就够，画多了页面全是格子。
+    for t in tables[:2]:
+        rows = t.get("rows") or []
+        if not rows:
+            continue
+        title = _html.escape(str(t.get("title") or "学校官网"))
+        url = _html.escape(str(t.get("url") or ""))
+        cols = max(len(r) for r in rows)
+        head = "<tr>" + "".join(f"<th>{_html.escape(str(c))}</th>"
+                                for c in (list(rows[0]) + [""] * (cols - len(rows[0])))) + "</tr>"
+        body = ""
+        for r in rows[1:]:
+            cells = list(r) + [""] * (cols - len(r))
+            body += "<tr>" + "".join(f"<td>{_html.escape(str(c))}</td>"
+                                     for c in cells) + "</tr>"
+        blocks.append(
+            f'<div class="ev-web-src">表格原文 ｜ <a href="{url}" target="_blank" '
+            f'rel="noopener">{title}</a>'
+            + (f" ｜ 抓取于 {fetched}" if fetched else "") + "</div>"
+            f'<table class="ev-web-tbl">{head}{body}</table>')
+
+    if blocks:
+        st.markdown("".join(blocks), unsafe_allow_html=True)
+
+    # 只给链接的情形（例如官网那份文件是影印件）：按用户要求只给链接，
+    # 不写「识别不出」这类话。
+    if links and not (passages or tables):
+        st.write("这条信息在官网的这份文件里，点开就能看：")
+        for l in links[:2]:
+            st.markdown(f"- [{l.get('title') or l.get('url')}]({l.get('url')})")
+    elif links:
+        st.caption("官网原始页面：" + "；".join(
+            f"[{l.get('title') or '打开'}]({l.get('url')})" for l in links[:2]))
+    return True
+
 
 def render_assistant(meta: dict, scope: str = ""):
     # `scope`＝这一轮问答的专属前缀，用来把角标锚点与手册原文卡片**配对**。
@@ -921,9 +1084,15 @@ def render_assistant(meta: dict, scope: str = ""):
                 st.caption("· " + str(d))
 
     if meta["refused"]:
-        title, tip = friendly_refuse(meta["refuse_reason"],
-                                     question=meta.get("question") or "")
-        st.warning(f"**{title}**\n\n{tip}")
+        # 官网兜底（2026-10-17）：手册判「没有」之后，先看官网那一趟有没有收获。
+        # 有就摊出来（W1/W2…，页头明标「不是学生手册」）；官网也没有，才贴
+        # 「本手册中没有对应内容」。顺序不能反 —— 手册优先是这条链的第一原则。
+        shown = render_web_answer(meta.get("web") or {},
+                                  meta.get("web_login") or {}, scope=scope)
+        if not shown:
+            title, tip = friendly_refuse(meta["refuse_reason"],
+                                         question=meta.get("question") or "")
+            st.warning(f"**{title}**\n\n{tip}")
     else:
         valid = {e["eid"] for e in meta["evidences"]}
         st.markdown(linkify_citations(format_answer(meta["answer"]) or "（空）", valid,
@@ -1009,7 +1178,17 @@ def _remember(mem: SessionMemory, prompt: str, meta: dict) -> None:
         if meta.get("refused"):
             # 拒答也记一笔，但只留一句短标记 —— 免得把「本手册中没有对应内容」
             # 这种话当成上文带进下一轮，反而干扰模型对下一句的理解。
-            mem.add_assistant("（本手册中没有对应内容）")
+            # 官网兜底命中时改记官网那句（2026-10-17）：学生下一步十有八九
+            # 会追问「那它几点关」，上文里得有这个话题才接得上；但必须带上
+            # 「官网」两字，免得下一轮把它当成手册规定（SYSTEM_PROMPT 第 8 条）。
+            web = meta.get("web") or {}
+            if meta.get("web_login"):
+                mem.add_assistant("（这类个人数据需登录学校系统查看）")
+            elif web.get("found") and web.get("passages"):
+                snippet = str(web["passages"][0].get("text") or "")[:60]
+                mem.add_assistant(f"（本手册没有，官网查到：{snippet}…）")
+            else:
+                mem.add_assistant("（本手册中没有对应内容）")
         else:
             mem.add_assistant(meta.get("answer") or "")
         if mem.over_budget():
@@ -1017,6 +1196,25 @@ def _remember(mem: SessionMemory, prompt: str, meta: dict) -> None:
             summarize_older(mem, getattr(get_pipeline(), "llm", None))
     except Exception:                                       # noqa: BLE001
         pass
+
+
+def _web_flag(meta: dict) -> str:
+    """官网兜底的命中标记，只用于日志与对账（口径见 oplog.log 的 docstring）。
+
+    `hit:N` 手册没有、官网答了 N 段 ｜ `link` 只给了链接 ｜
+    `login` 得登录才能查 ｜ `none` 官网也没有 ｜ `""` 压根没走这趟。
+    ⚠ 不能和「手册答对」混算 —— 一混，手册的误拒就被官网的命中盖住了。
+    """
+    web = meta.get("web") or {}
+    if meta.get("web_login"):
+        return "login"
+    if not web:
+        return ""
+    if web.get("found"):
+        return f"hit:{len(web.get('passages') or [])}"
+    if web.get("links"):
+        return "link"
+    return "none"
 
 
 def ask_and_render(prompt: str) -> bool:
@@ -1065,7 +1263,8 @@ def ask_and_render(prompt: str) -> bool:
     lg = get_logger()
     lg.log(sid, prompt, answer=meta["answer"],
            refused=meta["refused"], latency=meta["latency"],
-           n_evidence=meta["n_evidence"], cited=meta["citations"])
+           n_evidence=meta["n_evidence"], cited=meta["citations"],
+           web=_web_flag(meta))
     lg.usage(cid, sid)
     return True
 

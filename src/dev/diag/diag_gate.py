@@ -40,6 +40,13 @@ def main():
     ev = json.load(open(data / "eval_set.json", encoding="utf-8"))
     items = ev["items"]
 
+    # ⚠ 必须先把 .env 读进来（2026-10-17 踩到）：不读密钥时，`EMBED_BACKEND=api`
+    #   会因为「密钥没填」而构造失败 → 静默降级成纯关键词（BM25）。那时脚本照样
+    #   出分数、照样给「可分/不可分」的结论，但量到的根本不是线上那套**重排分**
+    #   （BM25 原始分能到 20+，重排分是 0~1），结论完全不可比。
+    from qa_chain import load_env_file
+    load_env_file()
+
     r = HandbookRetriever(str(data), use_rerank=True, verbose=False)
 
     rows = []
@@ -53,6 +60,17 @@ def main():
 
     ref = [x for x in rows if x["refuse_expected"]]
     nor = [x for x in rows if not x["refuse_expected"]]
+
+    # 先把「这次量的是哪条路」印出来 —— 降级状态下量出来的分布没有意义。
+    print("=" * 72)
+    print(f"编码后端 = {r.backend}　重排器 = {type(r.reranker).__name__}")
+    if r.degraded:
+        print("⚠ 检索发生了降级 —— 下面这些分数**不是**线上那套重排分：")
+        for d in r.degraded:
+            print(f"   - {d}")
+    else:
+        print("无降级，量到的就是线上同款分数")
+    print("=" * 72)
 
     print("=" * 72)
     print("逐题 top-1 rerank 分（降序）")

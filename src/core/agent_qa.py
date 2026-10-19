@@ -59,6 +59,7 @@
 """
 from __future__ import annotations
 
+import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -90,8 +91,9 @@ class AgentQAPipeline:
                  planner=None, reflect=None, enable_planner=True,
                  enable_reflect=True, max_reflect_rounds=2,
                  enable_gate=True, gate_min_top1=0.03,
+                 enable_subject=True,
                  parallel_search=False, search_workers=5,
-                 verbose=True, **qa_kwargs):
+                 enable_web=True, verbose=True, **qa_kwargs):
         self.retriever = retriever
         self.llm = llm
         self.top_k = top_k
@@ -118,6 +120,21 @@ class AgentQAPipeline:
         # 宁可漏拦、绝不误拦（误拒率 0% 是红线）。
         self.enable_gate = enable_gate
         self.gate_min_top1 = gate_min_top1
+        # 主体一致闸（2026-10-18）：证据分很低、且问句里的场所（图书馆/食堂/快递…）
+        # 在证据里一个字都没出现 → 判"答非所问"，直接拒答、不调模型。
+        # 治的是「问图书馆几点开门，答成学生公寓大门 6:00–23:30」那一类错答。
+        # 判据、实测数据与零误伤论证见 src/retrieval/subject_guard.py 文件头。
+        # 关掉的办法：环境变量 SUBJECT_GUARD=off，或构造时传 enable_subject=False。
+        self.enable_subject = enable_subject
+        # 官网兜底（2026-10-17）：手册判「没有」之后，再去学校官网找一趟。
+        # 硬原则见 src/retrieval/web_fallback.py 文件头 —— 手册优先、来源单标、
+        # 同样只许照抄。它只在这一个位置生效：**手册已经答不出来**时；
+        # 手册能答的题一个字都不掺官网内容。
+        # 关掉的办法：环境变量 WEB_FALLBACK=off（不用改代码，也不用重新部署）。
+        self.enable_web = enable_web and (
+            (os.environ.get("WEB_FALLBACK") or "").strip().lower()
+            not in ("off", "0", "false", "no"))
+        self.web_budget = 8.0       # 官网兜底的总预算秒数（超时就照旧拒答）
         # 性能：多路（原问题 + 各子问题）检索理论上可并发，但**实测默认关**。
         # 本机检索走 GPU（RTX 5060，torch.cuda 可用），并发反而抢 GPU 排队，
         # 实测首轮检索零提速、自检补检还从 1~4s 涨到 12s+（见 diag_latency 对比）。
@@ -253,6 +270,28 @@ class AgentQAPipeline:
         把追问改写干净，所以再留一条**确定性**兜底 —— 见 `_ask` 里的注释。
         两个都不传 = 原来的「每题独立」行为，完全向后兼容。
         """
+        # ---------- 个人数据：**提前**分流（2026-10-17） ----------
+        # 为什么必须放在最前面，而不是等手册判拒之后再分流：这类问题手册里
+        # 本来就不该有，但检索分并不低 —— 实测问「我这学期绩点多少」，
+        # 手册《学分绩点计算办法》能匹配到 0.666 分，免费模型真的会拿"绩点
+        # 怎么算"去答，学生看到的是一段规则，而不是自己的分。他要的是
+        # 「我没有这个数，得你自己去系统查」。所以命中就**不检索、不调模型**，
+        # 0 秒给引导话术（判据与话术见 src/retrieval/need_login.py，三道闸
+        # 故意收紧 —— 误把「奖学金评选条件」挡成个人数据，代价更大）。
+        if self.enable_web:
+            hit = self._login_guard(question)
+            if hit:
+                res = QAAnswer(question=question)
+                res.refused = True
+                res.web_login = hit
+                res.refuse_reason = f"个人数据（{hit['topic']}），需登录学校系统查看"
+                res.plan = {"personal_data": hit["topic"],
+                            "reason": "命中个人数据主题，提前分流，未检索手册"}
+                res.latency = 0.0
+                if self.verbose:
+                    print(f"[个人数据] 提前分流：{hit['topic']}", flush=True)
+                return res
+
         try:
             res = self._ask(question, history_block, prev_user)
         except Exception as e:                          # noqa: BLE001
@@ -269,7 +308,70 @@ class AgentQAPipeline:
                       f"{res.model_error[:120]}", flush=True)
             return self._rescue(question, RuntimeError(res.model_error),
                                 evs=res.evidences)
+
+        # ---------- 官网兜底（2026-10-17） ----------
+        # 只有走到这里才说明「整条链路正常跑完、结论是手册里没有」——
+        # 这才是去官网找一趟的时机。**技术故障不走这条**（上面已经 return 给
+        # _rescue 了）：那是系统坏了，不是手册没规定，拿官网内容顶上会把故障
+        # 掩盖成「手册里没有，但官网有」，管理员就再也看不出后台瘫了。
+        if res.refused and self.enable_web:
+            res.web, res.web_login = self._web_lookup(question)
         return res
+
+    def _login_guard(self, question: str):
+        """问的是「我自己的数据」→ 返回引导话术；否则 None。
+
+        判据和话术都在 `src/retrieval/need_login.py`（三道闸：得自称、得是个人
+        数据主题、不能是公共规则），这里只负责「提前拦」这个动作，不复制词表 ——
+        词表只留一处，将来加词不用改两遍。
+        """
+        try:
+            from need_login import check as _check
+            return _check(question)
+        except Exception:                                   # noqa: BLE001
+            return None                                     # 词表坏了不能拖垮主路
+
+    def _subject_guard(self, question: str, evs):
+        """问的场所是不是证据里真有 → 没有就返回说明字典；否则 None。
+
+        判据全在 `src/retrieval/subject_guard.py`（两道闸 + 词表），这里只做
+        「防御式调用」：闸门自己写错了，宁可放行也不能让整题崩掉。
+        """
+        try:
+            from subject_guard import check as _check
+            return _check(question, evs)
+        except Exception:                                   # noqa: BLE001
+            return None
+
+    def _web_lookup(self, question: str):
+        """手册判拒之后，去学校官网找一趟。返回 (官网素材, 空)。
+
+        三条纪律（与 src/retrieval/web_fallback.py 文件头一致）：
+          ① 只在**手册已判拒**之后调用 —— 手册能答的题，官网一个字都不掺；
+          ② 异常一律吞掉：官网挂了就只能拒答，绝不能让它把主链路拖塌；
+          ③ 个人数据在 `ask()` 开头就已经分流掉了（`_login_guard`），走到这里
+             说明确实该去公开网页找 —— 万一前置漏判，让官网再试一次也比直接
+             拒答好（官网本来就查不到别人的成绩）。
+        """
+        t0 = time.time()
+        try:
+            from web_fallback import ask_web
+            web = ask_web(question, budget=self.web_budget)
+        except Exception as e:                              # noqa: BLE001
+            # 留一条 reason 让页面与日志都看得出「是官网这条路坏了」，
+            # 而不是把它当成「官网也没有」——两者对学生是同一句拒答，
+            # 对排查是天壤之别。
+            return ({"found": False, "reason": "error", "passages": [],
+                     "tables": [], "links": [],
+                     "error": f"{type(e).__name__}: {str(e)[:160]}",
+                     "fetched_at": time.strftime("%Y-%m-%d %H:%M"),
+                     "stats": {"elapsed": round(time.time() - t0, 1)}}, {})
+
+        if self.verbose:
+            print(f"[官网兜底] {web.get('reason')} ｜ 命中 {len(web.get('passages') or [])} 段"
+                  f" / 表 {len(web.get('tables') or [])} 张"
+                  f" ｜ {web.get('stats', {}).get('elapsed', 0)}s", flush=True)
+        return web, {}
 
     def _rescue(self, question: str, err: Exception, evs=None):
         """大模型用不了时的保底作答：照抄手册原文，不留白。"""
@@ -380,6 +482,33 @@ class AgentQAPipeline:
                 res.hops = len(queries)
                 res.n_evidence = len(evs)
                 res.latency = time.time() - t0
+                return res
+
+        # ---------- 主体一致闸（2026-10-18） ----------
+        # 上面那道闸只看"分低不低"，这道看"问的和答的是不是同一个地方"。
+        # 起因：手册里没有图书馆开放时间，但《学生公寓管理办法》第十九条
+        # 「学生公寓大门开放时间为每天 6:00 至 23:30」句式太像，模型直接把
+        # 「图书馆」代进句式答了出来 —— 引用是真的，主体是假的。
+        # 判据见 src/retrieval/subject_guard.py：**证据分 <0.08 且主体词在证据里
+        # 只占不到两成**才拦；0.08 这条线在 60 题所有正常题（最低 0.1118）之下，
+        # 所以题只要有一点像样证据，本闸根本不启动 —— 零误伤是算出来的。
+        # 拦下 = 判"手册里没有"，`ask()` 随后自然会去官网兜一次。
+        if self.enable_subject:
+            subj = self._subject_guard(question, evs)
+            if subj:
+                res = QAAnswer(question=question)
+                res.evidences = evs
+                res.refused = True
+                res.refuse_reason = subj["reason"]
+                plan = dict(plan)
+                plan["subject_mismatch"] = {
+                    k: subj[k] for k in ("subject", "top", "support", "ratio")}
+                res.plan = plan
+                res.hops = len(queries)
+                res.n_evidence = len(evs)
+                res.latency = time.time() - t0
+                if self.verbose:
+                    print(f"[主体一致] {subj['reason']}", flush=True)
                 return res
 
         res = self.base.answer_from_evidences(question, evs,

@@ -392,6 +392,15 @@ class QAAnswer:
     reflect_log: list = field(default_factory=list)  # 每轮自检结果（缺口清单等）
     first_answer: str = ""                     # 自检前的首答快照（验收对比用）
     refuse_confirm: dict = field(default_factory=dict)  # 拒答复核记录（驳回/维持）
+    # ---- 官网兜底（2026-10-17 新增） ----
+    # 手册判「没有」之后才去官网找的那一份素材，形状见
+    # src/retrieval/web_fallback.ask_web；空 dict = 没走这一趟。
+    # ⚠ 它**不是** evidence：不进 citations、不进「手册答对率」，
+    #   页面另起一张「官网来源」卡单独标（W1/W2…），页面顶部明说不是学生手册。
+    web: dict = field(default_factory=dict)
+    # 命中「得登录才能查」时的引导话术（src/retrieval/need_login.check），
+    # 命中就**根本不去搜官网**，省 8 秒。
+    web_login: dict = field(default_factory=dict)
 
     def pretty(self) -> str:
         lines = [f"问题：{self.question}", ""]
