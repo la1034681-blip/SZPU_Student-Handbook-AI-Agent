@@ -381,8 +381,25 @@ class AgentQAPipeline:
         """
         t0 = time.time()
         try:
-            from web_fallback import ask_web
-            web = ask_web(question, budget=self.web_budget)
+            from web_fallback import ask_web, rewrites as _rewrites
+            # 先拿原话搜；搜不到就把学生用词换成官网用词再搜一次。
+            # 为什么不能只塞关键词（2026-10-20 实测）：官网那条链路后面还有一道
+            # 「这句得覆盖问题里三成的词」，问题本身仍是「校车」，时刻表里没有
+            # 「校」字 → 搜到了也全被筛掉。问「环校巴士」原来就是这样静默失败的。
+            tries = [question] + _rewrites(question)
+            deadline = time.time() + self.web_budget * 1.6
+            web = None
+            for qv in tries:
+                left = deadline - time.time()
+                if left < 3 and web is not None:
+                    break
+                w = ask_web(qv, budget=max(3.0, min(self.web_budget, left)))
+                w["query_used"] = qv
+                if web is None or (not web.get("found") and w.get("found")):
+                    web = w
+                if w.get("found") or w.get("links"):
+                    web = w
+                    break
         except Exception as e:                              # noqa: BLE001
             # 留一条 reason 让页面与日志都看得出「是官网这条路坏了」，
             # 而不是把它当成「官网也没有」——两者对学生是同一句拒答，
@@ -394,8 +411,10 @@ class AgentQAPipeline:
                      "stats": {"elapsed": round(time.time() - t0, 1)}}, {})
 
         if self.verbose:
+            used = web.get("query_used") or question
             print(f"[官网兜底] {web.get('reason')} ｜ 命中 {len(web.get('passages') or [])} 段"
                   f" / 表 {len(web.get('tables') or [])} 张"
+                  f" ｜ 搜的是「{used}」"
                   f" ｜ {web.get('stats', {}).get('elapsed', 0)}s", flush=True)
         return web, {}
 
