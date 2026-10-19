@@ -56,6 +56,13 @@ DEFAULT_EMBED_MODEL = "BAAI/bge-m3"
 # 所以最坏 30×2＝60 秒/路。真断的时候仍然认输得快，但慢的时候等得到。
 # 想临时收紧可设环境变量 EMBED_API_TIMEOUT。
 _DEFAULT_TIMEOUT = 30
+# 重排单独一个更短的超时，默认 10 秒。
+# 为什么和向量分开（2026-10-19 线上实测）：Cloud 到模力方舟这一路，向量是
+# `Read timed out`（连得上、只是回得慢，30 秒等得到），重排却是 `ConnectTimeout`
+# （TCP 都建不起来）。两种病不能同一个方子 —— 重排等 30 秒纯属白等，
+# 10 秒认输、只重试 1 次，最坏 20 秒，比原来 60 秒省下 40 秒。
+# 正常情况下一次重排约 0.6~1.5 秒，10 秒仍是 6 倍余量。
+_DEFAULT_RERANK_TIMEOUT = 10
 DEFAULT_RERANK_MODEL = "BAAI/bge-reranker-v2-m3"
 
 
@@ -180,8 +187,11 @@ class ApiReranker:
     """
 
     def __init__(self, model: str | None = None, base_url: str | None = None,
-                 api_key: str | None = None):
-        self.c = _Client(base_url, api_key)
+                 api_key: str | None = None, timeout: float | None = None,
+                 retries: int = 1):
+        _t = float(timeout or os.environ.get("EMBED_API_RERANK_TIMEOUT")
+                   or _DEFAULT_RERANK_TIMEOUT)
+        self.c = _Client(base_url, api_key, timeout=_t, retries=retries)
         self.model = (model or os.environ.get("EMBED_API_RERANK_MODEL")
                       or DEFAULT_RERANK_MODEL)
 
