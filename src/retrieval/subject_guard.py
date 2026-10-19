@@ -30,9 +30,11 @@
 
 判据（两道闸，必须同时成立才拦）
 --------------------------------
-1. **证据够弱**：全部证据的最高分 < `WEAK_TOP`（默认 0.08）。
-   这道闸的意义是**数学上保证不误伤**：题目本身证据分 ≥0.08 时，本闸**根本不启动**。
-   而 60 题里正常题最低是 0.1118 —— 全都在这条线之上，一道都不会被碰到。
+1. **证据够弱**：全部证据的最高分 < `STRONG_TOP`（默认 0.20）。
+   这道闸的意义是**数学上保证不误伤**：题目本身证据分 ≥0.20 时，本闸**根本不启动**。
+   （2026-10-20 把启动面从 0.08 抬到 0.20：换 Cloudflare 重排后分数整体上浮，
+   《公寓大门》那条从 0.0248 涨到 0.0857，「食堂几点开门」就是这么漏过去的；
+   抬之前验过 60 题，0.08~0.20 这段**一道真题都没有**。详见 `STRONG_TOP` 注释。）
 2. **主体无支撑**：问句里提到的场所（图书馆/食堂/快递…），在证据里出现的最高分
    < 最高分 × `SUPPORT_RATIO`（默认 0.2）；或者干脆一次都没出现。
 
@@ -87,6 +89,16 @@ GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
 # 取值依据：60 题正常题最低 0.1118、真拒答题最高 0.1093；三道主体替换错答最高 0.0529。
 # 0.08 在「错答」之上、「所有正常题」之下 —— 所以对 60 题零误伤是算出来的，不是估的。
 WEAK_TOP = 0.08
+# 第二道线（2026-10-20 加）：闸门启动面从 0.08 抬到 0.20。
+# 为什么要加：0.08 这条线是拿模力方舟的分数标定的，换成 Cloudflare 重排后分数整体上浮 ——
+# 「食堂几点开门」那条《公寓大门》从 0.0248 涨到 **0.0857**、直接越过 0.08 线，
+# 于是被答成「食堂大门 6:00–23:30」；「图书馆开放时间」也从 0.0529 涨到 0.1541。
+# 抬到 0.20 之前先验过 60 题：**没有一道真题落在 0.08~0.20 之间**（落在闸门启动面的
+# 5 道全是负例题），所以这不是"靠抬阈值硬压"，是区间本来就空着。
+# 判据仍然是「比值」（support ≥ top×0.2），不是"出现过就算"：
+# 图书馆那两条恰好被《留学生/机构》条款蹭到 0.0039~0.0109 分，比值只有 0.025~0.055，
+# 照样判无支撑 —— 这就是为什么不能改成简单粗暴的 support>0。
+STRONG_TOP = 0.20
 # 主体词在证据里的最高分，要达到"最高分 × 这个比值"才算有支撑。
 # 「图书馆开放时间」那道：0.0026 / 0.0529 = 0.049 → 无支撑（正确拦下）。
 SUPPORT_RATIO = 0.2
@@ -118,8 +130,8 @@ def check(question: str, evidences) -> dict | None:
         return None                      # 没提具体场所 → 不管，交给原有链路
 
     top = max((e.score or 0.0) for e in evidences)
-    if top <= 0 or top >= WEAK_TOP:
-        return None                      # 闸一：证据够强 → 不启动（零误伤保证）
+    if top <= 0 or top >= STRONG_TOP:
+        return None                      # 证据够强 → 闸门不启动（≥0.20 一律放行）
 
     for name, words in hits:
         support = 0.0
@@ -128,6 +140,7 @@ def check(question: str, evidences) -> dict | None:
                 support = max(support, e.score or 0.0)
         if support >= top * SUPPORT_RATIO:
             continue                     # 这个主体在证据里有支撑 → 放行
+        band = "weak" if top < WEAK_TOP else "mid"
         ratio = support / top if top else 0.0
         return {
             "subject": name,
@@ -135,6 +148,8 @@ def check(question: str, evidences) -> dict | None:
             "top": round(top, 4),
             "support": round(support, 4),
             "weak_top": WEAK_TOP,
+            "strong_top": STRONG_TOP,
+            "band": band,
             "ratio": round(ratio, 3),
             "reason": (f"主体不符：问的是「{name}」，但证据里最高分那条"
                        f"（{top:.4f}）没有提到它"),
@@ -146,6 +161,10 @@ def hint(hit: dict | None) -> str:
     """给页面「内部过程」用的一句话；没命中就返回空串。"""
     if not hit:
         return ""
+    if hit.get("band") == "mid":
+        return (f"主体一致闸：提问主体「{hit['subject']}」在证据中一次都没出现，"
+                f"最高分仅 {hit['top']:.4f}（低于 {hit.get('strong_top', 0.2)}）"
+                f"→ 判为答非所问，不交给模型")
     return (f"主体一致闸：提问主体「{hit['subject']}」在证据中只占 "
             f"{hit['support']:.4f} 分（最高分 {hit['top']:.4f}，"
             f"低于弱证据线 {hit['weak_top']}）→ 判为答非所问，不交给模型")

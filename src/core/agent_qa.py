@@ -382,23 +382,27 @@ class AgentQAPipeline:
         t0 = time.time()
         try:
             from web_fallback import ask_web, rewrites as _rewrites
-            # 先拿原话搜；搜不到就把学生用词换成官网用词再搜一次。
-            # 为什么不能只塞关键词（2026-10-20 实测）：官网那条链路后面还有一道
-            # 「这句得覆盖问题里三成的词」，问题本身仍是「校车」，时刻表里没有
+            # 官网这条路的规矩（2026-10-20 定）：**先按原话搜，搜不到就换成官网
+            # 的说法再搜，几路里挑最好的那份**。为什么不只塞关键词：官网后面还有
+            # 一道「这句得覆盖问题三成的词」，问题本身仍是「校车」，时刻表里没有
             # 「校」字 → 搜到了也全被筛掉。问「环校巴士」原来就是这样静默失败的。
             tries = [question] + _rewrites(question)
             deadline = time.time() + self.web_budget * 1.6
-            web = None
+            web, best_score = None, -1
             for qv in tries:
                 left = deadline - time.time()
                 if left < 3 and web is not None:
                     break
                 w = ask_web(qv, budget=max(3.0, min(self.web_budget, left)))
                 w["query_used"] = qv
-                if web is None or (not web.get("found") and w.get("found")):
-                    web = w
-                if w.get("found") or w.get("links"):
-                    web = w
+                # 打分：表格最值钱，其次正文段，只有链接最次
+                score = (3 * len(w.get("tables") or [])
+                         + 2 * len(w.get("passages") or [])
+                         + len(w.get("links") or []))
+                if web is None or score > best_score:
+                    web, best_score = w, score
+                # 已经拿到实在东西（有表、或≥2 段正文）就不再多花时间换词
+                if score >= 4:
                     break
         except Exception as e:                              # noqa: BLE001
             # 留一条 reason 让页面与日志都看得出「是官网这条路坏了」，

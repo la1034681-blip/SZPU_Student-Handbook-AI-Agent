@@ -29,7 +29,7 @@ import _paths  # noqa: E402,F401
 
 from qa_chain import load_env_file  # noqa: E402
 from retrievers import HandbookRetriever  # noqa: E402
-from subject_guard import WEAK_TOP, check  # noqa: E402
+from subject_guard import STRONG_TOP, WEAK_TOP, check  # noqa: E402
 
 ROOT = SRC.parent
 FAIL = []
@@ -68,7 +68,8 @@ def main() -> int:
     r = HandbookRetriever(str(ROOT / "data"), use_rerank=True, verbose=False)
     print(f"\n编码后端 = {r.backend}　重排 = {r.use_rerank}　"
           f"降级 = {r.degraded or '无'}")
-    print(f"弱证据线 WEAK_TOP = {WEAK_TOP}\n")
+    print(f"闸门启动面 = top1 < STRONG_TOP({STRONG_TOP})　"
+          f"（其中 < {WEAK_TOP} 走比值判据）\n")
 
     def run(q, k=6):
         evs = r.search(q, top_k=k)
@@ -96,12 +97,12 @@ def main() -> int:
         evs = r.search(q, top_k=6)
         top1 = max((e.score or 0.0) for e in evs) if evs else 0.0
         hit = check(q, evs)
-        if top1 < WEAK_TOP:
+        if top1 < STRONG_TOP:
             gated.append((it["qid"], top1, bool(it.get("refuse_expected"))))
         if hit:
             blocked.append((it["qid"], top1, hit["subject"], hit["reason"],
                             bool(it.get("refuse_expected"))))
-    print(f"   60 题里证据分低于 {WEAK_TOP} 的（闸门启动面）：{len(gated)} 道")
+    print(f"   60 题里证据分低于 {STRONG_TOP} 的（闸门启动面）：{len(gated)} 道")
     for qid, t, ref in gated:
         print(f"      {qid} top1={t:.4f}　{'该拒（负例题）' if ref else '★真题'}")
     # 红线不是「一道都不拦」，而是「**真题**一道都不许拦」——
