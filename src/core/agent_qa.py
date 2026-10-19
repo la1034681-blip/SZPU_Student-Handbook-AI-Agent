@@ -60,6 +60,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -84,6 +85,31 @@ def _norm_q(text: str) -> str:
 
 def _same_q(a: str, b: str) -> bool:
     return _norm_q(a) == _norm_q(b) and bool(_norm_q(a))
+
+
+# 「接着上一句问」的承接词。只认这些字面信号，不按句子长短猜。
+_FOLLOWUP_RE = re.compile(
+    r"(它|它们|这个|那个|这些|那些|上述|刚才|上面|前面|还有|另外|那么|那|呢|的话|接着|继续)")
+
+
+def _is_followup(question: str, prev_user: str = "") -> bool:
+    """这句是「接着上一句问」，还是另起一个新话题？
+
+    为什么必须判（2026-10-19 线上撞到，本地稳定复现）
+    --------------------------------------------------
+    下面有一段「追问兜底」：planner 没补出指代时，把「上一句 + 本句」拼成一路
+    去检索，靠上一句的词补「它 / 那」——本意是好的。但学生**换话题**时
+    （先问「旷课多少学时会被处分」，接着问「学校的班车怎么坐」）这句也照样被
+    拼进去：上一句的「旷课 / 处分 / 学时」把《违纪处分办法》顶到 0.986 分，
+    模型于是把处分条款照抄出来当答案 —— 学生问班车，得到的是一整页处分细则。
+    空上文时同一句只有 0.0008 分、正常拒答，差别全在那一句拼接上。
+
+    ⚠ 只认承接词，**不按句子长短猜**：把「宿舍几点关门」这种短句误判成追问，
+      等于把新话题又拼回旧话题，那是最坏的一种错 —— 答得一本正经、引用还是真的。
+    """
+    if not prev_user:
+        return False
+    return bool(_FOLLOWUP_RE.search(question or ""))
 
 
 class AgentQAPipeline:
@@ -427,12 +453,18 @@ class AgentQAPipeline:
         # （planner 保证 standalone 至少等于原问题）。生成仍然用原问句，这样
         # 回答的是学生真正问的那句，语气与承接也对得上。
         root = (plan.get("standalone") or question).strip() or question
+        # 换了新话题就别让上文碰到检索（2026-10-19，缘由见 _is_followup 的注释）：
+        # 不是追问时，连 planner 的补全句也不认 —— 小模型被吩咐过「别把上一轮搬
+        # 进来」，但它不一定听；原句本身语义完整，直接用原句检索最安全。
+        _fu = _is_followup(question, prev_user)
+        if not _fu:
+            root = question
         queries = ([root] + plan["sub_questions"] if need_split else [root])
         # 追问兜底（确定性，不指望小模型）：本次是追问、而模型又**没**把指代
         # 补出来（standalone 与原句一样）时，再补一路「上一句 + 本句」——
         # 靠上一个话题的词把「它/那」补上。例：「那要多久呢？」单独拿去检索
         # 什么都没；拼成「重修要什么条件 那要多久呢」就能搜到重修条款。
-        if (prev_user and history_block
+        if (_fu and prev_user and history_block
                 and _same_q(root, question) and prev_user not in queries):
             queries = queries + [f"{prev_user} {question}"]
         # 口语词换手册词（2026-10-16）：学生说「体测」，手册写「体质测试」，
