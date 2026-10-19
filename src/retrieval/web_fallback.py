@@ -388,6 +388,15 @@ def rank_candidates(items: list[dict], question: str, kws=None) -> list[dict]:
     strong, weak = [], []
     for it in items:
         title = it["title"]
+        if _is_news(title):
+            # 消息类页面（招聘/录取/揭牌/讲座…）**先剔掉，再谈相关性**。
+            # 2026-10-20 实测：问「图书馆时间」，结果全是招聘通知和
+            # 《3D 打印中心揭牌仪式…在图书馆西厅举行》——
+            # 「8月17日」能过日期闸、「图书馆」能过覆盖闸，可一个字没回答几点开门。
+            # 宁可拒答，也不给这种「引用是真的、主体是偷的」答案。
+            # ⚠ 必须放在 overlap 判断**之前**：这类标题常带「服务/中心」，
+            #   会被下面的 info_page 当成"信息型标题"补位进来。
+            continue
         tb = _bigrams(title)
         overlap = len(qb & tb)
         info_page = any(k in title for k in ("指南", "服务", "联系", "一览", "须知",
@@ -417,6 +426,26 @@ def rank_candidates(items: list[dict], question: str, kws=None) -> list[dict]:
 _PLACE_WORDS = ("校区", "园区", "楼", "室", "地址", "位于", "坐落", "号",
                 "东区", "西区", "南区", "北区", "门口")
 _TIME_RE = re.compile(r"\d{1,2}[:：]\s*\d{2}|\d{1,2}\s*点")
+_DATE_RE = re.compile(r"\d{1,2}\s*月\s*\d{1,2}\s*日|\d{1,2}\s*[-—~至]\s*\d{1,2}\s*月")
+
+# 「消息类」标题：招聘、录取、公示、讲座……这类页面**碰巧**带主体词的概率极高，
+# 但内容跟"这个场所怎么用"毫无关系。
+# 实测（2026-10-20）：问「图书馆时间」，头三条全是
+# 《2026年招聘图书馆资源建设专业馆员岗位递补录取结果的通知》和一篇教师获奖新闻 ——
+# 只有「图书馆」三个字对得上，一个字没回答几点开门。
+_NEWS_WORDS = ("招聘", "录取", "公示", "公告", "通知", "讲座", "活动", "举行",
+               "结果", "荣膺", "荣获", "喜报", "招标", "采购", "面试", "答辩",
+               "开班", "结业", "表彰", "启动", "签约")
+# 标题里带这些词的「通知」其实是信息页（《关于调整图书馆开放时间的通知》）
+# ⚠ 别把「服务」写进来：「3D 打印公共技术**服务**中心揭牌仪式」会被当成信息页。
+_INFO_WORDS = ("时间", "时刻", "一览", "指南", "须知", "开放", "联系", "作息", "校历")
+
+
+def _is_news(title: str) -> bool:
+    """消息类页面？带「时间/开放/指南」等字样的除外。"""
+    if any(w in title for w in _INFO_WORDS):
+        return False
+    return any(w in title for w in _NEWS_WORDS)
 
 
 def _focus_ok(question: str, text: str) -> bool:
@@ -436,8 +465,13 @@ def _focus_ok(question: str, text: str) -> bool:
     # 起因：问「图书馆开放时间」，抓回一条《校园开放日活动成功举办》——里面有
     # 「图书馆」也有「开放**日**」，字面都对得上，可它一个字没回答几点开门。
     # 原来只认「几点/什么时候/时间表」，这一问法恰好漏在网眼下面。
-    if re.search(r"几点|什么时候|多少点|时间表|开放时间|营业时间|开门|关门|作息", q):
+    if re.search(r"几点|什么时候|多少点|时间表|开放时间|营业时间|开馆|闭馆|开门|关门|作息", q):
         if not _TIME_RE.search(text):
+            return False
+    elif re.search(r"时间|日期|几号|哪天", q):
+        # 泛泛问「图书馆时间」这类（2026-10-20 补）：钟点或日期都算对上。
+        # 之前这一档完全没有闸，招聘通知只要含「图书馆」就能混进来。
+        if not (_TIME_RE.search(text) or _DATE_RE.search(text)):
             return False
     if re.search(r"电话|联系方式|找谁", q):
         if not re.search(r"\d{7,}|内线|电话", text):
