@@ -467,6 +467,12 @@ class AgentQAPipeline:
         if (_fu and prev_user and history_block
                 and _same_q(root, question) and prev_user not in queries):
             queries = queries + [f"{prev_user} {question}"]
+        # 追问时「原句」也单独搜一路（2026-10-19）。planner 的补全会**加戏**：
+        # 问「那吹风机呢？」它补成「那吹风机可以用来吹头发吗」——「公寓」这个
+        # 场景词丢了，"吹头发"又把相关性稀释掉，最高分只有 0.021，整题被判拒答；
+        # 而原句「那吹风机呢？」单独搜是 0.91。合并按条款取最高分，多一路只增不减。
+        if _fu and not _same_q(root, question):
+            queries.append(question)
         # 口语词换手册词（2026-10-16）：学生说「体测」，手册写「体质测试」，
         # 字面一个字都不重合 → BM25 零命中、向量也拉不起来，最高分只有 0.05，
         # 最后被引用校验判「证据只是擦边」整题拒答。这里多走几路「换过词的
@@ -476,7 +482,14 @@ class AgentQAPipeline:
         _alias_used = []
         try:
             from term_alias import variants as _alias_variants
-            _extra = [v for v in _alias_variants(root) if v not in queries]
+            # 对「补全句」和「原句」都换一轮词：追问时两者都在 queries 里，
+            # 只换补全句的话，原句里那个具体词（吹风机…）就白瞎了。
+            _srcs = [root] if _same_q(root, question) else [root, question]
+            _extra = []
+            for _s in _srcs:
+                for v in _alias_variants(_s):
+                    if v not in queries and v not in _extra:
+                        _extra.append(v)
             if _extra:
                 _alias_used = list(_extra)
         except Exception:                                   # noqa: BLE001
