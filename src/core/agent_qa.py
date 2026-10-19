@@ -556,8 +556,12 @@ class AgentQAPipeline:
                     print(f"[主体一致] {subj['reason']}", flush=True)
                 return res
 
+        # 降级时把 degraded 交给生成层：那边会关掉「拒答复核」。
+        # 理由见 qa_chain 里那段注释 —— 降级后分数是 BM25 原始分，量纲不同、
+        # 与真题/弃答题的重叠严重，拿它去驳模型只会逼出一个硬凑的答案。
         res = self.base.answer_from_evidences(question, evs,
-                                              history_block=history_block)
+                                              history_block=history_block,
+                                              degraded=bool(_deg))
 
         # ---------- 自检回环 ----------
         # 门控说明：**不按 need_split 限定**。第 1 步发现，唯一还失分的 Q36
@@ -585,7 +589,8 @@ class AgentQAPipeline:
                     pass
                 res = self.base.answer_from_evidences(question, new_evs,
                                                      hints=gaps,
-                                                     history_block=history_block)
+                                                     history_block=history_block,
+                                                     degraded=bool(_deg))
                 rounds += 1
                 if res.refused:
                     break

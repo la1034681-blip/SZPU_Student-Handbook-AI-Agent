@@ -508,7 +508,8 @@ class QAPipeline:
         return res
 
     def answer_from_evidences(self, question: str, evs, hints=None,
-                              history_block: str = "") -> QAAnswer:
+                              history_block: str = "",
+                              degraded: bool = False) -> QAAnswer:
         """生成 + 两级校验：给定证据产出答案（**不含检索**）。
 
         阶段 6 抽出：供 Agent 循环在"合并了多路检索的证据"之后复用，
@@ -590,7 +591,13 @@ class QAPipeline:
             # 判据用检索分而不是模型自述 —— 检索分是客观打分，模型自述是主观判断，
             # 弱模型最容易在这主观一步上保守过头（Q06 就是这么被误拒的）。
             top1 = max((e.score or 0.0) for e in evs) if evs else 0.0
-            if evs and self.refuse_confirm_min > 0 and top1 >= self.refuse_confirm_min:
+            # 降级时**不许**复核：此时分数已退化成 BM25 原始分，与「融合 + 重排」的
+            # 分不是一个量纲，拿它去驳模型等于拿坏尺子量东西。实测量过（60 题纯 BM25）：
+            # 弃答题最高 20.75、真题最低 7.66 —— 两者重叠，阈值根本切不开，
+            # 所以降级时任何「分数高就说明有证据」的推断都不成立（2026-10-19 线上
+            # 「食堂几点开门」被硬答成留学生管理办法，就是这么来的）。
+            if (evs and self.refuse_confirm_min > 0 and not degraded
+                    and top1 >= self.refuse_confirm_min):
                 self._log(f"模型称证据不足，但 top1={top1:.3f} ≥ "
                           f"{self.refuse_confirm_min}，启动拒答复核")
                 # 第一手：把「证据确实有」说破，让模型重答一次。
