@@ -43,6 +43,13 @@ DEFAULT_BASE = "https://api.siliconflow.cn/v1"
 #   模力方舟**（`EMBED_API_BASE=https://api.moark.com/v1`、模型名不带前缀），
 #   真实取值一律以 .env / Streamlit Secrets 为准，别照 DEFAULT 猜。
 DEFAULT_EMBED_MODEL = "BAAI/bge-m3"
+
+# 单次接口调用的读超时（秒）。
+# 正常一次编码约 0.8 秒、重排约 1.5 秒，8 秒已是 5~10 倍余量。
+# 定这么短是针对「连不上」的场景：原来 30 秒 × 3 次重试 = 90 秒/路，
+# 两路（向量 + 重排）就是一题干等 3 分钟（2026-10-19 线上实测 208 秒）。
+# 宁可快点认输走关键词，也别让学生盯着转圈。
+_DEFAULT_TIMEOUT = 8
 DEFAULT_RERANK_MODEL = "BAAI/bge-reranker-v2-m3"
 
 
@@ -73,7 +80,8 @@ class _Client:
         self.base = (base_url or os.environ.get("EMBED_API_BASE")
                      or DEFAULT_BASE).rstrip("/")
         self.key = (api_key or os.environ.get("EMBED_API_KEY") or "").strip()
-        self.timeout = float(timeout or os.environ.get("EMBED_API_TIMEOUT") or 30)
+        self.timeout = float(timeout or os.environ.get("EMBED_API_TIMEOUT")
+                             or _DEFAULT_TIMEOUT)
         self.retries = int(retries)
         if not self.key:
             raise ApiError(
@@ -93,7 +101,12 @@ class _Client:
                                   timeout=self.timeout)
             except Exception as e:                       # noqa: BLE001
                 last = f"网络异常：{e}"
-                if attempt < self.retries:
+                # 连不上、读超时这类**确定性失败**（网关不通 / 被墙 / 地址写错）
+                # 重试几次结果都一样，只会把 8 秒拖成 24 秒，学生干等着看转圈。
+                # 所以网络类最多重试 1 次；限流与 5xx 才走下面的完整重试。
+                # 2026-10-19 线上实测：moark 从 Cloud 读超时（30s×3 次），
+                # 一道题光等网络就 90 秒，两路合计 208 秒才出答案。
+                if attempt < min(self.retries, 1):
                     time.sleep(0.8 * (attempt + 1))
                     continue
                 raise ApiError(f"连不上编码接口（{self.base}）：{e}") from e

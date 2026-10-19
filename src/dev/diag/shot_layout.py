@@ -18,7 +18,10 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+from _secret import code as _code   # 口令只从 .env 读（仓库公开，不许写死）
+
 URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8502/"
+CODE = _code()
 OUT = Path(__file__).resolve().parents[3] / ".trash_tmp" / "layout_shots"
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -33,7 +36,7 @@ def main():
 
         # 门禁
         if pg.locator('input[type="password"]').count():
-            pg.fill('input[type="password"]', "SZPU666")
+            pg.fill('input[type="password"]', CODE)
             pg.get_by_role("button", name="进 入").click()
             pg.wait_for_timeout(8000)
 

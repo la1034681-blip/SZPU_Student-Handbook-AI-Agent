@@ -7,7 +7,7 @@
   3. 提交一条建议 → 提示成功 → 内容真的出现在墙上（读写云库）
   4. 点「使用统计」入口 → 出现密钥框（学生到此为止）
   5. 密钥输错 → 报错，看不到任何数字
-  6. 密钥 9925 → 进入看板，出现统计数字
+  6. 密钥 TESTADMIN → 进入看板，出现统计数字
   7. 真实提问一次 → 云库 qa_usage 的计数 +1
 
 测试会往云库写一条带【自测】标记的留言，跑完由外部 SQL 清掉（页面没有删除入口）。
@@ -26,8 +26,8 @@ sys.path.insert(0, str(ROOT / "src"))
 import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
 # 必须在 import app 之前：load_env_file 只填「尚未存在」的变量
-os.environ["ACCESS_CODE"] = "SZPU666"
-os.environ["ADMIN_CODE"] = "9925"
+os.environ["ACCESS_CODE"] = "TESTCODE"
+os.environ["ADMIN_CODE"] = "TESTADMIN"
 os.environ["CLOUD_LOG_ENABLED"] = "1"
 
 from streamlit.testing.v1 import AppTest          # noqa: E402
@@ -62,7 +62,7 @@ def main():
 
     print("\n① 通过口令进入", flush=True)
     show_exc(at, "初始")
-    at.text_input[0].set_value("SZPU666")
+    at.text_input[0].set_value("TESTCODE")
     at.button[0].click().run()
     show_exc(at, "进入")
     print("   已进主界面:", has_ask_entry(at), flush=True)
@@ -120,9 +120,9 @@ def main():
             print("   error:", [e.value[:40] for e in at.error], flush=True)
             print("   仍看不到数字:", "累计提问" not in md_all(at), flush=True)
 
-    print("\n⑦ 密钥 9925 进看板", flush=True)
+    print("\n⑦ 密钥 TESTADMIN 进看板", flush=True)
     if at.text_input:
-        at.text_input[0].set_value("9925")
+        at.text_input[0].set_value("TESTADMIN")
         bb = btn(at, "进 入") or (at.button[0] if at.button else None)
         if bb is not None:
             bb.click().run()

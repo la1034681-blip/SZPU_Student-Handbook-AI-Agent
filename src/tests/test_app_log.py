@@ -18,7 +18,7 @@ APP = str(ROOT / "app.py")
 sys.path.insert(0, str(ROOT / "src"))
 import _paths  # noqa: E402 把 core/retrieval/infra/cli 也挂上搜索路径
 
-os.environ["ACCESS_CODE"] = "SZPU666"
+os.environ["ACCESS_CODE"] = "TESTCODE"
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
 from oplog import get_logger              # noqa: E402
@@ -29,7 +29,7 @@ def main():
     at = AppTest.from_file(APP, default_timeout=900)
     at.run()
 
-    at.text_input[0].set_value("SZPU666")
+    at.text_input[0].set_value("TESTCODE")
     at.button[0].click().run()
     print("进门成功（有问答入口）:", has_ask_entry(at), flush=True)
 

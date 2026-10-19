@@ -23,10 +23,11 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 from _browser import content_view   # 穿透线上 Cloud 的 iframe，见该模块 docstring
+from _secret import admin as _admin, code as _code   # 口令/密钥只从 .env 读
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8502/"
-CODE = "SZPU666"
-ADMIN = "9925"
+CODE = _code()
+ADMIN = _admin()
 OUT = Path(__file__).resolve().parents[3] / ".trash_tmp" / "layout_shots"
 OUT.mkdir(parents=True, exist_ok=True)
 PROBLEMS: list[str] = []
@@ -106,7 +107,7 @@ def main():
         #      （口令框＝「请输入访问口令」，密钥框＝「请输入查看密钥」）；
         #   ② 直接 goto ?view=stats 等于**新开一次页面加载**，上个页面的登录状态
         #      没了 → 会先回到门禁页。所以得：先过口令 → 再看是不是在问密钥 → 再输密钥。
-        print("\n⓪b 使用统计页（要密钥 9925）", flush=True)
+        print("\n⓪b 使用统计页（要看板密钥）", flush=True)
         pg0.goto(URL.rstrip("/") + "/?view=stats", wait_until="domcontentloaded")
         v0 = content_view(pg0)                    # 这次导航后必须重新取
 
@@ -168,7 +169,7 @@ def main():
         pg.screenshot(path=str(OUT / "g1_chinese.png"), full_page=True)
 
         print("\n② 汉字夹在正确口令里", flush=True)
-        crash, _, inside = try_code(v, "SZPU666中", "混合")
+        crash, _, inside = try_code(v, CODE + "中", "混合")
         ck("页面没崩", not crash, crash)
         ck("也没放进去", not inside)
 

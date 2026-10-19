@@ -385,8 +385,8 @@ def load_secrets():
 
     线上怎么配（Streamlit Cloud → 你的 app → Settings → Secrets，TOML 格式）：
 
-        ACCESS_CODE = "SZPU666"
-        ADMIN_CODE = "9925"
+        ACCESS_CODE = "你的访问口令"
+        ADMIN_CODE = "你的看板密钥"
         FREE_LLM_API_KEY = "…"
         EMBED_BACKEND = "api"
         EMBED_API_BASE = "https://api.moark.com/v1"
@@ -485,12 +485,18 @@ def get_memory() -> SessionMemory:
 
 
 def admin_code() -> str:
-    """看板密钥（.env 的 ADMIN_CODE，默认 9925）—— 只在服务端比对，不外发。"""
-    return (os.environ.get("ADMIN_CODE") or "9925").strip()
+    """看板密钥（`.env` 的 ADMIN_CODE）—— 只在服务端比对，不外发。
+
+    默认空 = 挡住，与访问口令同一口径（`_same_secret` 对空 want 恒返回 False）。
+    原来这里默认写死一个 4 位数字，仓库是公开的 ⇒ 等于把看板钥匙一起发了出去
+    （2026-10-19 修）。
+    """
+    return (os.environ.get("ADMIN_CODE") or "").strip()
 
 
 # ==================================================================== 访问门禁
-# 口令写在 .env 的 ACCESS_CODE（默认 SZPU666）。留空 = 不设门禁（本地自测用）。
+# 口令写在 .env 的 ACCESS_CODE。**留空 = 一律挡住**（不是放行）；
+# 有意免口令要显式写 ACCESS_CODE=off。
 _GATE_FAIL_MAX = 5        # 连续输错几次开始短时锁定
 _GATE_LOCK_SEC = 60       # 锁定秒数
 
@@ -606,7 +612,7 @@ def _gate_ok() -> bool:
     为什么「留空」不再等于「不设门禁」：线上 Secrets 没生效时 ACCESS_CODE 就是空的，
     按旧逻辑等于**门户大开** —— 手册内容随便拿、免费 GLM 额度随便烧，而且页面上
     一点异常都看不出来（学生看到的就是个正常可用的系统）。宁可挡住并说明原因，
-    也绝不默认放行。本地 .env 里配了 SZPU666，所以日常使用不受影响。
+    也绝不默认放行。本地 .env 里配好 ACCESS_CODE 之后，日常使用不受影响。
     """
     code = _gate_code()
     if code.lower() in _GATE_OPEN_VALUES:
@@ -1423,7 +1429,7 @@ def _config_rows() -> list:
     if bk not in ("local", "api"):
         bk = "local" if (ROOT / "models" / "bge-m3" / "config.json").exists() else "api"
     return [
-        ("ACCESS_CODE", has("ACCESS_CODE"), "访问口令；没配＝不设门禁，谁都能进"),
+        ("ACCESS_CODE", has("ACCESS_CODE"), "访问口令；没配＝挡住（不是放行）"),
         ("ADMIN_CODE", has("ADMIN_CODE"), "统计看板密钥；没配则打不开"),
         ("EMBED_API_KEY", has("EMBED_API_KEY"),
          f"在线编码密钥（当前编码后端 = {bk}）；后端是 api 时缺它直接没法提问"),

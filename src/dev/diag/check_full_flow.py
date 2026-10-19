@@ -33,11 +33,13 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+from _secret import code as _code   # 口令只从 .env 读（仓库公开，不许写死）
+
 URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8501/"
 OUT = Path(__file__).resolve().parents[3] / ".trash_tmp" / "layout_shots"
 OUT.mkdir(parents=True, exist_ok=True)
 
-CODE = "SZPU666"
+CODE = _code()
 PROBLEMS: list[str] = []
 STEP_TIMES: list[tuple[str, float]] = []
 

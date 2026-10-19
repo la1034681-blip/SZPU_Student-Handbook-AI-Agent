@@ -56,8 +56,6 @@ URL = "http://localhost:8501/" if arg == "local" else arg
 OUT = Path(__file__).resolve().parents[3] / ".trash_tmp" / "layout_shots"
 OUT.mkdir(parents=True, exist_ok=True)
 
-CODE = "SZPU666"
-
 # 抽检题：覆盖「补考 / 处分 / 宿舍 / 学业预警 / 学位」五类，
 # 最后加一道手册里**没有**的，专测拒答话术。
 CASES = [

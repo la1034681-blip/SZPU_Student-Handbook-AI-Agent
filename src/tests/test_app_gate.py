@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 APP = str(ROOT / "app.py")
 
 # 必须在 import app 之前设好：load_env_file 只填「尚未存在」的变量，不会被 .env 覆盖
-os.environ["ACCESS_CODE"] = "SZPU666"
+os.environ["ACCESS_CODE"] = "TESTCODE"
 os.environ["CLOUD_LOG_ENABLED"] = "0"      # 测试不往云库写，免得污染日志
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
@@ -69,8 +69,8 @@ def main():
     print("   error:", [e.value[:60] for e in at.error], flush=True)
     print("   仍在门禁页:", not has_ask_entry(at), flush=True)
 
-    print("\n③ 输入正确口令 SZPU666", flush=True)
-    at.text_input[0].set_value("SZPU666")
+    print("\n③ 输入正确口令 TESTCODE", flush=True)
+    at.text_input[0].set_value("TESTCODE")
     at.button[0].click().run()
     show_exc(at, "正确口令")
     print("   已进入主界面（有问答入口）:", has_ask_entry(at), flush=True)
@@ -119,7 +119,7 @@ def main():
     at.run()
     show_exc(at, "口令 off")
     print("   放行（有问答入口）:", has_ask_entry(at), flush=True)
-    os.environ["ACCESS_CODE"] = "SZPU666"          # 复原，别影响别的脚本
+    os.environ["ACCESS_CODE"] = "TESTCODE"          # 复原，别影响别的脚本
 
     print("\n⑧ 输汉字/emoji 当口令 → 只提示不对，页面不能崩", flush=True)
     # 起因：2026-10-15 夜里的全流程目检撞到 —— 学生切中文输入法随手打个汉字，
@@ -130,14 +130,14 @@ def main():
     ap = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(ap)
     for bad in ("口令", "szpu666中", "🎉🎉", "", " ", "管理员"):
-        got = ap._same_secret(bad, "SZPU666")
+        got = ap._same_secret(bad, "TESTCODE")
         ck(f"输 {bad!r} → 不放行也不抛异常", got is False, f"竟返回了 {got!r}")
-    ck("正确口令仍然放行", ap._same_secret("SZPU666", "SZPU666") is True)
-    ck("前后空格照样认（等价于 strip）", ap._same_secret(" SZPU666 ", "SZPU666") is True)
-    ck("没配口令时谁都不放行", ap._same_secret("SZPU666", "") is False)
-    ck("大小写不同不放行", ap._same_secret("szpu666", "SZPU666") is False)
+    ck("正确口令仍然放行", ap._same_secret("TESTCODE", "TESTCODE") is True)
+    ck("前后空格照样认（等价于 strip）", ap._same_secret(" TESTCODE ", "TESTCODE") is True)
+    ck("没配口令时谁都不放行", ap._same_secret("TESTCODE", "") is False)
+    ck("大小写不同不放行", ap._same_secret("szpu666", "TESTCODE") is False)
 
-    os.environ["ACCESS_CODE"] = "SZPU666"
+    os.environ["ACCESS_CODE"] = "TESTCODE"
     at.run()
     show_exc(at, "门口状态")
     print("   页面无异常:", not at.exception, flush=True)

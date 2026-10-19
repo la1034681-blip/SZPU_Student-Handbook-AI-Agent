@@ -32,9 +32,10 @@ import time
 from playwright.sync_api import sync_playwright
 
 from _browser import content_view   # 穿透线上 Cloud 的 iframe，见该模块 docstring
+from _secret import code as _code   # 口令只从 .env 读（仓库公开，不许写死）
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8501/"
-CODE = "SZPU666"
+CODE = _code()
 PROBLEMS: list[str] = []
 
 

@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 APP = str(ROOT / "app.py")
 
 # 必须在 import app 之前：load_env_file 只填「尚不存在」的变量，不会被 .env 覆盖
-os.environ["ACCESS_CODE"] = "SZPU666"
+os.environ["ACCESS_CODE"] = "TESTCODE"
 os.environ["CLOUD_LOG_ENABLED"] = "0"      # 测试不往云库写，免得污染日志
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
@@ -74,7 +74,7 @@ def main():
     at.run()
 
     print("① 先用口令进门", flush=True)
-    at.text_input[0].set_value("SZPU666")
+    at.text_input[0].set_value("TESTCODE")
     at.button[0].click().run()             # 表单要真的点提交，只 set_value 不生效
     show_exc(at, "进门")
     entered = has_ask_entry(at)
