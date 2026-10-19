@@ -139,6 +139,33 @@ class _Client:
         raise ApiError(last)
 
 
+def _is_cloudflare(base: str) -> bool:
+    """是不是 Cloudflare Workers AI。它的接口长相与 OpenAI 兼容格式完全不同，
+    要单独走一套请求体与响应解析，所以先认一下地址。
+
+    为什么支持它（2026-10-20）：模力方舟从 Streamlit Cloud（美国）连过去，
+    向量是读超时、重排直接 TCP 握手失败；而 Cloudflare 是全球边缘网络，
+    从哪儿访问都是就近处理，不受「跨国绕回国内」影响。它上面有
+    `@cf/baai/bge-m3`（1024 维，与现有向量库同款）和
+    `@cf/baai/bge-reranker-base`（重排），免费额度每天 1 万 Neurons。
+
+    配置写法（注意 base 要带到 `/ai` 为止）：
+        EMBED_API_BASE = "https://api.cloudflare.com/client/v4/accounts/<账户ID>/ai"
+        EMBED_API_MODEL = "@cf/baai/bge-m3"
+        EMBED_API_RERANK_MODEL = "@cf/baai/bge-reranker-base"
+        EMBED_API_KEY = "<API 令牌>"
+    """
+    return "api.cloudflare.com" in (base or "")
+
+
+def _cf_check(j: dict, what: str) -> dict:
+    """Cloudflare 有时候 HTTP 200 但 `success` 是 false，错误藏在 errors 里。"""
+    if j.get("success") is False:
+        err = j.get("errors") or []
+        raise ApiError(f"Cloudflare {what} 失败：{str(err)[:200]}")
+    return j.get("result") or {}
+
+
 class ApiEmbedder:
     """在线文本向量化。用法与 SentenceTransformer.encode 对齐。"""
 
@@ -147,7 +174,9 @@ class ApiEmbedder:
         self.c = _Client(base_url, api_key)
         self.model = (model or os.environ.get("EMBED_API_MODEL")
                       or DEFAULT_EMBED_MODEL)
-        self.batch = int(batch or os.environ.get("EMBED_API_BATCH") or 32)
+        # Cloudflare 单次条数比 OpenAI 风格保守，批量小一点更稳
+        self.batch = int(batch or os.environ.get("EMBED_API_BATCH")
+                         or (16 if _is_cloudflare(self.c.base) else 32))
 
     def encode(self, texts, normalize_embeddings: bool = True,
                convert_to_numpy: bool = True, **kw):
@@ -157,9 +186,19 @@ class ApiEmbedder:
         if not items:
             return np.zeros((0, 1024), dtype=np.float32)
 
+        cf = _is_cloudflare(self.c.base)
         rows: list = []
         for i in range(0, len(items), self.batch):
             part = items[i:i + self.batch]
+            if cf:
+                # 请求体是 {"text": [...]}，回来是 {"result": {"shape":…, "data": [[…]]}}
+                j = self.c.post(f"/run/{self.model}", {"text": part})
+                data = _cf_check(j, "向量化").get("data") or []
+                if len(data) != len(part):
+                    raise ApiError(
+                        f"向量条数对不上：要 {len(part)} 条，回 {len(data)} 条")
+                rows.extend(data)
+                continue
             j = self.c.post("/embeddings", {
                 "model": self.model,
                 "input": part,
@@ -197,6 +236,19 @@ class ApiReranker:
 
     def _one(self, query: str, docs: list) -> list:
         out = [0.0] * len(docs)
+        if _is_cloudflare(self.c.base):
+            # 请求体是 {"query":…, "contexts":[{"text":…}]}，
+            # 回来是 {"result": {"response": [{"id":…, "score":…}]}}
+            j = self.c.post(f"/run/{self.model}", {
+                "query": query,
+                "contexts": [{"text": d} for d in docs],
+            })
+            for item in (_cf_check(j, "重排").get("response") or []):
+                idx = int(item.get("id", item.get("index", -1)))
+                if 0 <= idx < len(docs):
+                    out[idx] = float(item.get("score", item.get("relevance_score")) or 0.0)
+            return out
+
         j = self.c.post("/rerank", {
             "model": self.model,
             "query": query,

@@ -37,10 +37,20 @@ if not CODE:
     sys.exit(1)
 
 DEFAULT_URL = "https://szpustudent-handbook-ai-agent.streamlit.app/"
-arg = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_URL
-URL = "http://localhost:8501/" if arg == "local" else arg
+# 用法：脚本 [地址|local] [问题1] [问题2] …
+# 不给问题就用下面这两道默认题（一道会试重排、一道不会）。
+_args = sys.argv[1:]
+URL = DEFAULT_URL
+_qs: list[str] = []
+for _a in _args:
+    if _a.startswith("http"):
+        URL = _a
+    elif _a == "local":
+        URL = "http://localhost:8501/"
+    else:
+        _qs.append(_a)
 
-QUESTIONS = ["补考怎么算成绩", "旷课多少学时会被处分"]
+QUESTIONS = _qs or ["补考怎么算成绩", "旷课多少学时会被处分"]
 
 
 def last_answer(view) -> str:
@@ -89,6 +99,12 @@ def main() -> int:
             print(f"耗时 {time.time() - t0:.1f}s", flush=True)
 
             whole = last_answer(view)
+            # 先把答复正文抄一段出来 —— 官网兜底有没有命中、拒答话术对不对，
+            # 都只能从正文里看出来，光看黄条是不够的。
+            print("──── 答复正文 ────", flush=True)
+            print(whole[:900], flush=True)
+            print("──────────────────", flush=True)
+
             if "打了折扣" not in whole:
                 print("（本题没有降级黄条 —— 编码接口这次是通的）", flush=True)
                 continue
