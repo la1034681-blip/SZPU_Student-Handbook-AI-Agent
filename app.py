@@ -229,15 +229,21 @@ details.ev-web{
 details.ev-web summary{ cursor:pointer; font-weight:600; color:#2F4560; }
 .ev-web-src{ font-size:.83em; color:var(--szpu-gray); margin:6px 0 4px; }
 .ev-web-src a{ color:#3F6690 !important; }
-.ev-web-tbl{ border-collapse:collapse; width:100%; margin:8px 0; font-size:.9em;
-             table-layout:fixed; }
+/* 表格按内容分配列宽（auto），外面套一层可横向滚动的壳。
+   原先用 fixed 均分：6 列各占 1/6，正文那列只剩十来个字宽，
+   「第5节课：14:00—14:45」被断成三行（2026-10-19 目检发现）。
+   auto 让长内容自己撑开，撑破屏幕时在壳里横向滑，不挤成一列一个字。 */
+.ev-web-wrap{ overflow-x:auto; margin:8px 0; padding-bottom:2px; }
+.ev-web-tbl{ border-collapse:collapse; font-size:.9em; table-layout:auto;
+             min-width:420px; width:100%; }
 .ev-web-tbl th, .ev-web-tbl td{
   border:1px solid #E2E8F0; padding:5px 8px; text-align:left; vertical-align:top;
   word-break:break-word; overflow-wrap:anywhere; line-height:1.6;
 }
 /* 第一列多给一点：作息表第一列是「上午/下午/晚上」这种 2~4 字的行标签，
    等宽分配会把它挤成竖排一个字一行（2026-10-17 目检发现）。 */
-.ev-web-tbl tr > :first-child{ width:13%; color:#2F4560; font-weight:600; }
+.ev-web-tbl tr > :first-child{ min-width:82px; width:13%; color:#2F4560;
+                               font-weight:600; }
 .ev-web-tbl th{ background:#F1F5F9; color:#2F4560; font-weight:600; }
 .web-tag{
   display:inline-block; padding:0 7px; margin-right:4px; border-radius:7px;
@@ -1038,7 +1044,8 @@ def render_web_answer(web: dict, login: dict, scope: str = "") -> bool:
             f'<div class="ev-web-src">表格原文 ｜ <a href="{url}" target="_blank" '
             f'rel="noopener">{title}</a>'
             + (f" ｜ 抓取于 {fetched}" if fetched else "") + "</div>"
-            f'<table class="ev-web-tbl">{head}{body}</table>')
+            f'<div class="ev-web-wrap"><table class="ev-web-tbl">{head}{body}'
+            f'</table></div>')
 
     if blocks:
         st.markdown("".join(blocks), unsafe_allow_html=True)
