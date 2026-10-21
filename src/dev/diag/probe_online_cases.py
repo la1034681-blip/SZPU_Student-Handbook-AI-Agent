@@ -44,10 +44,10 @@ try:
 except Exception:                     # noqa: BLE001  # 环境不完整也不该让脚本直接崩
     pass
 
+# 2026-10-21 起进站口令已拆除，打开网址即可提问 —— 这里不再强制要求 CODE。
+# 留这个变量只是为了兼容「本地还开着旧版带口令的页面」的情况：有就填，没有就空着，
+# pass_gate() 会先看页面上有没有口令框，没有就直接当已进门。
 CODE = (os.environ.get("ACCESS_CODE") or "").strip()
-if not CODE:
-    print("缺访问口令：在项目根 .env 里写 ACCESS_CODE=xxx（或 set ACCESS_CODE=xxx）再跑。")
-    sys.exit(1)
 
 DEFAULT_URL = "https://szpustudent-handbook-ai-agent.streamlit.app/"
 arg = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_URL

@@ -31,10 +31,8 @@ try:
 except Exception:  # noqa: BLE001
     pass
 
+# 2026-10-21 起进站口令已拆除（打开即可提问），不再强制要求 CODE。
 CODE = (os.environ.get("ACCESS_CODE") or "").strip()
-if not CODE:
-    print("缺访问口令：.env 里写 ACCESS_CODE=xxx 再跑。")
-    sys.exit(1)
 
 DEFAULT_URL = "https://szpustudent-handbook-ai-agent.streamlit.app/"
 # 用法：脚本 [地址|local] [问题1] [问题2] …
