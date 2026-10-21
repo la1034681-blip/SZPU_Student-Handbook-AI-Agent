@@ -251,11 +251,7 @@ details.ev-web summary{ cursor:pointer; font-weight:600; color:#2F4560; }
   border:1px solid #CFDCEA;
 }
 
-/* ---------------- 访问口令门禁 ---------------- */
-.gate-tip{ text-align:center; color:var(--szpu-gray); font-size:.93rem; line-height:1.75; }
-.gate-tip b{ color:var(--szpu-red); }
-.gate-rule{ text-align:center; color:var(--szpu-gray); font-size:.8rem;
-            line-height:1.9; margin-top:4px; }
+/* ---------------- 表单容器（2026-10-21 起门禁已拆，这里只剩建议墙在用） ---------------- */
 [data-testid="stForm"]{ border:none !important; padding:0 !important; }
 
 /* ---------------- 建议墙 ---------------- */
@@ -361,8 +357,7 @@ _CULTURE = """
 _FOOT = """
 <div class="foot">
   本系统只依据《深圳职业技术大学学生手册（2025 年修订）》原文作答，不臆测、不编造；
-  手册中查不到的内容会明确告知。<br>
-  设访问口令保护，仅供校内师生学习使用。<br>
+  手册中查不到的内容会明确告知，能查到官网的会标注来源。<br>
   <b>深圳职业技术大学</b>　·　学生手册智能问答
 </div>
 """
@@ -385,7 +380,6 @@ def load_secrets():
 
     线上怎么配（Streamlit Cloud → 你的 app → Settings → Secrets，TOML 格式）：
 
-        ACCESS_CODE = "你的访问口令"
         ADMIN_CODE = "你的看板密钥"
         FREE_LLM_API_KEY = "…"
         EMBED_BACKEND = "api"
@@ -495,20 +489,17 @@ def admin_code() -> str:
 
 
 # ==================================================================== 访问门禁
-# 口令写在 .env 的 ACCESS_CODE。**留空 = 一律挡住**（不是放行）；
-# 有意免口令要显式写 ACCESS_CODE=off。
-_GATE_FAIL_MAX = 5        # 连续输错几次开始短时锁定
-_GATE_LOCK_SEC = 60       # 锁定秒数
+# 2026-10-21 按用户要求：**取消「进站先输口令」这道门** —— 打开网址即可直接提问。
+# 原来的 `_gate_ok() / _render_gate() / _render_gate_unconfigured() / _gate_code()`
+# 与 `_GATE_FAIL_MAX / _GATE_LOCK_SEC` 一并删除，`ACCESS_CODE` 这个配置项也不再读。
+# ⚠ `_same_secret()` 必须留着：看板密钥（ADMIN_CODE）还在用它做定长比较。
+# ⚠ 这与「问个人数据要登录」是两件事：问「我绩点多少」仍由 `need_login` 引导去学校系统。
 
 # 「系统自检」页（配置状态 + 云库/编码接口连通性）—— 2026-10-16 用户要求
 # **不在网站上展示**：它是给自己排查用的，学生看到只会是一堆技术名词。
 # 代码与页面内容原样保留，改成 True 即可完整恢复（工具条那个入口按钮也留了
 # 注释版）。关掉时连地址栏 ?view=diag 这条后门一起关，免得「撤了等于没撤」。
 SHOW_DIAG = False
-
-
-def _gate_code() -> str:
-    return (os.environ.get("ACCESS_CODE") or "").strip()
 
 
 def _same_secret(got: str, want: str) -> bool:
@@ -532,98 +523,6 @@ def _same_secret(got: str, want: str) -> bool:
         return False
 
 
-def _render_gate():
-    """未通过口令时**只**显示这一页：不加载模型、不渲染任何问答入口。
-
-    这样即便有人扫到这个网址，也拿不到任何手册内容，更不会触发
-    半分钟的模型加载把机器拖垮。
-    """
-    st.markdown(_STYLE, unsafe_allow_html=True)
-    st.markdown(_HERO, unsafe_allow_html=True)
-    st.markdown(
-        "<div class='sec' style='justify-content:center;margin:16px 0 6px'>"
-        "<span class='sec-bar'></span><span class='sec-t'>访问口令</span></div>"
-        "<div class='gate-tip'>本系统面向在校师生开放，请先输入访问口令<br>"
-        "口令由老师发放，<b>请勿外传</b></div>",
-        unsafe_allow_html=True)
-    st.write("")
-
-    _, mid, _ = st.columns([1, 1.15, 1])
-    with mid:
-        with st.form("gate_form", clear_on_submit=True):
-            pw = st.text_input("访问口令", type="password",
-                               label_visibility="collapsed",
-                               placeholder="请输入访问口令")
-            submit = st.form_submit_button("进 入", use_container_width=True)
-
-        now = time.time()
-        lock_until = float(st.session_state.get("gate_lock") or 0)
-        if submit:
-            if now < lock_until:                      # 锁定中，连正确口令也不放行
-                st.error(f"尝试次数过多，请 {int(lock_until - now) + 1} 秒后再试")
-            elif _same_secret(pw, _gate_code()):
-                st.session_state["authed"] = True
-                st.session_state["gate_fails"] = 0
-                st.session_state.pop("gate_lock", None)
-                st.rerun()
-            else:
-                fails = int(st.session_state.get("gate_fails") or 0) + 1
-                if fails >= _GATE_FAIL_MAX:
-                    st.session_state["gate_fails"] = 0
-                    st.session_state["gate_lock"] = now + _GATE_LOCK_SEC
-                    st.error(f"口令连续输错 {_GATE_FAIL_MAX} 次，"
-                             f"请 {_GATE_LOCK_SEC} 秒后再试")
-                else:
-                    st.session_state["gate_fails"] = fails
-                    st.error(f"口令不对，请再试一次"
-                             f"（还可尝试 {_GATE_FAIL_MAX - fails} 次）")
-        elif now < lock_until:
-            st.error(f"尝试次数过多，请 {int(lock_until - now) + 1} 秒后再试")
-
-        st.markdown(
-            "<div class='gate-rule'>本系统只依据《学生手册（2025 年修订）》原文作答</div>",
-            unsafe_allow_html=True)
-
-
-_GATE_OPEN_VALUES = ("off", "none", "0", "false", "open")
-
-
-def _render_gate_unconfigured():
-    """口令**没配好**时挡在这里，明说这是配置问题，而不是假装门禁不存在。"""
-    st.markdown(_STYLE, unsafe_allow_html=True)
-    st.markdown(_HERO, unsafe_allow_html=True)
-    st.error(
-        "**后台还没配访问口令，暂时不能开放使用**\n\n"
-        "管理员请到 Streamlit 后台 **Settings → Secrets** 补上 `ACCESS_CODE`"
-        "（TOML 格式：等号两边留空格、值用英文双引号），保存后会自动重新部署。\n\n"
-        "在配好之前这里会一直挡着 —— 这是故意的：宁可挡住，也不能因为漏配就门户大开。")
-    st.caption("本地调试若想有意不设门禁，把 ACCESS_CODE 设成 off —— "
-               "与「漏配导致为空」区分开。")
-
-
-def _gate_ok() -> bool:
-    """门禁放行判定；未通过就把登录页渲染掉、结束本次脚本。
-
-    三种情况（2026-10-15 改，起因见下）：
-      · 口令已配            → 正常走门禁
-      · 口令**留空**        → 视为「没配好」，**拒绝放行**（fail-safe）
-      · 口令是 off/none/0…  → 有意关闭门禁（本地调试用）
-
-    为什么「留空」不再等于「不设门禁」：线上 Secrets 没生效时 ACCESS_CODE 就是空的，
-    按旧逻辑等于**门户大开** —— 手册内容随便拿、免费 GLM 额度随便烧，而且页面上
-    一点异常都看不出来（学生看到的就是个正常可用的系统）。宁可挡住并说明原因，
-    也绝不默认放行。本地 .env 里配好 ACCESS_CODE 之后，日常使用不受影响。
-    """
-    code = _gate_code()
-    if code.lower() in _GATE_OPEN_VALUES:
-        return True
-    if not code:
-        _render_gate_unconfigured()
-        return False
-    if st.session_state.get("authed"):
-        return True
-    _render_gate()
-    return False
 
 
 _CITE_RE = re.compile(r"\[(E\d+)\]")
@@ -1429,7 +1328,6 @@ def _config_rows() -> list:
     if bk not in ("local", "api"):
         bk = "local" if (ROOT / "models" / "bge-m3" / "config.json").exists() else "api"
     return [
-        ("ACCESS_CODE", has("ACCESS_CODE"), "访问口令；没配＝挡住（不是放行）"),
         ("ADMIN_CODE", has("ADMIN_CODE"), "统计看板密钥；没配则打不开"),
         ("EMBED_API_KEY", has("EMBED_API_KEY"),
          f"在线编码密钥（当前编码后端 = {bk}）；后端是 api 时缺它直接没法提问"),
@@ -1619,8 +1517,7 @@ def render_diag():
 def main():
     load_secrets()                        # 线上：先灌 Secrets（有则以它为准）
     load_env_file()                       # 本地：.env 兜底（已存在的变量不覆盖）
-    if not _gate_ok():                    # 未通过口令 → 只显示登录页
-        return
+    # 2026-10-21 起不再有「进站口令」这道门，打开网址直接可用（见「访问门禁」注释）
 
     st.markdown(_STYLE, unsafe_allow_html=True)
     st.markdown(_HERO, unsafe_allow_html=True)

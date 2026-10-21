@@ -13,9 +13,7 @@ from __future__ import annotations
 
 import os
 
-# 跳过访问门禁：本脚本只验内容/角标/过程面板，不测口令
-# （fail-safe 之后 ACCESS_CODE 为空会被挡住，测试必须显式声明「有意关」）
-os.environ["ACCESS_CODE"] = "off"
+# 2026-10-21：网站已取消进站口令，不再需要「有意关」这个开关；只关云库写入
 os.environ["CLOUD_LOG_ENABLED"] = "0"
 
 import sys

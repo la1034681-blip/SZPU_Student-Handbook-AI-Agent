@@ -43,11 +43,12 @@ def _read(key: str) -> str:
 
 
 def code() -> str:
-    """访问口令。读不到就退出 —— 别拿空口令去试，会把"没配"误判成"进不去"。"""
-    v = _read("ACCESS_CODE")
-    if not v:
-        sys.exit(f"缺访问口令：在 {ROOT / '.env'} 里写 ACCESS_CODE=xxx 再跑。")
-    return v
+    """访问口令。**2026-10-21 起网站已取消进站口令**，这里保留只为兼容老脚本。
+
+    取不到就返回空串（不再 sys.exit）：所有调用的脚本都是先看页面上有没有
+    口令框，没有就直接进站 —— 空串正好让那段逻辑自然跳过。
+    """
+    return _read("ACCESS_CODE")
 
 
 def admin() -> str:
